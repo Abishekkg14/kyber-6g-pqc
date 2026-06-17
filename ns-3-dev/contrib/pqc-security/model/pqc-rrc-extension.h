@@ -7,6 +7,7 @@
 #define PQC_RRC_EXTENSION_H
 
 #include "hybrid-kem-combiner.h"
+#include "hardware-profile.h"
 #include "ml-dsa-signer.h"
 #include "pqc-pdcp-layer.h"
 #include "pqc-session-keys.h"
@@ -63,6 +64,11 @@ class PqcRrcExtension : public Object
      * \brief Set the crypto mode for evaluation.
      */
     void SetCryptoMode(CryptoMode mode);
+
+    void SetKyberLevel(CrystalsKyberKem::SecurityLevel level);
+    void SetMlDsaLevel(MlDsaSigner::Level level);
+    void SetHardwareProfile(const HardwareProfile& profile);
+    void SetParallelHandshake(bool parallel);
 
     // ═══════════════════════════════════════════════════
     // UE-side methods (initiator)

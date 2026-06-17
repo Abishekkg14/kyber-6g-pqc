@@ -88,7 +88,7 @@ InstallUdpTraffic(NodeContainer ueNodes,
 
     Ipv4StaticRoutingHelper routingHelper;
     auto remoteHostRouting = routingHelper.GetStaticRouting(remoteHost->GetObject<Ipv4>());
-    remoteHostRouting->AddNetworkRoute(Ipv4Address("7.0.0.0"),
+    remoteHostRouting->AddNetworkRouteTo(Ipv4Address("7.0.0.0"),
                                        Ipv4Mask("255.0.0.0"),
                                        1);
 
@@ -192,10 +192,14 @@ main(int argc, char* argv[])
     bool enableQuantumAttacker = false;
     bool outputCsv = true;
     std::string csvPrefix = "pqc-metrics";
+    uint32_t seed = 42;
+    uint32_t numRuns = 1;
+    double edgeBackhaulMs = 2.0;
+    bool nlosEnabled = false;
+    std::string hardwareProfile = "jetson-nano";
 
-    // Parse command-line arguments
     CommandLine cmd;
-    cmd.AddValue("scenario", "Scenario: baseline, dense-urban, high-speed, quantum-attack", scenario);
+    cmd.AddValue("scenario", "Scenario: baseline, dense-urban, high-speed, quantum-attack, dense-urban-nlos", scenario);
     cmd.AddValue("numUesPerGnb", "UEs per gNB (dense urban)", numUesPerGnb);
     cmd.AddValue("speed", "UE speed in m/s (high-speed)", speed);
     cmd.AddValue("simTime", "Simulation time in seconds", simTime);
@@ -205,6 +209,11 @@ main(int argc, char* argv[])
     cmd.AddValue("enableQuantumAttacker", "Enable quantum attacker", enableQuantumAttacker);
     cmd.AddValue("outputCsv", "Export metrics to CSV", outputCsv);
     cmd.AddValue("csvPrefix", "CSV output file prefix", csvPrefix);
+    cmd.AddValue("seed", "RNG seed", seed);
+    cmd.AddValue("numRuns", "Monte Carlo runs", numRuns);
+    cmd.AddValue("edgeBackhaulMs", "MEC backhaul latency ms", edgeBackhaulMs);
+    cmd.AddValue("nlosEnabled", "Enable NLOS shadowing", nlosEnabled);
+    cmd.AddValue("hardwareProfile", "Hardware profile name", hardwareProfile);
     cmd.Parse(argc, argv);
 
     // Quantum attack scenario forces PQC + attacker
@@ -246,13 +255,20 @@ main(int argc, char* argv[])
 
     // ── Create the scenario ──
     PqcScenarioHelper scenarioHelper;
+    PqcScenarioConfig scfg;
+    scfg.edgeBackhaulDelay = MilliSeconds(edgeBackhaulMs);
+    scfg.nlosEnabled = nlosEnabled || (scenario == "dense-urban-nlos");
+    scfg.urbanCanyon = (scenario == "dense-urban-nlos");
+    scfg.speed = speed;
+    scenarioHelper.SetConfig(scfg);
+
     PqcScenarioHelper::ScenarioResult scenarioResult;
 
     if (scenario == "baseline" || scenario == "quantum-attack")
     {
         scenarioResult = scenarioHelper.CreateBaselineScenario(2);
     }
-    else if (scenario == "dense-urban")
+    else if (scenario == "dense-urban" || scenario == "dense-urban-nlos")
     {
         scenarioResult = scenarioHelper.CreateDenseUrbanScenario(numUesPerGnb);
     }
@@ -290,7 +306,9 @@ main(int argc, char* argv[])
         else if (mlDsaLevel == "87")
             pqcHelper.SetMlDsaLevel(MlDsaSigner::ML_DSA_87);
 
-        pqcHelper.SetEnableHybridKem(true);
+        pqcHelper.SetCryptoMode(enablePqc ? CryptoMode::HYBRID_KYBER_ECDH : CryptoMode::ECC_ONLY);
+        pqcHelper.SetHardwareProfile(hardwareProfile);
+        pqcHelper.SetEdgeBackhaulDelay(MilliSeconds(edgeBackhaulMs));
         pqcHelper.SetEnableAuthentication(true);
         pqcHelper.SetEnableQuantumAttacker(enableQuantumAttacker);
         pqcHelper.SetEnableForwardSecrecy(true);

@@ -10,8 +10,11 @@
 #include "ns3/node-container.h"
 #include "ns3/object-factory.h"
 #include "ns3/crystals-kyber-kem.h"
+#include "ns3/hardware-profile.h"
 #include "ns3/ml-dsa-signer.h"
+#include "ns3/pqc-energy-model.h"
 #include "ns3/pqc-handover-manager.h"
+#include "ns3/pqc-key-cache.h"
 #include "ns3/pqc-metrics-collector.h"
 #include "ns3/pqc-pdcp-layer.h"
 #include "ns3/pqc-rrc-extension.h"
@@ -55,6 +58,19 @@ class PqcSecurityHelper
     void SetEnableAuthentication(bool enable);
     void SetEnableQuantumAttacker(bool enable);
     void SetEnableForwardSecrecy(bool enable);
+    void SetParallelHandshake(bool parallel);
+    void SetHardwareProfile(const std::string& profileName);
+    void SetCacheEnabled(bool enabled);
+    void SetCacheTtl(Time ttl);
+    void SetCacheRevocationEnabled(bool enabled);
+    void SetEdgeBackhaulDelay(Time delay);
+    void SetBatteryWh(double wh);
+    void SetMobilityHash(uint32_t ueIndex, uint32_t hash);
+
+    void ExportRunMetadata(const std::string& filename,
+                           uint32_t seed,
+                           uint32_t runIndex,
+                           const std::string& scenario) const;
 
     // ── Installation ──
 
@@ -107,7 +123,10 @@ class PqcSecurityHelper
      */
     Ptr<PqcHandoverManager> GetHandoverManager(uint32_t ueIndex) const;
 
+    Ptr<PqcKeyCache> GetKeyCache() const;
+
   private:
+    void ApplyDeviceConfig(Ptr<PqcRrcExtension> rrc);
     // Configuration
     CrystalsKyberKem::SecurityLevel m_kyberLevel;
     MlDsaSigner::Level m_mlDsaLevel;
@@ -115,6 +134,14 @@ class PqcSecurityHelper
     bool m_enableAuth;
     bool m_enableQuantumAttacker;
     bool m_enableForwardSecrecy;
+    bool m_parallelHandshake{false};
+    bool m_cacheEnabled{true};
+    bool m_cacheRevocationEnabled{true};
+    Time m_cacheTtl;
+    Time m_edgeBackhaulDelay;
+    double m_batteryWh{74.0};
+    HardwareProfile m_hwProfile;
+    PqcEnergyModel m_energyModel;
 
     // Per-device PQC objects
     struct UePqcContext
@@ -133,8 +160,10 @@ class PqcSecurityHelper
     std::vector<UePqcContext> m_ueContexts;
     std::vector<GnbPqcContext> m_gnbContexts;
     std::vector<bool> m_mecCache;
+    std::vector<uint32_t> m_ueMobilityHash;
 
     Ptr<PqcMetricsCollector> m_metricsCollector;
+    Ptr<PqcKeyCache> m_keyCache;
     Ptr<QuantumAttacker> m_quantumAttacker;
 
     // Internal methods

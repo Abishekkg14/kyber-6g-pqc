@@ -86,6 +86,67 @@ void PqcMetricsCollector::RecordSecurityScore(double score) { Record("security_s
 void PqcMetricsCollector::RecordEfficiencyScore(double score) { Record("security_latency_efficiency", score); }
 void PqcMetricsCollector::RecordCryptoComputationTime(Time t) { Record("crypto_computation_us", t.GetMicroSeconds()); }
 
+void PqcMetricsCollector::RecordHandoffLatencyMs(double ms) { Record("handoff_latency_ms", ms); }
+void PqcMetricsCollector::RecordCryptoComputeEnergyMj(double mj) { Record("crypto_compute_energy_mj", mj); }
+void PqcMetricsCollector::RecordTxEnergyMj(double mj) { Record("tx_energy_mj", mj); }
+void PqcMetricsCollector::RecordRxEnergyMj(double mj) { Record("rx_energy_mj", mj); }
+void PqcMetricsCollector::RecordIdleEnergyMj(double mj) { Record("idle_energy_mj", mj); }
+void PqcMetricsCollector::RecordMemoryEnergyMj(double mj) { Record("memory_energy_mj", mj); }
+void PqcMetricsCollector::RecordTotalEnergyMj(double mj) { Record("total_energy_mj", mj); }
+void PqcMetricsCollector::RecordEstimatedBatteryLifeMinutes(double m) { Record("estimated_battery_life_minutes", m); }
+void PqcMetricsCollector::RecordCacheHitRate(double r) { Record("cache_hit_rate", r); }
+void PqcMetricsCollector::RecordStaleKeyEvent(uint32_t c) { Record("stale_key_events", c); }
+void PqcMetricsCollector::RecordRevokedKeyReuseAttempt(uint32_t c) { Record("revoked_key_reuse_attempts", c); }
+void PqcMetricsCollector::RecordSecurityBitsClassical(double b) { Record("security_bits_classical", b); }
+void PqcMetricsCollector::RecordSecurityBitsQuantum(double b) { Record("security_bits_quantum", b); }
+void PqcMetricsCollector::RecordAttackCostLog2Ops(double b) { Record("attack_cost_log2_ops", b); }
+void PqcMetricsCollector::RecordThroughputMbps(double mbps) { Record("throughput_mbps", mbps); }
+
+double
+PqcMetricsCollector::ComputeConfidenceIntervalHalfWidth(double mean,
+                                                        double stddev,
+                                                        uint32_t n,
+                                                        double alpha)
+{
+    (void)mean;
+    if (n < 2)
+    {
+        return 0.0;
+    }
+    double se = stddev / std::sqrt(static_cast<double>(n));
+    // Approximate t-critical for 95% CI (two-tailed); use 2.0 for n>=30, else conservative 2.262
+    double tCrit = (n >= 30) ? 1.96 : 2.262;
+    if (alpha != 0.05)
+    {
+        tCrit = 1.96;
+    }
+    return tCrit * se;
+}
+
+void
+PqcMetricsCollector::ExportMetadataJson(const std::string& filename,
+                                        const std::map<std::string, std::string>& meta) const
+{
+    std::ofstream out(filename);
+    if (!out.is_open())
+    {
+        return;
+    }
+    out << "{\n";
+    bool first = true;
+    for (const auto& [k, v] : meta)
+    {
+        if (!first)
+        {
+            out << ",\n";
+        }
+        out << "  \"" << k << "\": \"" << v << "\"";
+        first = false;
+    }
+    out << "\n}\n";
+    out.close();
+}
+
 PqcMetricsCollector::MetricStats
 PqcMetricsCollector::GetStats(const std::string& metricName) const
 {

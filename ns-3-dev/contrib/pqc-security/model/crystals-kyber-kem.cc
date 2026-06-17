@@ -130,6 +130,12 @@ CrystalsKyberKem::GetLevel() const
     return m_level;
 }
 
+void
+CrystalsKyberKem::SetSecurityLevel(SecurityLevel level)
+{
+    m_level = level;
+}
+
 CrystalsKyberKem::EnergyMetrics
 CrystalsKyberKem::GetEnergyMetrics() const
 {

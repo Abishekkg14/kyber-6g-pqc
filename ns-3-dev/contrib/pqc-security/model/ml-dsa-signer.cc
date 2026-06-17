@@ -107,6 +107,13 @@ MlDsaSigner::GetSizes() const
     return SIZE_TABLE.at(m_level);
 }
 
+void
+MlDsaSigner::SetLevel(Level level)
+{
+    m_level = level;
+    m_keysGenerated = false;
+}
+
 MlDsaSigner::KeyPair
 MlDsaSigner::KeyGen()
 {

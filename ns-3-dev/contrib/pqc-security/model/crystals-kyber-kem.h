@@ -121,6 +121,8 @@ class CrystalsKyberKem : public Object
      */
     SecurityLevel GetLevel() const;
 
+    void SetSecurityLevel(SecurityLevel level);
+
     /**
      * \brief Return the simulated energy metrics (MicroJoules) for the current security level.
      */

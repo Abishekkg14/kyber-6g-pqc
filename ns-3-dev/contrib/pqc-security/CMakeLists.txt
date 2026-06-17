@@ -1,5 +1,8 @@
 set(source_files
     model/pqc-session-keys.cc
+    model/hardware-profile.cc
+    model/pqc-key-cache.cc
+    model/pqc-energy-model.cc
     model/crystals-kyber-kem.cc
     model/x25519-ecdh.cc
     model/hybrid-kem-combiner.cc
@@ -18,6 +21,9 @@ set(source_files
 
 set(header_files
     model/pqc-session-keys.h
+    model/hardware-profile.h
+    model/pqc-key-cache.h
+    model/pqc-energy-model.h
     model/crystals-kyber-kem.h
     model/x25519-ecdh.h
     model/hybrid-kem-combiner.h

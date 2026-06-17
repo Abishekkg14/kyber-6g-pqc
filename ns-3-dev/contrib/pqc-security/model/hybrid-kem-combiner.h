@@ -7,6 +7,7 @@
 #define HYBRID_KEM_COMBINER_H
 
 #include "crystals-kyber-kem.h"
+#include "hardware-profile.h"
 #include "pqc-session-keys.h"
 #include "x25519-ecdh.h"
 
@@ -87,6 +88,9 @@ class HybridKemCombiner : public Object
      * \brief Set the cryptographic mode to use for evaluation.
      */
     void SetCryptoMode(CryptoMode mode);
+    void SetKyberLevel(CrystalsKyberKem::SecurityLevel level);
+    void SetHardwareProfile(const HardwareProfile& profile);
+    void SetParallelHandshake(bool parallel);
 
     /**
      * \brief Generate both ECDH and Kyber key pairs (initiator step).
@@ -132,11 +136,19 @@ class HybridKemCombiner : public Object
     CryptoMode m_cryptoMode;
     Ptr<X25519Ecdh> m_ecdh;
     Ptr<CrystalsKyberKem> m_kyber;
-    Ptr<UniformRandomVariable> m_rng;
+    HardwareProfile m_hwProfile;
+    bool m_parallelHandshake{false};
 
-    /// HKDF simulation: concatenate and hash (simulated by random + correct size)
-    std::vector<uint8_t> SimulatedHkdf(const std::vector<uint8_t>& ecdhSs,
-                                        const std::vector<uint8_t>& kyberSs);
+    Time ScaleTime(Time t) const;
+    Time CombineParallelTime(Time a, Time b) const;
+
+    /// Deterministic simulated HKDF-SHA256(ecdhSs || kyberSs, salt)
+    static std::vector<uint8_t> SimulatedHkdf(const std::vector<uint8_t>& ecdhSs,
+                                              const std::vector<uint8_t>& kyberSs);
+
+    /// Simulation-only: coordinate Kyber/ECDH secrets across encaps/decaps peers
+    static std::string SecretCacheKey(const std::vector<uint8_t>& kyberCt);
+    static std::map<std::string, std::vector<uint8_t>> s_encapsSecretCache;
 };
 
 } // namespace pqc

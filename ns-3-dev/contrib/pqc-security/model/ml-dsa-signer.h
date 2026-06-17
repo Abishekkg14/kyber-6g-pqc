@@ -106,6 +106,8 @@ class MlDsaSigner : public Object
      */
     Sizes GetSizes() const;
 
+    void SetLevel(Level level);
+
     // Trace sources
     TracedCallback<Time> m_signTrace;
     TracedCallback<Time> m_verifyTrace;

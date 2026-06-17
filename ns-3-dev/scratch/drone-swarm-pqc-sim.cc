@@ -5,106 +5,111 @@
 
 /**
  * \file drone-swarm-pqc-sim.cc
- * \brief Military Drone Swarm Communication with Post-Quantum Security.
- *
- * Simulates a swarm of drones using 3D Waypoint/Formation mobility, 
- * communicating over a 5G/NR network where gNBs act merely as relays.
- * End-to-end telemetry and command traffic is encrypted using AES-GCM
- * with keys derived from a CRYSTALS-Kyber/X25519 KEM handshakes.
+ * \brief Drone swarm PQC security evaluation (primary experiment driver).
  */
 
 #include "ns3/applications-module.h"
 #include "ns3/command-line.h"
 #include "ns3/config.h"
 #include "ns3/core-module.h"
-#include "ns3/flow-monitor-module.h"
+#include "ns3/energy-module.h"
+#include "ns3/gauss-markov-mobility-model.h"
 #include "ns3/internet-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/nr-module.h"
-#include "ns3/energy-module.h"
-
+#include "ns3/pqc-drone-app.h"
+#include "ns3/pqc-metrics-collector.h"
 #include "ns3/pqc-scenario-helper.h"
 #include "ns3/pqc-security-helper.h"
-#include "ns3/pqc-metrics-collector.h"
-#include "ns3/pqc-drone-app.h"
-#include "ns3/aes-gcm-cipher.h"
 #include "ns3/pqc-session-keys.h"
+#include "ns3/aes-gcm-cipher.h"
 #include "ns3/queue-item.h"
-#include "ns3/point-to-point-net-device.h"
 
+#include <algorithm>
+#include <cmath>
 #include <iomanip>
 #include <map>
+#include <string>
 
 using namespace ns3;
 using namespace ns3::pqc;
 
 NS_LOG_COMPONENT_DEFINE("DroneSwarmPqcSim");
 
-// ═══════════════════════════════════════════════════════════
-// Queueing Theory Tracker
-// ═══════════════════════════════════════════════════════════
 std::map<uint64_t, Time> g_enqueueTimes;
 Ptr<PqcMetricsCollector> g_metrics;
 
-void EnqueueTrace(Ptr<const Packet> packet)
+void
+EnqueueTrace(Ptr<const QueueItem> item)
 {
-    g_enqueueTimes[packet->GetUid()] = Simulator::Now();
+    if (!item || !item->GetPacket())
+    {
+        return;
+    }
+    g_enqueueTimes[item->GetPacket()->GetUid()] = Simulator::Now();
 }
 
-void DequeueTrace(Ptr<const Packet> packet)
+void
+DequeueTrace(Ptr<const QueueItem> item)
 {
-    auto it = g_enqueueTimes.find(packet->GetUid());
+    if (!item || !item->GetPacket())
+    {
+        return;
+    }
+    auto it = g_enqueueTimes.find(item->GetPacket()->GetUid());
     if (it != g_enqueueTimes.end())
     {
         Time delay = Simulator::Now() - it->second;
-        if (g_metrics) g_metrics->RecordQueueingDelay(delay);
+        if (g_metrics)
+        {
+            g_metrics->RecordQueueingDelay(delay);
+        }
         g_enqueueTimes.erase(it);
     }
 }
 
-// ═══════════════════════════════════════════════════════════
-// Drone Mobility and Routing
-// ═══════════════════════════════════════════════════════════
-
 static void
-SetDroneMobility(NodeContainer drones, double speed, double altitude)
+ApplyDroneSpeed(NodeContainer drones, double speed)
 {
-    // NOTE: Mobility is now managed by GaussMarkovMobilityModel set in PqcScenarioHelper.
-    // We just verify it exists here.
-    auto existingMobility = drones.Get(0)->GetObject<MobilityModel>();
-    if (!existingMobility)
+    for (uint32_t i = 0; i < drones.GetN(); ++i)
     {
-        NS_LOG_UNCOND("WARNING: No mobility model found on drones.");
+        auto gm = drones.Get(i)->GetObject<GaussMarkovMobilityModel>();
+        if (gm)
+        {
+            gm->SetAttribute("MeanVelocity",
+                             StringValue("ns3::UniformRandomVariable[Min=0.0|Max=" +
+                                         std::to_string(speed) + "]"));
+        }
+        auto cv = drones.Get(i)->GetObject<ConstantVelocityMobilityModel>();
+        if (cv)
+        {
+            Vector vel = cv->GetVelocity();
+            double mag = std::sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
+            if (mag > 0)
+            {
+                cv->SetVelocity(Vector(speed, 0, 0));
+            }
+        }
     }
-    // GaussMarkov will naturally distribute them and move them.
 }
 
-// ═══════════════════════════════════════════════════════════
-// End-To-End App Install
-// ═══════════════════════════════════════════════════════════
-
 static void
-InstallDroneApplications(NodeContainer drones, 
+InstallDroneApplications(NodeContainer drones,
                          Ptr<PqcMetricsCollector> metrics,
-                         Time simTime, 
+                         Time simTime,
                          uint32_t packetSize,
                          uint32_t dataRateKbps)
 {
-    // Drone 0 will act as the Swarm Commander (Receiver & Broadcaster)
-    // Drones 1..N will act as followers, sending telemetry to Drone 0
     Ptr<Node> commander = drones.Get(0);
-    
     Ptr<Ipv4> cmdrIpv4 = commander->GetObject<Ipv4>();
     if (!cmdrIpv4 || cmdrIpv4->GetNInterfaces() < 2)
     {
-        NS_LOG_UNCOND("WARNING: Commander has no Ipv4 or insufficient interfaces. Skipping app install.");
         return;
     }
-    
+
     Ipv4Address cmdrAddr = cmdrIpv4->GetAddress(1, 0).GetLocal();
     uint16_t port = 9999;
 
-    // Commander receives connections
     Ptr<AesGcmCipher> cmdrCipher = CreateObject<AesGcmCipher>();
     Ptr<PqcDroneApp> cmdrApp = CreateObject<PqcDroneApp>();
     cmdrApp->Setup(true, Ipv4Address::GetAny(), port, cmdrCipher, metrics);
@@ -112,7 +117,6 @@ InstallDroneApplications(NodeContainer drones,
     cmdrApp->SetStartTime(Seconds(0.5));
     cmdrApp->SetStopTime(simTime);
 
-    // Provide keys shortly after startup to simulate post-handshake
     PqcSessionKeys dummyKeys;
     dummyKeys.combinedSecret.resize(32, 0x42);
     dummyKeys.encryptionKey.resize(32, 0x42);
@@ -120,171 +124,325 @@ InstallDroneApplications(NodeContainer drones,
     dummyKeys.nonceBase.resize(12, 0x00);
     Simulator::Schedule(Seconds(1.2), &AesGcmCipher::InstallKeys, cmdrCipher, dummyKeys);
 
-    // Followers send to Commander
     for (uint32_t i = 1; i < drones.GetN(); ++i)
     {
         Ptr<Node> drone = drones.Get(i);
         Ptr<AesGcmCipher> cipher = CreateObject<AesGcmCipher>();
         Ptr<PqcDroneApp> droneApp = CreateObject<PqcDroneApp>();
-        
         double interval = (packetSize * 8.0) / (dataRateKbps * 1000.0);
         droneApp->SetAttribute("PacketSize", UintegerValue(packetSize));
         droneApp->SetAttribute("Interval", TimeValue(Seconds(interval)));
-
         droneApp->Setup(false, cmdrAddr, port, cipher, metrics);
         drone->AddApplication(droneApp);
-
-        // Stagger starts
         droneApp->SetStartTime(Seconds(1.0 + i * 0.05));
         droneApp->SetStopTime(simTime);
-
-        // Keys established after KEM handshake
         Simulator::Schedule(Seconds(1.2 + i * 0.05), &AesGcmCipher::InstallKeys, cipher, dummyKeys);
     }
 }
 
-
-// ═══════════════════════════════════════════════════════════
-// Energy Model Setup
-// ═══════════════════════════════════════════════════════════
-
 static void
-InstallEnergyModel(NodeContainer drones)
+InstallEnergyModel(NodeContainer drones, double batteryWh)
 {
     BasicEnergySourceHelper basicSourceHelper;
-    // 5000 mAh = 5 Ah = 5 * 3600 A*s = 18000 C.  Energy = 18000 * 14.8 = 266400 Joules
-    basicSourceHelper.Set("BasicEnergySourceInitialEnergyJ", DoubleValue(266400.0));
-    basicSourceHelper.Set("BasicEnergySupplyVoltageV", DoubleValue(14.8));
-    
-    energy::EnergySourceContainer sources = basicSourceHelper.Install(drones);
+    double energyJ = batteryWh * 3600.0 * 14.8; // MODELED: 14.8V nominal
+    basicSourceHelper.Set("BasicEnergySourceInitialEnergyJ", DoubleValue(energyJ));
+    basicSourceHelper.Install(drones);
 }
 
-static void RevocationSignal(PqcSecurityHelper* pqcHelper, uint32_t droneId)
+static void
+RevocationSignal(PqcSecurityHelper* pqcHelper, uint32_t droneId)
 {
-    NS_LOG_UNCOND("T=" << Simulator::Now().GetSeconds() << "s : Triggering RevocationSignal. Purging MEC cache for Drone " << droneId);
-    pqcHelper->PurgeCache(droneId); 
+    pqcHelper->PurgeCache(droneId);
 }
 
-// ═══════════════════════════════════════════════════════════
-// Main
-// ═══════════════════════════════════════════════════════════
-
-int main(int argc, char* argv[])
+static CryptoMode
+ResolveCryptoMode(const std::string& crypto, PqcScenarioId scenarioId)
 {
-    std::string cryptoModeStr = "hybrid"; 
-    uint32_t numDrones = 20;
-    double speed = 25.0; // Drone speed (m/s)
-    uint32_t packetSize = 1024; // Bytes
-    uint32_t dataRateKbps = 200; // Telemetry rate
-    double simTime = 10.0;
+    std::string lower = crypto;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    if (lower == "ecc" || lower == "baseline-ecc")
+        return CryptoMode::ECC_ONLY;
+    if (lower == "kyber" || lower == "kyber768" || lower == "kyber512" || lower == "kyber1024")
+        return CryptoMode::KYBER_ONLY;
+    if (lower == "kyber_cached" || lower == "kyber768-cached")
+        return CryptoMode::KYBER_CACHED;
+    if (lower == "hybrid" || lower == "hybrid-kyber768-x25519")
+        return CryptoMode::HYBRID_KYBER_ECDH;
 
-    CommandLine cmd;
-    cmd.AddValue("cryptoMode", "Cryptography Mode: ecc, kyber, kyber_cached, hybrid", cryptoModeStr);
-    cmd.AddValue("nodes", "Number of drone nodes (e.g. 10, 50, 100)", numDrones);
-    cmd.AddValue("speed", "Drone mobility speed m/s", speed);
-    cmd.AddValue("packetSize", "Telemetry payload size in bytes", packetSize);
-    cmd.AddValue("rate", "Data rate kbps per drone", dataRateKbps);
-    cmd.Parse(argc, argv);
-
-    NS_LOG_UNCOND("Starting Drone Swarm PQC Simulation");
-    NS_LOG_UNCOND("Nodes: " << numDrones << ", CryptoMode: " << cryptoModeStr << ", Speed: " << speed << " m/s");
-
-    // Initialize 6G/NR topology — auto-select based on swarm size
-    NS_LOG_UNCOND("[CHECKPOINT 1] Creating NR scenario...");
-    PqcScenarioHelper scenarioHelper;
-    PqcScenarioHelper::ScenarioResult scenarioResult;
-    if (numDrones <= 20)
+    switch (scenarioId)
     {
-        // Small swarm: single gNB is sufficient
+    case PqcScenarioId::BASELINE_ECC:
+        return CryptoMode::ECC_ONLY;
+    case PqcScenarioId::KYBER512:
+    case PqcScenarioId::KYBER768:
+    case PqcScenarioId::KYBER1024:
+        return CryptoMode::KYBER_ONLY;
+    case PqcScenarioId::KYBER768_CACHED:
+        return CryptoMode::KYBER_CACHED;
+    case PqcScenarioId::HYBRID_KYBER768_X25519_CACHED:
+        return CryptoMode::HYBRID_KYBER_ECDH;
+    default:
+        return CryptoMode::HYBRID_KYBER_ECDH;
+    }
+}
+
+static CrystalsKyberKem::SecurityLevel
+ResolveKyberLevel(const std::string& crypto, uint32_t kyberLevelArg, PqcScenarioId scenarioId)
+{
+    if (kyberLevelArg == 512)
+        return CrystalsKyberKem::KYBER_512;
+    if (kyberLevelArg == 1024)
+        return CrystalsKyberKem::KYBER_1024;
+    std::string lower = crypto;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    if (lower.find("512") != std::string::npos)
+        return CrystalsKyberKem::KYBER_512;
+    if (lower.find("1024") != std::string::npos)
+        return CrystalsKyberKem::KYBER_1024;
+    if (scenarioId == PqcScenarioId::KYBER512)
+        return CrystalsKyberKem::KYBER_512;
+    if (scenarioId == PqcScenarioId::KYBER1024)
+        return CrystalsKyberKem::KYBER_1024;
+    return CrystalsKyberKem::KYBER_768;
+}
+
+static int
+RunSingleSimulation(const std::string& cryptoModeStr,
+                    uint32_t numDrones,
+                    double speed,
+                    uint32_t packetSize,
+                    uint32_t dataRateKbps,
+                    double simTime,
+                    uint32_t kyberLevelArg,
+                    bool parallelHandshake,
+                    bool cacheEnabled,
+                    double cacheTtlSec,
+                    bool cacheRevocation,
+                    double edgeBackhaulMs,
+                    const std::string& scenarioStr,
+                    bool nlosEnabled,
+                    bool urbanCanyon,
+                    const std::string& hardwareProfile,
+                    double batteryWh,
+                    uint32_t runIndex,
+                    uint32_t seed)
+{
+    PqcScenarioId scenarioId = ParseScenarioId(scenarioStr);
+    PqcScenarioConfig scfg;
+    scfg.speed = speed;
+    scfg.nlosEnabled = nlosEnabled;
+    scfg.urbanCanyon = urbanCanyon;
+    scfg.edgeBackhaulDelay = MilliSeconds(edgeBackhaulMs);
+    scfg.enableHandover = (scenarioId == PqcScenarioId::HIGH_SPEED_HANDOVER);
+
+    PqcScenarioHelper scenarioHelper;
+    scenarioHelper.SetConfig(scfg);
+
+    PqcScenarioHelper::ScenarioResult scenarioResult;
+    if (!scenarioStr.empty() && scenarioStr != "auto")
+    {
+        scenarioResult = scenarioHelper.CreateFromScenarioId(scenarioId, numDrones);
+    }
+    else if (numDrones <= 20)
+    {
         scenarioResult = scenarioHelper.CreateBaselineScenario(numDrones);
     }
     else
     {
-        // Large swarm: distribute across 7 gNBs to avoid RNTI overload
-        uint32_t uesPerGnb = (numDrones + 6) / 7; // ceiling division
+        uint32_t uesPerGnb = (numDrones + 6) / 7;
         scenarioResult = scenarioHelper.CreateDenseUrbanScenario(uesPerGnb);
     }
+
     uint32_t actualDrones = scenarioResult.ueNodes.GetN();
-    NS_LOG_UNCOND("[CHECKPOINT 2] NR scenario created: " << actualDrones << " UEs, " << scenarioResult.numGnbs << " gNBs");
+    ApplyDroneSpeed(scenarioResult.ueNodes, speed);
 
-    // Setup drone mobility (update positions, don't reinstall mobility model)
-    NS_LOG_UNCOND("[CHECKPOINT 3] Setting up drone mobility...");
-    SetDroneMobility(scenarioResult.ueNodes, speed, 100.0);
-    NS_LOG_UNCOND("[CHECKPOINT 4] Mobility setup complete.");
-
-    // PQC Security framework
-    NS_LOG_UNCOND("[CHECKPOINT 5] Installing PQC security framework...");
     PqcSecurityHelper pqcHelper;
     g_metrics = pqcHelper.GetMetricsCollector();
     g_metrics->SetNodeCount(actualDrones);
 
-    CryptoMode mode = CryptoMode::HYBRID_KYBER_ECDH;
-    if (cryptoModeStr == "ecc")
+    CryptoMode mode = ResolveCryptoMode(cryptoModeStr, scenarioId);
+    if (scenarioId == PqcScenarioId::HYBRID_KYBER768_X25519_CACHED ||
+        scenarioId == PqcScenarioId::KYBER768_CACHED)
     {
-        mode = CryptoMode::ECC_ONLY;
+        mode = (scenarioId == PqcScenarioId::KYBER768_CACHED) ? CryptoMode::KYBER_CACHED
+                                                              : CryptoMode::HYBRID_KYBER_ECDH;
+        cacheEnabled = true;
     }
-    else if (cryptoModeStr == "kyber")
-    {
-        mode = CryptoMode::KYBER_ONLY;
-    }
-    else if (cryptoModeStr == "kyber_cached")
-    {
-        mode = CryptoMode::KYBER_CACHED;
-        // PSK Caching optimization reduces connection setup processing
-        Config::SetDefault("ns3::pqc::CrystalsKyberKem::EncapsTime", TimeValue(MicroSeconds(10)));
-        Config::SetDefault("ns3::pqc::CrystalsKyberKem::DecapsTime", TimeValue(MicroSeconds(10)));
-    }
-    else if (cryptoModeStr == "hybrid")
-    {
-        mode = CryptoMode::HYBRID_KYBER_ECDH;
-    }
-    else
-    {
-        NS_LOG_UNCOND("Invalid cryptoMode: " << cryptoModeStr << ". Defaulting to hybrid.");
-    }
-    
+
+    auto kyberLevel = ResolveKyberLevel(cryptoModeStr, kyberLevelArg, scenarioId);
     pqcHelper.SetCryptoMode(mode);
+    pqcHelper.SetKyberLevel(kyberLevel);
+    pqcHelper.SetParallelHandshake(parallelHandshake);
+    pqcHelper.SetHardwareProfile(hardwareProfile);
+    pqcHelper.SetCacheEnabled(cacheEnabled);
+    pqcHelper.SetCacheTtl(Seconds(cacheTtlSec));
+    pqcHelper.SetCacheRevocationEnabled(cacheRevocation);
+    pqcHelper.SetEdgeBackhaulDelay(MilliSeconds(edgeBackhaulMs));
+    pqcHelper.SetBatteryWh(batteryWh);
+
+    if (scenarioId == PqcScenarioId::QUANTUM_ATTACK)
+    {
+        pqcHelper.SetEnableQuantumAttacker(true);
+    }
 
     pqcHelper.Install(scenarioResult.gnbDevices, scenarioResult.ueDevices);
-    NS_LOG_UNCOND("[CHECKPOINT 6] PQC framework installed.");
-    
-    // Adaptive rekey logic handles the refresh automatically, but we schedule initial ones
     pqcHelper.ScheduleHandshakes(MilliSeconds(800));
-    NS_LOG_UNCOND("[CHECKPOINT 7] Handshakes scheduled.");
 
-    // Monitor Queueing Delay on all Drone UE devices
-    Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/TxQueue/Enqueue", MakeCallback(&EnqueueTrace));
-    Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/TxQueue/Dequeue", MakeCallback(&DequeueTrace));
-    NS_LOG_UNCOND("[CHECKPOINT 8] Queue traces connected.");
+    if (cacheEnabled)
+    {
+        pqcHelper.ScheduleHandshakes(Seconds(2.0));
+    }
 
-    // Install Drone SWARM Apps
-    NS_LOG_UNCOND("[CHECKPOINT 9] Installing drone applications...");
-    InstallDroneApplications(scenarioResult.ueNodes, pqcHelper.GetMetricsCollector(), Seconds(simTime), packetSize, dataRateKbps);
-    NS_LOG_UNCOND("[CHECKPOINT 10] Apps installed.");
+    // NR MAC queue traces vary by ns-3/NR version; queueing_delay_us also derived from RRC overhead model.
 
-    // Install Energy Model
-    InstallEnergyModel(scenarioResult.ueNodes);
+    InstallDroneApplications(scenarioResult.ueNodes,
+                           pqcHelper.GetMetricsCollector(),
+                           Seconds(simTime),
+                           packetSize,
+                           dataRateKbps);
+    InstallEnergyModel(scenarioResult.ueNodes, batteryWh);
 
-    // Schedule Revocation Signal at T=300s for Drone 1 (if simTime >= 300)
-    // For smaller test runs we scale it, but prompt says "exactly T=300 seconds"
-    Simulator::Schedule(Seconds(300.0), &RevocationSignal, &pqcHelper, 1);
-    
-    NS_LOG_UNCOND("[CHECKPOINT 11] Starting simulation...");
+  double revTime = std::min(simTime * 0.5, 300.0);
+    if (cacheRevocation)
+    {
+        Simulator::Schedule(Seconds(revTime), &RevocationSignal, &pqcHelper, 1u);
+    }
 
     Simulator::Stop(Seconds(simTime + 1.0));
     Simulator::Run();
 
-    NS_LOG_UNCOND("\nResults for " << actualDrones << " drones using " << cryptoModeStr << ":");
-    pqcHelper.GetMetricsCollector()->PrintSummary();
+    if (scenarioId == PqcScenarioId::QUANTUM_ATTACK)
+    {
+        pqcHelper.RunQuantumAttack();
+    }
+
+    pqcHelper.GetMetricsCollector()->RecordCacheHitRate(pqcHelper.GetKeyCache()->GetHitRate());
+    pqcHelper.GetMetricsCollector()->RecordStaleKeyEvent(pqcHelper.GetKeyCache()->GetStaleKeyEvents());
+    pqcHelper.GetMetricsCollector()->RecordRevokedKeyReuseAttempt(
+        pqcHelper.GetKeyCache()->GetRevokedReuseAttempts());
+
     pqcHelper.GetMetricsCollector()->ExportIntermediateLogs("results_data");
-    
-    // Ensure results/ directory exists (best-effort; script should also mkdir)
-    if (system("mkdir -p results")) { }
-    std::string csvName = "results/" + cryptoModeStr + "_" + std::to_string(actualDrones) + "nodes.csv";
+
+    if (system("mkdir -p results results/metadata")) {
+    }
+
+    std::string csvName = "results/" + cryptoModeStr + "_" + std::to_string(actualDrones) + "nodes";
+    if (runIndex > 0)
+    {
+        csvName += "_run" + std::to_string(runIndex);
+    }
+    csvName += ".csv";
+
     pqcHelper.GetMetricsCollector()->ExportToCsv(csvName);
-    
+
+    std::string metaName = "results/metadata/" + cryptoModeStr + "_" +
+                           std::to_string(actualDrones) + "nodes_run" + std::to_string(runIndex) +
+                           ".meta";
+    pqcHelper.ExportRunMetadata(metaName, seed, runIndex, scenarioStr);
+
+    std::map<std::string, std::string> meta;
+    meta["seed"] = std::to_string(seed);
+    meta["run_index"] = std::to_string(runIndex);
+    meta["scenario"] = scenarioStr;
+    meta["crypto_mode"] = cryptoModeStr;
+    meta["nodes"] = std::to_string(actualDrones);
+    pqcHelper.GetMetricsCollector()->ExportMetadataJson(
+        metaName + ".json",
+        meta);
+
+    pqcHelper.GetMetricsCollector()->PrintSummary();
     Simulator::Destroy();
-    NS_LOG_UNCOND("Done.\n");
     return 0;
 }
 
+int
+main(int argc, char* argv[])
+{
+    std::string cryptoModeStr = "hybrid";
+    std::string cryptoAlias;
+    std::string scenarioStr = "auto";
+    std::string hardwareProfile = "jetson-nano";
+    uint32_t numDrones = 20;
+    uint32_t numRuns = 1;
+    uint32_t seed = 42;
+    uint32_t kyberLevelArg = 768;
+    std::string hybridModeStr = "kyber768-x25519";
+    bool parallelHandshake = false;
+    bool cacheEnabled = false;
+    double cacheTtlSec = 300.0;
+    bool cacheRevocation = false;
+    double edgeBackhaulMs = 2.0;
+    bool nlosEnabled = false;
+    bool urbanCanyon = false;
+    double speed = 25.0;
+    double batteryWh = 74.0;
+    uint32_t packetSize = 1024;
+    uint32_t dataRateKbps = 200;
+    double simTime = 10.0;
+
+    CommandLine cmd;
+    cmd.AddValue("cryptoMode", "Cryptography mode: ecc, kyber, kyber_cached, hybrid", cryptoModeStr);
+    cmd.AddValue("crypto", "Alias for cryptoMode", cryptoAlias);
+    cmd.AddValue("nodes", "Number of drone nodes", numDrones);
+    cmd.AddValue("nDrones", "Alias for nodes", numDrones);
+    cmd.AddValue("numRuns", "Monte Carlo run count (default 1, use >=30 for publication)", numRuns);
+    cmd.AddValue("seed", "RNG seed base", seed);
+    cmd.AddValue("RngRun", "Alias for seed offset (legacy ablation compat)", seed);
+    cmd.AddValue("kyberLevel", "Kyber level: 512, 768, 1024", kyberLevelArg);
+    cmd.AddValue("hybridMode", "Hybrid variant label", hybridModeStr);
+    cmd.AddValue("parallelHandshake", "Run ECDH+Kyber in parallel when hardware allows", parallelHandshake);
+    cmd.AddValue("cacheEnabled", "Enable mobility-aware PQC key cache", cacheEnabled);
+    cmd.AddValue("cacheTtl", "Cache TTL in seconds", cacheTtlSec);
+    cmd.AddValue("cacheRevocation", "Trigger cache revocation mid-simulation", cacheRevocation);
+    cmd.AddValue("edgeBackhaulMs", "MEC edge backhaul latency (ms)", edgeBackhaulMs);
+    cmd.AddValue("scenario", "Scenario name (see docs/simulation-methodology.md)", scenarioStr);
+    cmd.AddValue("nlosEnabled", "Enable NLOS shadowing", nlosEnabled);
+    cmd.AddValue("urbanCanyon", "Urban canyon propagation stress", urbanCanyon);
+    cmd.AddValue("speed", "Drone mobility speed m/s", speed);
+    cmd.AddValue("batteryWh", "Battery capacity in Wh (MODELED)", batteryWh);
+    cmd.AddValue("hardwareProfile",
+                 "Hardware profile: cortex-a55, jetson-nano, jetson-orin, pixhawk-class, edge-server",
+                 hardwareProfile);
+    cmd.AddValue("packetSize", "Telemetry payload bytes", packetSize);
+    cmd.AddValue("rate", "Data rate kbps per drone", dataRateKbps);
+    cmd.AddValue("simTime", "Simulation duration seconds", simTime);
+    cmd.Parse(argc, argv);
+
+    if (!cryptoAlias.empty())
+    {
+        cryptoModeStr = cryptoAlias;
+    }
+
+    if (cryptoModeStr == "kyber_cached" || cryptoModeStr == "kyber768-cached")
+    {
+        cacheEnabled = true;
+    }
+
+    for (uint32_t run = 0; run < numRuns; ++run)
+    {
+        RngSeedManager::SetSeed(seed + run);
+        RngSeedManager::SetRun(run + 1);
+        NS_LOG_UNCOND("Run " << (run + 1) << "/" << numRuns << " seed=" << (seed + run));
+        RunSingleSimulation(cryptoModeStr,
+                            numDrones,
+                            speed,
+                            packetSize,
+                            dataRateKbps,
+                            simTime,
+                            kyberLevelArg,
+                            parallelHandshake,
+                            cacheEnabled,
+                            cacheTtlSec,
+                            cacheRevocation,
+                            edgeBackhaulMs,
+                            scenarioStr,
+                            nlosEnabled,
+                            urbanCanyon,
+                            hardwareProfile,
+                            batteryWh,
+                            run,
+                            seed + run);
+    }
+
+    return 0;
+}

@@ -10,10 +10,15 @@
 
 #include "ns3/aes-gcm-cipher.h"
 #include "ns3/crystals-kyber-kem.h"
+#include "ns3/hardware-profile.h"
 #include "ns3/hybrid-kem-combiner.h"
 #include "ns3/ml-dsa-signer.h"
+#include "ns3/pqc-energy-model.h"
+#include "ns3/pqc-key-cache.h"
+#include "ns3/pqc-metrics-collector.h"
 #include "ns3/pqc-pdcp-layer.h"
 #include "ns3/pqc-rrc-extension.h"
+#include "ns3/pqc-security-helper.h"
 #include "ns3/pqc-session-keys.h"
 #include "ns3/x25519-ecdh.h"
 
@@ -260,6 +265,216 @@ class FullHandshakeTestCase : public TestCase
     }
 };
 
+class KyberLevelPropagationTestCase : public TestCase
+{
+  public:
+    KyberLevelPropagationTestCase()
+        : TestCase("Kyber level propagation changes wire sizes")
+    {
+    }
+
+    void DoRun() override
+    {
+        auto hybrid = CreateObject<HybridKemCombiner>();
+        hybrid->SetKyberLevel(CrystalsKyberKem::KYBER_512);
+        auto hkp = hybrid->GenerateKeyPair();
+        NS_TEST_ASSERT_MSG_EQ(hkp.kyberKeys.publicKey.size(), 800u, "512 PK size");
+        Simulator::Destroy();
+    }
+};
+
+class HybridDerivationConsistencyTestCase : public TestCase
+{
+  public:
+    HybridDerivationConsistencyTestCase()
+        : TestCase("UE and gNB derive identical combined secret")
+    {
+    }
+
+    void DoRun() override
+    {
+        auto hybrid = CreateObject<HybridKemCombiner>();
+        auto hkp = hybrid->GenerateKeyPair();
+        auto enc = hybrid->Encapsulate(hkp.ecdhKeys.publicKey, hkp.kyberKeys.publicKey);
+        auto dec = hybrid->Decapsulate(hkp, enc.ecdhPublicKey, enc.kyberCiphertext);
+        NS_TEST_ASSERT_MSG_EQ(dec.size(), enc.combinedSecret.size(), "Same length");
+        for (size_t i = 0; i < dec.size(); ++i)
+        {
+            NS_TEST_ASSERT_MSG_EQ(dec[i], enc.combinedSecret[i], "Byte mismatch in combined secret");
+        }
+        Simulator::Destroy();
+    }
+};
+
+class CacheTtlExpiryTestCase : public TestCase
+{
+  public:
+    CacheTtlExpiryTestCase()
+        : TestCase("Cache TTL expiry rejects stale keys")
+    {
+    }
+
+    void DoRun() override
+    {
+        auto cache = CreateObject<PqcKeyCache>();
+        cache->SetDefaultTtl(Seconds(1.0));
+        std::vector<uint8_t> secret(32, 0x55);
+        cache->Store(0, secret, 100);
+        Simulator::Schedule(Seconds(2.0), [&]() {
+            std::vector<uint8_t> out;
+            auto r = cache->Lookup(0, 100, out);
+            NS_TEST_ASSERT_MSG_EQ(static_cast<int>(r),
+                                  static_cast<int>(PqcKeyCache::LookupResult::STALE),
+                                  "Should be stale");
+        });
+        Simulator::Run();
+        Simulator::Destroy();
+    }
+};
+
+class CacheRevocationTestCase : public TestCase
+{
+  public:
+    CacheRevocationTestCase()
+        : TestCase("Revoked cache entry is rejected")
+    {
+    }
+
+    void DoRun() override
+    {
+        auto cache = CreateObject<PqcKeyCache>();
+        std::vector<uint8_t> secret(32, 0x66);
+        cache->Store(1, secret, 200);
+        cache->Revoke(1);
+        std::vector<uint8_t> out;
+        auto r = cache->Lookup(1, 200, out);
+        NS_TEST_ASSERT_MSG_EQ(static_cast<int>(r),
+                              static_cast<int>(PqcKeyCache::LookupResult::REVOKED),
+                              "Should be revoked");
+        Simulator::Destroy();
+    }
+};
+
+class ReplayNonceTestCase : public TestCase
+{
+  public:
+    ReplayNonceTestCase()
+        : TestCase("Replay nonce rejected")
+    {
+    }
+
+    void DoRun() override
+    {
+        auto cache = CreateObject<PqcKeyCache>();
+        std::vector<uint8_t> secret(32, 0x77);
+        cache->Store(2, secret, 300);
+        NS_TEST_ASSERT_MSG_EQ(cache->ValidateNonce(2, 1), true, "First nonce ok");
+        NS_TEST_ASSERT_MSG_EQ(cache->ValidateNonce(2, 1), false, "Replay rejected");
+        Simulator::Destroy();
+    }
+};
+
+class MetricsCollectorTestCase : public TestCase
+{
+  public:
+    MetricsCollectorTestCase()
+        : TestCase("Metrics collector records and exports fields")
+    {
+    }
+
+    void DoRun() override
+    {
+        auto m = CreateObject<PqcMetricsCollector>();
+        m->RecordHandshakeLatency(MicroSeconds(1000));
+        m->RecordCacheHitRate(0.5);
+        auto stats = m->GetStats("handshake_latency_us");
+        NS_TEST_ASSERT_MSG_EQ(stats.count, 1u, "One sample");
+        NS_TEST_ASSERT_MSG_GT(stats.mean, 0.0, "Mean > 0");
+        Simulator::Destroy();
+    }
+};
+
+class EnergyModelTestCase : public TestCase
+{
+  public:
+    EnergyModelTestCase()
+        : TestCase("Energy model sums components")
+    {
+    }
+
+    void DoRun() override
+    {
+        PqcEnergyModel em(GetHardwareProfile(HardwareProfileId::JETSON_NANO));
+        auto e = em.ComputeHandshakeEnergy(MilliSeconds(5), 2000, MilliSeconds(1), MilliSeconds(1), Seconds(1));
+        NS_TEST_ASSERT_MSG_GT(e.TotalMj(), 0.0, "Total energy > 0");
+        NS_TEST_ASSERT_MSG_GT(e.cryptoComputeMj, 0.0, "Crypto energy > 0");
+        Simulator::Destroy();
+    }
+};
+
+class ConfidenceIntervalTestCase : public TestCase
+{
+  public:
+    ConfidenceIntervalTestCase()
+        : TestCase("Confidence interval half-width calculation")
+    {
+    }
+
+    void DoRun() override
+    {
+        double hw = PqcMetricsCollector::ComputeConfidenceIntervalHalfWidth(10.0, 2.0, 30);
+        NS_TEST_ASSERT_MSG_GT(hw, 0.0, "CI half-width > 0");
+        double hw1 = PqcMetricsCollector::ComputeConfidenceIntervalHalfWidth(10.0, 2.0, 1);
+        NS_TEST_ASSERT_MSG_EQ(hw1, 0.0, "n=1 gives zero CI");
+        Simulator::Destroy();
+    }
+};
+
+class HardwareProfileScalingTestCase : public TestCase
+{
+  public:
+    HardwareProfileScalingTestCase()
+        : TestCase("Hardware profile scales crypto timing")
+    {
+    }
+
+    void DoRun() override
+    {
+        auto pixhawk = GetHardwareProfile(HardwareProfileId::PIXHAWK_CLASS);
+        auto orin = GetHardwareProfile(HardwareProfileId::JETSON_ORIN);
+        NS_TEST_ASSERT_MSG_GT(pixhawk.cryptoTimingScale, orin.cryptoTimingScale,
+                              "Pixhawk slower than Orin");
+        Simulator::Destroy();
+    }
+};
+
+class ParallelVsSequentialTimingTestCase : public TestCase
+{
+  public:
+    ParallelVsSequentialTimingTestCase()
+        : TestCase("Parallel handshake timing <= sequential")
+    {
+    }
+
+    void DoRun() override
+    {
+        auto seq = CreateObject<HybridKemCombiner>();
+        seq->SetHardwareProfile(GetHardwareProfile(HardwareProfileId::JETSON_ORIN));
+        seq->SetParallelHandshake(false);
+        auto hkp = seq->GenerateKeyPair();
+
+        auto par = CreateObject<HybridKemCombiner>();
+        par->SetHardwareProfile(GetHardwareProfile(HardwareProfileId::JETSON_ORIN));
+        par->SetParallelHandshake(true);
+        auto encSeq = seq->Encapsulate(hkp.ecdhKeys.publicKey, hkp.kyberKeys.publicKey);
+        auto encPar = par->Encapsulate(hkp.ecdhKeys.publicKey, hkp.kyberKeys.publicKey);
+        bool parallelLeSeq =
+            encPar.totalTime.GetMicroSeconds() <= encSeq.totalTime.GetMicroSeconds();
+        NS_TEST_ASSERT_MSG_EQ(parallelLeSeq, true, "Parallel <= sequential");
+        Simulator::Destroy();
+    }
+};
+
 // ════════════════════════════════════════════════════════
 // Test Suite Registration
 // ════════════════════════════════════════════════════════
@@ -275,6 +490,16 @@ class PqcSecurityTestSuite : public TestSuite
         AddTestCase(new MlDsaSizesTestCase, TestCase::Duration::QUICK);
         AddTestCase(new AesGcmOverheadTestCase, TestCase::Duration::QUICK);
         AddTestCase(new FullHandshakeTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new KyberLevelPropagationTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new HybridDerivationConsistencyTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new CacheTtlExpiryTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new CacheRevocationTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new ReplayNonceTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new MetricsCollectorTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new EnergyModelTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new ConfidenceIntervalTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new HardwareProfileScalingTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new ParallelVsSequentialTimingTestCase, TestCase::Duration::QUICK);
     }
 };
 

@@ -96,6 +96,46 @@ PqcRrcExtension::SetCryptoMode(CryptoMode mode)
     }
 }
 
+void
+PqcRrcExtension::SetKyberLevel(CrystalsKyberKem::SecurityLevel level)
+{
+    if (m_hybridKem)
+    {
+        m_hybridKem->SetKyberLevel(level);
+    }
+}
+
+void
+PqcRrcExtension::SetMlDsaLevel(MlDsaSigner::Level level)
+{
+    if (m_signer)
+    {
+        m_signer->SetLevel(level);
+    }
+    if (m_verifier)
+    {
+        m_verifier->SetLevel(level);
+    }
+}
+
+void
+PqcRrcExtension::SetHardwareProfile(const HardwareProfile& profile)
+{
+    if (m_hybridKem)
+    {
+        m_hybridKem->SetHardwareProfile(profile);
+    }
+}
+
+void
+PqcRrcExtension::SetParallelHandshake(bool parallel)
+{
+    if (m_hybridKem)
+    {
+        m_hybridKem->SetParallelHandshake(parallel);
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 // UE-SIDE: Generate RRC Connection Request
 // ═══════════════════════════════════════════════════════════

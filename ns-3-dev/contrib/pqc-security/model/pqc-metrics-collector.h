@@ -85,6 +85,37 @@ class PqcMetricsCollector : public Object
     void RecordEfficiencyScore(double score);
     void RecordCryptoComputationTime(Time t);
 
+    void RecordHandoffLatencyMs(double ms);
+    void RecordCryptoComputeEnergyMj(double mj);
+    void RecordTxEnergyMj(double mj);
+    void RecordRxEnergyMj(double mj);
+    void RecordIdleEnergyMj(double mj);
+    void RecordMemoryEnergyMj(double mj);
+    void RecordTotalEnergyMj(double mj);
+    void RecordEstimatedBatteryLifeMinutes(double minutes);
+    void RecordCacheHitRate(double rate);
+    void RecordStaleKeyEvent(uint32_t count);
+    void RecordRevokedKeyReuseAttempt(uint32_t count);
+    void RecordSecurityBitsClassical(double bits);
+    void RecordSecurityBitsQuantum(double bits);
+    void RecordAttackCostLog2Ops(double log2ops);
+    void RecordThroughputMbps(double mbps);
+
+    /**
+     * \brief Compute 95% confidence interval half-width (t-distribution).
+     * \param mean Sample mean
+     * \param stddev Sample standard deviation
+     * \param n Sample count
+     * \param alpha Significance level (default 0.05 for 95% CI)
+     */
+    static double ComputeConfidenceIntervalHalfWidth(double mean,
+                                                     double stddev,
+                                                     uint32_t n,
+                                                     double alpha = 0.05);
+
+    void ExportMetadataJson(const std::string& filename,
+                            const std::map<std::string, std::string>& meta) const;
+
     // ═══════════════════════════════════════════════════
     // Retrieval and export
     // ═══════════════════════════════════════════════════

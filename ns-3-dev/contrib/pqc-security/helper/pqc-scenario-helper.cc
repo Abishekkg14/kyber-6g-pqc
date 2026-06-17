@@ -21,6 +21,8 @@
 #include "ns3/uinteger.h"
 
 #include <cmath>
+#include <algorithm>
+#include <cctype>
 
 namespace ns3
 {
@@ -29,12 +31,117 @@ namespace pqc
 
 NS_LOG_COMPONENT_DEFINE("PqcScenarioHelper");
 
+PqcScenarioId
+ParseScenarioId(const std::string& name)
+{
+    std::string lower = name;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    if (lower == "baseline-ecc" || lower == "baseline")
+        return PqcScenarioId::BASELINE_ECC;
+    if (lower == "kyber512")
+        return PqcScenarioId::KYBER512;
+    if (lower == "kyber768" || lower == "kyber")
+        return PqcScenarioId::KYBER768;
+    if (lower == "kyber1024")
+        return PqcScenarioId::KYBER1024;
+    if (lower == "kyber768-cached" || lower == "kyber_cached")
+        return PqcScenarioId::KYBER768_CACHED;
+    if (lower == "hybrid-kyber768-x25519" || lower == "hybrid")
+        return PqcScenarioId::HYBRID_KYBER768_X25519;
+    if (lower == "hybrid-kyber768-x25519-cached")
+        return PqcScenarioId::HYBRID_KYBER768_X25519_CACHED;
+    if (lower == "quantum-attack")
+        return PqcScenarioId::QUANTUM_ATTACK;
+    if (lower == "dense-urban-nlos" || lower == "dense-urban")
+        return PqcScenarioId::DENSE_URBAN_NLOS;
+    if (lower == "high-speed-handover" || lower == "high-speed")
+        return PqcScenarioId::HIGH_SPEED_HANDOVER;
+    if (lower == "core-bottleneck")
+        return PqcScenarioId::CORE_BOTTLENECK;
+    if (lower == "edge-backhaul-latency")
+        return PqcScenarioId::EDGE_BACKHAUL_LATENCY;
+    return PqcScenarioId::HYBRID_KYBER768_X25519;
+}
+
+const char*
+ScenarioIdToString(PqcScenarioId id)
+{
+    switch (id)
+    {
+    case PqcScenarioId::BASELINE_ECC:
+        return "baseline-ecc";
+    case PqcScenarioId::KYBER512:
+        return "kyber512";
+    case PqcScenarioId::KYBER768:
+        return "kyber768";
+    case PqcScenarioId::KYBER1024:
+        return "kyber1024";
+    case PqcScenarioId::KYBER768_CACHED:
+        return "kyber768-cached";
+    case PqcScenarioId::HYBRID_KYBER768_X25519:
+        return "hybrid-kyber768-x25519";
+    case PqcScenarioId::HYBRID_KYBER768_X25519_CACHED:
+        return "hybrid-kyber768-x25519-cached";
+    case PqcScenarioId::QUANTUM_ATTACK:
+        return "quantum-attack";
+    case PqcScenarioId::DENSE_URBAN_NLOS:
+        return "dense-urban-nlos";
+    case PqcScenarioId::HIGH_SPEED_HANDOVER:
+        return "high-speed-handover";
+    case PqcScenarioId::CORE_BOTTLENECK:
+        return "core-bottleneck";
+    case PqcScenarioId::EDGE_BACKHAUL_LATENCY:
+        return "edge-backhaul-latency";
+    }
+    return "hybrid-kyber768-x25519";
+}
+
 PqcScenarioHelper::PqcScenarioHelper()
 {
 }
 
 PqcScenarioHelper::~PqcScenarioHelper()
 {
+}
+
+void
+PqcScenarioHelper::SetConfig(const PqcScenarioConfig& config)
+{
+    m_config = config;
+}
+
+const PqcScenarioConfig&
+PqcScenarioHelper::GetConfig() const
+{
+    return m_config;
+}
+
+PqcScenarioHelper::ScenarioResult
+PqcScenarioHelper::CreateFromScenarioId(PqcScenarioId id, uint32_t numUes)
+{
+    switch (id)
+    {
+    case PqcScenarioId::DENSE_URBAN_NLOS:
+        m_config.nlosEnabled = true;
+        m_config.urbanCanyon = true;
+        return CreateDenseUrbanScenario((numUes + 6) / 7);
+    case PqcScenarioId::HIGH_SPEED_HANDOVER:
+        m_config.enableHandover = true;
+        return CreateHighSpeedMobilityScenario(5, numUes, m_config.speed);
+    case PqcScenarioId::CORE_BOTTLENECK:
+        m_config.coreBottleneck = true;
+        m_config.s1uLinkDelay = MilliSeconds(10);
+        return CreateDenseUrbanScenario((numUes + 6) / 7);
+    case PqcScenarioId::EDGE_BACKHAUL_LATENCY:
+        return CreateDenseUrbanScenario((numUes + 6) / 7);
+    case PqcScenarioId::BASELINE_ECC:
+    default:
+        if (numUes > 20)
+        {
+            return CreateDenseUrbanScenario((numUes + 6) / 7);
+        }
+        return CreateBaselineScenario(numUes);
+    }
 }
 
 PqcScenarioHelper::ScenarioResult
@@ -65,14 +172,14 @@ PqcScenarioHelper::SetupNrStack(NodeContainer& gnbNodes,
     mecNode.Create(1);
     PointToPointHelper p2pMec;
     p2pMec.SetDeviceAttribute("DataRate", DataRateValue(DataRate("10Gbps")));
-    p2pMec.SetChannelAttribute("Delay", TimeValue(MilliSeconds(2.0)));
+    p2pMec.SetChannelAttribute("Delay", TimeValue(m_config.edgeBackhaulDelay));
     p2pMec.Install(result.epcHelper->GetPgwNode(), mecNode.Get(0));
 
-
-    // Setup Handover Algorithm
-    // result.nrHelper->SetHandoverAlgorithmType("ns3::NrA3RsrpHandoverAlgorithm");
-    // result.nrHelper->SetHandoverAlgorithmAttribute("Hysteresis", DoubleValue(3.0));
-    // result.nrHelper->SetHandoverAlgorithmAttribute("TimeToTrigger", TimeValue(MilliSeconds(256)));
+    if (m_config.enableHandover || m_config.speed > 50.0)
+    {
+        // Handover algorithm API varies by NR module version; mobility stress still applies.
+        NS_LOG_INFO("Handover scenario enabled (mobility + rekey); NR HO algorithm not wired in this build.");
+    }
 
     // Spectrum configuration
     CcBwpCreator ccBwpCreator;
@@ -86,7 +193,19 @@ PqcScenarioHelper::SetupNrStack(NodeContainer& gnbNodes,
     // result.nrHelper->SetChannelConditionModelAttribute("TypeId", StringValue("ns3::ThreeGppChannelConditionModel"));
     // result.nrHelper->SetChannelConditionModelAttribute("Scenario", StringValue("UMa-AV"));
     // result.nrHelper->SetPathlossModel("ns3::ThreeGppPropagationLossModel");
-    result.nrHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(false));
+    result.nrHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(m_config.nlosEnabled));
+    if (m_config.urbanCanyon)
+    {
+        result.nrHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(true));
+        // MODELED: increased shadowing for urban canyon (ASSUMED)
+        Config::SetDefault("ns3::ThreeGppPropagationLossModel::ShadowingStd",
+                           DoubleValue(m_config.shadowingStdDb * 1.5));
+    }
+    else if (m_config.nlosEnabled)
+    {
+        Config::SetDefault("ns3::ThreeGppPropagationLossModel::ShadowingStd",
+                           DoubleValue(m_config.shadowingStdDb));
+    }
     result.nrHelper->InitializeOperationBand(&band);
 
     BandwidthPartInfoPtrVector allBwps = CcBwpCreator::GetAllBwps({band});
@@ -95,7 +214,8 @@ PqcScenarioHelper::SetupNrStack(NodeContainer& gnbNodes,
         "BeamformingMethod",
         TypeIdValue(DirectPathBeamforming::GetTypeId()));
 
-    result.epcHelper->SetAttribute("S1uLinkDelay", TimeValue(MilliSeconds(0)));
+    Time s1uDelay = m_config.coreBottleneck ? MilliSeconds(10) : m_config.s1uLinkDelay;
+    result.epcHelper->SetAttribute("S1uLinkDelay", TimeValue(s1uDelay));
 
     // UE antenna config
     result.nrHelper->SetUeAntennaAttribute("NumRows", UintegerValue(2));
@@ -213,7 +333,8 @@ PqcScenarioHelper::CreateDenseUrbanScenario(uint32_t numUesPerGnb,
         "Bounds", BoxValue(Box(-5000, 5000, -5000, 5000, 80, 80)),
         "TimeStep", TimeValue(Seconds(0.5)),
         "Alpha", DoubleValue(0.85),
-        "MeanVelocity", StringValue("ns3::UniformRandomVariable[Min=0.0|Max=25.0]"),
+        "MeanVelocity", StringValue("ns3::UniformRandomVariable[Min=0.0|Max=" +
+                                    std::to_string(m_config.speed) + "]"),
         "MeanDirection", StringValue("ns3::UniformRandomVariable[Min=0.0|Max=6.283185307]"),
         "MeanPitch", StringValue("ns3::UniformRandomVariable[Min=0.0|Max=0.0]"));
 

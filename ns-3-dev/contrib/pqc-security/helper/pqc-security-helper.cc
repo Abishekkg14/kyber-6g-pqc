@@ -6,8 +6,11 @@
 #include "pqc-security-helper.h"
 
 #include "ns3/boolean.h"
+#include "ns3/hybrid-kem-combiner.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
+
+#include <fstream>
 
 namespace ns3
 {
@@ -16,15 +19,88 @@ namespace pqc
 
 NS_LOG_COMPONENT_DEFINE("PqcSecurityHelper");
 
+namespace
+{
+
+struct SecurityBitInfo
+{
+    double classical;
+    double quantum;
+    double attackCostLog2;
+};
+
+SecurityBitInfo
+GetSecurityBits(CryptoMode mode, CrystalsKyberKem::SecurityLevel kyberLevel)
+{
+    SecurityBitInfo info{128.0, 0.0, 80.0};
+    switch (mode)
+    {
+    case CryptoMode::ECC_ONLY:
+        info.classical = 128.0;
+        info.quantum = 0.0;
+        info.attackCostLog2 = 80.0;
+        break;
+    case CryptoMode::KYBER_ONLY:
+    case CryptoMode::KYBER_CACHED:
+        if (kyberLevel == CrystalsKyberKem::KYBER_512)
+        {
+            info.classical = 128.0;
+            info.quantum = 118.0;
+            info.attackCostLog2 = 118.0;
+        }
+        else if (kyberLevel == CrystalsKyberKem::KYBER_1024)
+        {
+            info.classical = 256.0;
+            info.quantum = 230.0;
+            info.attackCostLog2 = 230.0;
+        }
+        else
+        {
+            info.classical = 192.0;
+            info.quantum = 203.0;
+            info.attackCostLog2 = 203.0;
+        }
+        break;
+    case CryptoMode::HYBRID_KYBER_ECDH:
+        if (kyberLevel == CrystalsKyberKem::KYBER_512)
+        {
+            info.classical = 128.0;
+            info.quantum = 118.0;
+            info.attackCostLog2 = 118.0;
+        }
+        else if (kyberLevel == CrystalsKyberKem::KYBER_1024)
+        {
+            info.classical = 256.0;
+            info.quantum = 230.0;
+            info.attackCostLog2 = 230.0;
+        }
+        else
+        {
+            info.classical = 192.0;
+            info.quantum = 203.0;
+            info.attackCostLog2 = 203.0;
+        }
+        break;
+    }
+    return info;
+}
+
+} // namespace
+
 PqcSecurityHelper::PqcSecurityHelper()
     : m_kyberLevel(CrystalsKyberKem::KYBER_768),
       m_mlDsaLevel(MlDsaSigner::ML_DSA_65),
       m_cryptoMode(CryptoMode::HYBRID_KYBER_ECDH),
       m_enableAuth(true),
       m_enableQuantumAttacker(false),
-      m_enableForwardSecrecy(true)
+      m_enableForwardSecrecy(true),
+      m_cacheTtl(Seconds(300)),
+      m_edgeBackhaulDelay(MilliSeconds(2)),
+      m_hwProfile(GetHardwareProfile(HardwareProfileId::JETSON_NANO)),
+      m_energyModel(m_hwProfile)
 {
     m_metricsCollector = CreateObject<PqcMetricsCollector>();
+    m_keyCache = CreateObject<PqcKeyCache>();
 }
 
 PqcSecurityHelper::~PqcSecurityHelper()
@@ -37,50 +113,94 @@ void PqcSecurityHelper::SetCryptoMode(CryptoMode mode) { m_cryptoMode = mode; }
 void PqcSecurityHelper::SetEnableAuthentication(bool enable) { m_enableAuth = enable; }
 void PqcSecurityHelper::SetEnableQuantumAttacker(bool enable) { m_enableQuantumAttacker = enable; }
 void PqcSecurityHelper::SetEnableForwardSecrecy(bool enable) { m_enableForwardSecrecy = enable; }
+void PqcSecurityHelper::SetParallelHandshake(bool parallel) { m_parallelHandshake = parallel; }
+
+void
+PqcSecurityHelper::SetHardwareProfile(const std::string& profileName)
+{
+    m_hwProfile = GetHardwareProfileByName(profileName);
+    m_energyModel = PqcEnergyModel(m_hwProfile);
+    m_energyModel.SetBatteryWh(m_batteryWh);
+}
+
+void
+PqcSecurityHelper::SetCacheEnabled(bool enabled)
+{
+    m_cacheEnabled = enabled;
+    m_keyCache->SetEnabled(enabled);
+}
+
+void
+PqcSecurityHelper::SetCacheTtl(Time ttl)
+{
+    m_cacheTtl = ttl;
+    m_keyCache->SetDefaultTtl(ttl);
+}
+
+void
+PqcSecurityHelper::SetCacheRevocationEnabled(bool enabled)
+{
+    m_cacheRevocationEnabled = enabled;
+    m_keyCache->SetRevocationEnabled(enabled);
+}
+
+void
+PqcSecurityHelper::SetEdgeBackhaulDelay(Time delay)
+{
+    m_edgeBackhaulDelay = delay;
+}
+
+void
+PqcSecurityHelper::SetBatteryWh(double wh)
+{
+    m_batteryWh = wh;
+    m_energyModel.SetBatteryWh(wh);
+}
+
+void
+PqcSecurityHelper::SetMobilityHash(uint32_t ueIndex, uint32_t hash)
+{
+    if (ueIndex >= m_ueMobilityHash.size())
+    {
+        m_ueMobilityHash.resize(ueIndex + 1, 0);
+    }
+    m_ueMobilityHash[ueIndex] = hash;
+}
+
+void
+PqcSecurityHelper::ApplyDeviceConfig(Ptr<PqcRrcExtension> rrc)
+{
+    rrc->SetCryptoMode(m_cryptoMode);
+    rrc->SetKyberLevel(m_kyberLevel);
+    rrc->SetMlDsaLevel(m_mlDsaLevel);
+    rrc->SetHardwareProfile(m_hwProfile);
+    rrc->SetParallelHandshake(m_parallelHandshake);
+    rrc->SetAttribute("EnableAuthentication", BooleanValue(m_enableAuth));
+}
 
 void
 PqcSecurityHelper::Install(NetDeviceContainer gnbDevices, NetDeviceContainer ueDevices)
 {
-    NS_LOG_INFO("");
-    NS_LOG_INFO("╔══════════════════════════════════════════════════════╗");
-    NS_LOG_INFO("║  PQC Security Framework — Installing on NR devices  ║");
-    NS_LOG_INFO("╚══════════════════════════════════════════════════════╝");
-    NS_LOG_INFO("  Kyber level: " << m_kyberLevel);
-    NS_LOG_INFO("  ML-DSA level: " << m_mlDsaLevel);
-    NS_LOG_INFO("  Crypto Mode: " << static_cast<int>(m_cryptoMode));
-    NS_LOG_INFO("  Authentication: " << (m_enableAuth ? "ENABLED" : "DISABLED"));
-    NS_LOG_INFO("  Quantum Attacker: " << (m_enableQuantumAttacker ? "ENABLED" : "DISABLED"));
-    NS_LOG_INFO("  Forward Secrecy: " << (m_enableForwardSecrecy ? "ENABLED" : "DISABLED"));
-    NS_LOG_INFO("");
+    NS_LOG_INFO("Installing PQC: Kyber=" << m_kyberLevel << " mode=" << static_cast<int>(m_cryptoMode)
+                                          << " hw=" << m_hwProfile.name);
 
-    // Create PQC contexts for each gNB
     for (uint32_t i = 0; i < gnbDevices.GetN(); ++i)
     {
         GnbPqcContext ctx;
-
         ctx.rrcExtension = CreateObject<PqcRrcExtension>();
         ctx.rrcExtension->SetRole(PqcRrcExtension::GNB_ROLE);
-        ctx.rrcExtension->SetCryptoMode(m_cryptoMode);
-        ctx.rrcExtension->SetAttribute("EnableAuthentication", BooleanValue(m_enableAuth));
-
+        ApplyDeviceConfig(ctx.rrcExtension);
         ctx.pdcpLayer = CreateObject<PqcPdcpLayer>();
         ctx.rrcExtension->SetPdcpLayer(ctx.pdcpLayer);
-
         m_gnbContexts.push_back(ctx);
-
-        NS_LOG_INFO("  gNB #" << i << ": PQC RRC Extension + PDCP layer installed");
     }
 
-    // Create PQC contexts for each UE
     for (uint32_t i = 0; i < ueDevices.GetN(); ++i)
     {
         UePqcContext ctx;
-
         ctx.rrcExtension = CreateObject<PqcRrcExtension>();
         ctx.rrcExtension->SetRole(PqcRrcExtension::UE_ROLE);
-        ctx.rrcExtension->SetCryptoMode(m_cryptoMode);
-        ctx.rrcExtension->SetAttribute("EnableAuthentication", BooleanValue(m_enableAuth));
-
+        ApplyDeviceConfig(ctx.rrcExtension);
         ctx.pdcpLayer = CreateObject<PqcPdcpLayer>();
         ctx.rrcExtension->SetPdcpLayer(ctx.pdcpLayer);
 
@@ -91,116 +211,131 @@ PqcSecurityHelper::Install(NetDeviceContainer gnbDevices, NetDeviceContainer ueD
         }
 
         m_ueContexts.push_back(ctx);
-        m_mecCache.push_back(true); // Cache initialized to true
-
-        NS_LOG_INFO("  UE #" << i << ": PQC RRC Extension + PDCP layer"
-                    << (m_enableForwardSecrecy ? " + Handover Manager" : "") << " installed");
+        m_mecCache.push_back(m_cacheEnabled);
+        m_ueMobilityHash.push_back(0);
     }
 
-    // Set up quantum attacker if enabled
     if (m_enableQuantumAttacker)
     {
         m_quantumAttacker = CreateObject<QuantumAttacker>();
-        NS_LOG_INFO("  Quantum Attacker: INSTALLED (HNDL mode)");
     }
 
-    // Connect trace sources to metrics collector
     ConnectTraces();
-
-    NS_LOG_INFO("");
-    NS_LOG_INFO("  Total: " << gnbDevices.GetN() << " gNBs + "
-                << ueDevices.GetN() << " UEs secured");
 }
 
 void
 PqcSecurityHelper::ScheduleHandshakes(Time handshakeTime)
 {
-    NS_LOG_INFO("Scheduling PQC handshakes at t=" << handshakeTime.As(Time::MS));
-
-    // Schedule a handshake for each UE with the nearest gNB
-    // In a multi-gNB scenario, this would use the attachment mapping
     for (uint32_t ueIdx = 0; ueIdx < m_ueContexts.size(); ++ueIdx)
     {
-        uint32_t gnbIdx = ueIdx % m_gnbContexts.size(); // Round-robin for now
-
-        // Stagger handshakes slightly to avoid simultaneous processing
+        uint32_t gnbIdx = ueIdx % std::max<uint32_t>(1, m_gnbContexts.size());
         Time staggeredTime = handshakeTime + MicroSeconds(ueIdx * 100);
-
-        Simulator::Schedule(staggeredTime,
-                            &PqcSecurityHelper::DoHandshake,
-                            this,
-                            ueIdx,
-                            gnbIdx);
+        if (!m_parallelHandshake)
+        {
+            staggeredTime += MilliSeconds(ueIdx * 5);
+        }
+        Simulator::Schedule(staggeredTime, &PqcSecurityHelper::DoHandshake, this, ueIdx, gnbIdx);
     }
 }
 
 void
 PqcSecurityHelper::DoHandshake(uint32_t ueIndex, uint32_t gnbIndex)
 {
-    NS_LOG_INFO("");
-    NS_LOG_INFO("═══ PQC HANDSHAKE: UE #" << ueIndex << " <-> gNB #" << gnbIndex << " ═══");
-
     auto& ueCtx = m_ueContexts[ueIndex];
     auto& gnbCtx = m_gnbContexts[gnbIndex];
 
-    // Step 1: UE generates Connection Request
+    uint32_t mobHash = (ueIndex < m_ueMobilityHash.size()) ? m_ueMobilityHash[ueIndex] : 0;
+  std::vector<uint8_t> cachedSecret;
+
+    bool useCache = m_cacheEnabled &&
+                    (m_cryptoMode == CryptoMode::KYBER_CACHED ||
+                     m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH) &&
+                    m_mecCache[ueIndex];
+
+    if (useCache)
+    {
+        auto result = m_keyCache->Lookup(ueIndex, mobHash, cachedSecret);
+        m_metricsCollector->RecordCacheHitRate(m_keyCache->GetHitRate());
+        if (result == PqcKeyCache::LookupResult::HIT)
+        {
+            Ptr<HybridKemCombiner> kem = CreateObject<HybridKemCombiner>();
+            kem->SetCryptoMode(m_cryptoMode);
+            kem->SetKyberLevel(m_kyberLevel);
+            kem->SetHardwareProfile(m_hwProfile);
+            auto keys = kem->DeriveSessionKeys(cachedSecret);
+            ueCtx.pdcpLayer->InstallSessionKeys(keys);
+            gnbCtx.pdcpLayer->InstallSessionKeys(keys);
+            Time cacheDelay = MicroSeconds(10) + m_edgeBackhaulDelay;
+            m_metricsCollector->RecordHandshakeLatency(cacheDelay);
+            m_metricsCollector->RecordHandoffLatencyMs(cacheDelay.GetMilliSeconds());
+            return;
+        }
+        if (result == PqcKeyCache::LookupResult::STALE)
+        {
+            m_metricsCollector->RecordStaleKeyEvent(1);
+        }
+        if (result == PqcKeyCache::LookupResult::REVOKED)
+        {
+            m_metricsCollector->RecordRevokedKeyReuseAttempt(1);
+        }
+    }
+
     auto requestPayload = ueCtx.rrcExtension->GenerateConnectionRequest();
     m_metricsCollector->RecordRrcRequestSize(requestPayload.TotalSize());
 
-    // Step 2: gNB processes request and generates Setup
     auto setupPayload = gnbCtx.rrcExtension->ProcessConnectionRequest(requestPayload);
-
     if (setupPayload.rejected)
     {
-        NS_LOG_WARN("Handshake REJECTED for UE #" << ueIndex);
         return;
     }
 
     m_metricsCollector->RecordRrcSetupSize(setupPayload.TotalSize());
 
-    // Step 3: UE completes key exchange
     auto sessionKeys = ueCtx.rrcExtension->CompleteKeyExchange(setupPayload);
 
-    // Apply MEC Cache Processing Delay
-    bool isCached = m_mecCache[ueIndex];
-    Time mecDelay = isCached ? MicroSeconds(10) : MicroSeconds(1920); // 0.01ms vs 1.92ms
+    bool isCached = m_mecCache[ueIndex] && m_cacheEnabled;
+    Time mecDelay = isCached ? MicroSeconds(10) : MicroSeconds(1920);
+    mecDelay += m_edgeBackhaulDelay;
     setupPayload.processingDelay += mecDelay;
 
-    // Simulate Crypto Power Spike overhead (1.80W for 5.76ms, 0.30W DRAM penalty)
-    // Energy = Power * Time = (1.80W + 0.30W) * 0.00576s = 0.012096 Joules = 12096 MicroJoules
-    m_metricsCollector->RecordCryptoEnergyMicroJoules(12096.0);
-    m_metricsCollector->RecordCryptoMemoryBytes(1184); // Kyber payload approx
-
-    // Record metrics
-    Time totalCryptoTime = requestPayload.processingDelay + 
-                           setupPayload.processingDelay + 
+    Time totalCryptoTime = requestPayload.processingDelay + setupPayload.processingDelay +
                            ueCtx.rrcExtension->GetHandshakeProcessingTime();
 
-    double securityScore = 0.0;
-    switch (m_cryptoMode)
-    {
-        case CryptoMode::ECC_ONLY:
-            securityScore = 128.0; // Assuming X25519 is ~128 bits
-            break;
-        case CryptoMode::KYBER_ONLY:
-        case CryptoMode::KYBER_CACHED:
-        case CryptoMode::HYBRID_KYBER_ECDH:
-            securityScore = 203.0; // Kyber-768 quantum security strength
-            break;
-    }
-
-    m_metricsCollector->RecordSecurityScore(securityScore);
+    auto secBits = GetSecurityBits(m_cryptoMode, m_kyberLevel);
+    m_metricsCollector->RecordSecurityScore(secBits.quantum > 0 ? secBits.quantum : secBits.classical);
+    m_metricsCollector->RecordSecurityBitsClassical(secBits.classical);
+    m_metricsCollector->RecordSecurityBitsQuantum(secBits.quantum);
+    m_metricsCollector->RecordAttackCostLog2Ops(secBits.attackCostLog2);
     m_metricsCollector->RecordCryptoComputationTime(totalCryptoTime);
 
-    // Efficiency Score: Security Strength / Latency (ms)
-    // We will use totalCryptoTime for the efficiency ratio calculation for now.
     double latencyMs = totalCryptoTime.GetMilliSeconds();
     if (latencyMs > 0)
     {
-        m_metricsCollector->RecordEfficiencyScore(securityScore / latencyMs);
+        m_metricsCollector->RecordEfficiencyScore(
+            (secBits.quantum > 0 ? secBits.quantum : secBits.classical) / latencyMs);
     }
 
-    // Record in quantum attacker if enabled
+    uint32_t memBytes = requestPayload.TotalSize() + setupPayload.TotalSize();
+    PqcEnergyBreakdown energy = m_energyModel.ComputeHandshakeEnergy(
+        totalCryptoTime, memBytes, MilliSeconds(2), MilliSeconds(2), MilliSeconds(5));
+    m_metricsCollector->RecordCryptoComputeEnergyMj(energy.cryptoComputeMj);
+    m_metricsCollector->RecordTxEnergyMj(energy.txMj);
+    m_metricsCollector->RecordRxEnergyMj(energy.rxMj);
+    m_metricsCollector->RecordIdleEnergyMj(energy.idleMj);
+    m_metricsCollector->RecordMemoryEnergyMj(energy.memoryMj);
+    m_metricsCollector->RecordTotalEnergyMj(energy.TotalMj());
+    m_metricsCollector->RecordEstimatedBatteryLifeMinutes(
+        m_energyModel.EstimateBatteryLifeMinutes(energy, 10.0));
+
+    m_metricsCollector->RecordHandshakeLatency(totalCryptoTime + mecDelay);
+    m_metricsCollector->RecordHandoffLatencyMs((totalCryptoTime + mecDelay).GetMilliSeconds());
+
+    if (m_cacheEnabled)
+    {
+        m_keyCache->Store(ueIndex, sessionKeys.combinedSecret, mobHash);
+        m_metricsCollector->RecordCacheHitRate(m_keyCache->GetHitRate());
+    }
+
     if (m_quantumAttacker)
     {
         QuantumAttacker::CapturedHandshake ch;
@@ -211,14 +346,10 @@ PqcSecurityHelper::DoHandshake(uint32_t ueIndex, uint32_t gnbIndex)
         m_quantumAttacker->CaptureHandshake(ueIndex, ch);
     }
 
-    // Pre-compute handover keys if forward secrecy is enabled
     if (ueCtx.handoverManager)
     {
         ueCtx.handoverManager->PrecomputeHandoverKeys();
     }
-
-    NS_LOG_INFO("═══ HANDSHAKE COMPLETE ═══");
-    NS_LOG_INFO("");
 }
 
 void
@@ -227,8 +358,9 @@ PqcSecurityHelper::PurgeCache(uint32_t ueIndex)
     if (ueIndex < m_mecCache.size())
     {
         m_mecCache[ueIndex] = false;
-        NS_LOG_INFO("MEC Cache purged for UE #" << ueIndex);
     }
+    m_keyCache->Revoke(ueIndex);
+    m_keyCache->Purge(ueIndex);
 }
 
 void
@@ -236,51 +368,63 @@ PqcSecurityHelper::RunQuantumAttack()
 {
     if (!m_quantumAttacker)
     {
-        NS_LOG_WARN("Quantum attacker not enabled!");
         return;
     }
+    m_quantumAttacker->AttemptRetroactiveDecryption();
+}
 
-    auto report = m_quantumAttacker->AttemptRetroactiveDecryption();
-
-    // Log the report to the metrics collector
-    m_metricsCollector->RecordRrcRequestSize(0); // marker for report boundary
+void
+PqcSecurityHelper::ExportRunMetadata(const std::string& filename,
+                                     uint32_t seed,
+                                     uint32_t runIndex,
+                                     const std::string& scenario) const
+{
+    std::ofstream out(filename);
+    if (!out.is_open())
+    {
+        return;
+    }
+    out << "seed," << seed << "\n";
+    out << "run_index," << runIndex << "\n";
+    out << "scenario," << scenario << "\n";
+    out << "kyber_level," << m_kyberLevel << "\n";
+    out << "crypto_mode," << static_cast<int>(m_cryptoMode) << "\n";
+    out << "hardware_profile," << m_hwProfile.name << "\n";
+    out << "parallel_handshake," << (m_parallelHandshake ? 1 : 0) << "\n";
+    out << "cache_enabled," << (m_cacheEnabled ? 1 : 0) << "\n";
+    out << "cache_ttl_s," << m_cacheTtl.GetSeconds() << "\n";
+    out << "edge_backhaul_ms," << m_edgeBackhaulDelay.GetMilliSeconds() << "\n";
+    out << "battery_wh," << m_batteryWh << "\n";
+    out << "modeled_fields,crypto_energy,battery_life,attack_cost,security_bits\n";
+    out.close();
 }
 
 void
 PqcSecurityHelper::ConnectTraces()
 {
-    // Connect UE trace sources to metrics collector
     for (auto& ctx : m_ueContexts)
     {
         ctx.rrcExtension->m_rrcRequestSizeTrace.ConnectWithoutContext(
             MakeCallback(&PqcMetricsCollector::RecordRrcRequestSize, m_metricsCollector));
-
         ctx.rrcExtension->m_handshakeLatencyTrace.ConnectWithoutContext(
             MakeCallback(&PqcMetricsCollector::RecordHandshakeLatency, m_metricsCollector));
-
         ctx.pdcpLayer->m_encryptLatencyTrace.ConnectWithoutContext(
             MakeCallback(&PqcMetricsCollector::RecordEncryptionLatency, m_metricsCollector));
-
         ctx.pdcpLayer->m_decryptLatencyTrace.ConnectWithoutContext(
             MakeCallback(&PqcMetricsCollector::RecordDecryptionLatency, m_metricsCollector));
-
         if (ctx.handoverManager)
         {
             ctx.handoverManager->m_handoverRekeyLatencyTrace.ConnectWithoutContext(
                 MakeCallback(&PqcMetricsCollector::RecordHandoverRekeyTime, m_metricsCollector));
-
             ctx.handoverManager->m_handoverInterruptionTimeTrace.ConnectWithoutContext(
-                MakeCallback(&PqcMetricsCollector::RecordHandoverInterruptionTime,
-                             m_metricsCollector));
+                MakeCallback(&PqcMetricsCollector::RecordHandoverInterruptionTime, m_metricsCollector));
         }
     }
 
-    // Connect gNB trace sources
     for (auto& ctx : m_gnbContexts)
     {
         ctx.rrcExtension->m_rrcSetupSizeTrace.ConnectWithoutContext(
             MakeCallback(&PqcMetricsCollector::RecordRrcSetupSize, m_metricsCollector));
-
         ctx.rrcExtension->m_processingTimeTrace.ConnectWithoutContext(
             MakeCallback(&PqcMetricsCollector::RecordRrcSetupLatency, m_metricsCollector));
     }
@@ -296,6 +440,12 @@ Ptr<QuantumAttacker>
 PqcSecurityHelper::GetQuantumAttacker() const
 {
     return m_quantumAttacker;
+}
+
+Ptr<PqcKeyCache>
+PqcSecurityHelper::GetKeyCache() const
+{
+    return m_keyCache;
 }
 
 Ptr<PqcRrcExtension>

@@ -5,9 +5,10 @@
 
 #include "hybrid-kem-combiner.h"
 
-#include "ns3/double.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
+
+#include <sstream>
 
 namespace ns3
 {
@@ -16,6 +17,8 @@ namespace pqc
 
 NS_LOG_COMPONENT_DEFINE("HybridKemCombiner");
 NS_OBJECT_ENSURE_REGISTERED(HybridKemCombiner);
+
+std::map<std::string, std::vector<uint8_t>> HybridKemCombiner::s_encapsSecretCache;
 
 TypeId
 HybridKemCombiner::GetTypeId()
@@ -51,13 +54,11 @@ HybridKemCombiner::GetTypeId()
 }
 
 HybridKemCombiner::HybridKemCombiner()
-    : m_cryptoMode(CryptoMode::HYBRID_KYBER_ECDH)
+    : m_cryptoMode(CryptoMode::HYBRID_KYBER_ECDH),
+      m_hwProfile(GetHardwareProfile(HardwareProfileId::JETSON_NANO))
 {
     m_ecdh = CreateObject<X25519Ecdh>();
     m_kyber = CreateObject<CrystalsKyberKem>();
-    m_rng = CreateObject<UniformRandomVariable>();
-    m_rng->SetAttribute("Min", DoubleValue(0.0));
-    m_rng->SetAttribute("Max", DoubleValue(255.0));
 }
 
 HybridKemCombiner::~HybridKemCombiner()
@@ -70,51 +71,120 @@ HybridKemCombiner::SetCryptoMode(CryptoMode mode)
     m_cryptoMode = mode;
 }
 
-HybridKemCombiner::HybridKeyPair
-HybridKemCombiner::GenerateKeyPair()
+void
+HybridKemCombiner::SetKyberLevel(CrystalsKyberKem::SecurityLevel level)
 {
-    HybridKeyPair hkp;
+    m_kyber->SetSecurityLevel(level);
+}
 
-    hkp.totalGenerationTime = Seconds(0);
+void
+HybridKemCombiner::SetHardwareProfile(const HardwareProfile& profile)
+{
+    m_hwProfile = profile;
+    double scale = profile.cryptoTimingScale;
+    m_ecdh->SetAttribute("KeyGenTime", TimeValue(MicroSeconds(40 * scale)));
+    m_ecdh->SetAttribute("DhTime", TimeValue(MicroSeconds(50 * scale)));
+    m_kyber->SetAttribute("KeyGenTime", TimeValue(MicroSeconds(150 * scale)));
+    m_kyber->SetAttribute("EncapsTime", TimeValue(MicroSeconds(180 * scale)));
+    m_kyber->SetAttribute("DecapsTime", TimeValue(MicroSeconds(190 * scale)));
+}
 
-    if (m_cryptoMode == CryptoMode::ECC_ONLY || m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
+void
+HybridKemCombiner::SetParallelHandshake(bool parallel)
+{
+    m_parallelHandshake = parallel;
+}
+
+Time
+HybridKemCombiner::ScaleTime(Time t) const
+{
+    return MicroSeconds(t.GetMicroSeconds() * m_hwProfile.cryptoTimingScale);
+}
+
+Time
+HybridKemCombiner::CombineParallelTime(Time a, Time b) const
+{
+    if (m_parallelHandshake && m_hwProfile.maxParallelOps >= 2)
     {
-        hkp.ecdhKeys = m_ecdh->KeyGen();
-        hkp.totalGenerationTime += hkp.ecdhKeys.generationTime;
+        // Parallel: max component + 10% memory contention (MODELED)
+        double maxUs = std::max(a.GetMicroSeconds(), b.GetMicroSeconds());
+        return MicroSeconds(maxUs * 1.1);
     }
-    
-    if (m_cryptoMode == CryptoMode::KYBER_ONLY || m_cryptoMode == CryptoMode::KYBER_CACHED || m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
+    return MicroSeconds(a.GetMicroSeconds() + b.GetMicroSeconds());
+}
+
+std::string
+HybridKemCombiner::SecretCacheKey(const std::vector<uint8_t>& kyberCt)
+{
+    std::ostringstream oss;
+    for (uint8_t b : kyberCt)
     {
-        hkp.kyberKeys = m_kyber->KeyGen();
-        hkp.totalGenerationTime += hkp.kyberKeys.generationTime;
+        oss << std::hex << static_cast<int>(b);
     }
-
-    NS_LOG_INFO("Hybrid KeyGen: ECDH(32B) + Kyber(" << hkp.kyberKeys.publicKey.size()
-                                                     << "B) total_pk="
-                                                     << hkp.TotalPublicKeySize()
-                                                     << "B time=" << hkp.totalGenerationTime.As(Time::US));
-
-    m_hybridKeyGenTrace(hkp.totalGenerationTime);
-    m_totalPublicKeySizeTrace(hkp.TotalPublicKeySize());
-
-    return hkp;
+    return oss.str();
 }
 
 std::vector<uint8_t>
 HybridKemCombiner::SimulatedHkdf(const std::vector<uint8_t>& ecdhSs,
                                   const std::vector<uint8_t>& kyberSs)
 {
-    // Simulated HKDF-SHA256(ecdhSs || kyberSs, "Kyber6G-HybridKEM-v1")
-    // In simulation we combine by XOR + randomization to produce a 32-byte output.
-    // The important thing is the SIZE and TIMING, not the cryptographic correctness.
+    // Deterministic simulated HKDF-SHA256(ecdhSs || kyberSs, "Kyber6G-HybridKEM-v1")
+    static const char salt[] = "Kyber6G-HybridKEM-v1";
+    std::vector<uint8_t> input;
+    input.reserve(ecdhSs.size() + kyberSs.size() + sizeof(salt));
+    input.insert(input.end(), ecdhSs.begin(), ecdhSs.end());
+    input.insert(input.end(), kyberSs.begin(), kyberSs.end());
+    input.insert(input.end(), salt, salt + sizeof(salt) - 1);
+
     std::vector<uint8_t> combined(32);
+    uint64_t h = 0xcbf29ce484222325ULL;
+    for (uint8_t b : input)
+    {
+        h ^= b;
+        h *= 0x100000001b3ULL;
+    }
     for (uint32_t i = 0; i < 32; ++i)
     {
-        uint8_t a = (i < ecdhSs.size()) ? ecdhSs[i] : 0;
-        uint8_t b = (i < kyberSs.size()) ? kyberSs[i] : 0;
-        combined[i] = a ^ b ^ static_cast<uint8_t>(m_rng->GetInteger(0, 255));
+        h ^= static_cast<uint64_t>(i);
+        h *= 0x100000001b3ULL;
+        combined[i] = static_cast<uint8_t>((h >> ((i % 8) * 8)) & 0xFF);
     }
     return combined;
+}
+
+HybridKemCombiner::HybridKeyPair
+HybridKemCombiner::GenerateKeyPair()
+{
+    HybridKeyPair hkp;
+    hkp.totalGenerationTime = Seconds(0);
+    Time ecdhTime = Seconds(0);
+    Time kyberTime = Seconds(0);
+
+    if (m_cryptoMode == CryptoMode::ECC_ONLY || m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
+    {
+        hkp.ecdhKeys = m_ecdh->KeyGen();
+        ecdhTime = ScaleTime(hkp.ecdhKeys.generationTime);
+    }
+
+    if (m_cryptoMode == CryptoMode::KYBER_ONLY || m_cryptoMode == CryptoMode::KYBER_CACHED ||
+        m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
+    {
+        hkp.kyberKeys = m_kyber->KeyGen();
+        kyberTime = ScaleTime(hkp.kyberKeys.generationTime);
+    }
+
+    if (m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
+    {
+        hkp.totalGenerationTime = CombineParallelTime(ecdhTime, kyberTime);
+    }
+    else
+    {
+        hkp.totalGenerationTime = MicroSeconds(ecdhTime.GetMicroSeconds() + kyberTime.GetMicroSeconds());
+    }
+
+    m_hybridKeyGenTrace(hkp.totalGenerationTime);
+    m_totalPublicKeySizeTrace(hkp.TotalPublicKeySize());
+    return hkp;
 }
 
 HybridKemCombiner::HybridEncapsResult
@@ -122,9 +192,11 @@ HybridKemCombiner::Encapsulate(const std::vector<uint8_t>& initiatorEcdhPk,
                                 const std::vector<uint8_t>& initiatorKyberPk)
 {
     HybridEncapsResult result;
-
     result.totalTime = Seconds(0);
-    std::vector<uint8_t> ecdhSecret, kyberSecret;
+    std::vector<uint8_t> ecdhSecret;
+    std::vector<uint8_t> kyberSecret;
+    Time ecdhTime = Seconds(0);
+    Time kyberTime = Seconds(0);
 
     if (m_cryptoMode == CryptoMode::ECC_ONLY || m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
     {
@@ -132,28 +204,38 @@ HybridKemCombiner::Encapsulate(const std::vector<uint8_t>& initiatorEcdhPk,
         auto ecdhSs = m_ecdh->ComputeSharedSecret(ecdhKp.secretKey, initiatorEcdhPk);
         result.ecdhPublicKey = ecdhKp.publicKey;
         ecdhSecret = ecdhSs.sharedSecret;
-        result.totalTime += ecdhKp.generationTime + ecdhSs.computeTime;
+        ecdhTime = ScaleTime(ecdhKp.generationTime + ecdhSs.computeTime);
     }
 
-    if (m_cryptoMode == CryptoMode::KYBER_ONLY || m_cryptoMode == CryptoMode::KYBER_CACHED || m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
+    if (m_cryptoMode == CryptoMode::KYBER_ONLY || m_cryptoMode == CryptoMode::KYBER_CACHED ||
+        m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
     {
         auto kyberResult = m_kyber->Encapsulate(initiatorKyberPk);
         result.kyberCiphertext = kyberResult.ciphertext;
         kyberSecret = kyberResult.sharedSecret;
-        result.totalTime += kyberResult.encapsulationTime;
+        kyberTime = ScaleTime(kyberResult.encapsulationTime);
+    }
+
+    if (m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
+    {
+        result.totalTime = CombineParallelTime(ecdhTime, kyberTime);
+    }
+    else
+    {
+        result.totalTime = MicroSeconds(ecdhTime.GetMicroSeconds() + kyberTime.GetMicroSeconds());
     }
 
     result.combinedSecret = SimulatedHkdf(ecdhSecret, kyberSecret);
-    result.totalTime += MicroSeconds(5); // HKDF overhead
+    result.totalTime += MicroSeconds(5 * m_hwProfile.cryptoTimingScale);
 
-    NS_LOG_INFO("Hybrid Encaps: ecdh_pk=32B + kyber_ct="
-                << result.kyberCiphertext.size()
-                << "B total_wire=" << result.TotalWireSize()
-                << "B time=" << result.totalTime.As(Time::US));
+    // Simulation coordination: UE decaps must derive identical combined secret
+    if (!result.kyberCiphertext.empty())
+    {
+        s_encapsSecretCache[SecretCacheKey(result.kyberCiphertext)] = result.combinedSecret;
+    }
 
     m_hybridEncapsTrace(result.totalTime);
     m_totalEncapsSizeTrace(result.TotalWireSize());
-
     return result;
 }
 
@@ -163,28 +245,52 @@ HybridKemCombiner::Decapsulate(const HybridKeyPair& myKeys,
                                 const std::vector<uint8_t>& kyberCiphertext)
 {
     Time totalTime = Seconds(0);
-    std::vector<uint8_t> ecdhSecret, kyberSecret;
+    std::vector<uint8_t> ecdhSecret;
+    std::vector<uint8_t> kyberSecret;
+    Time ecdhTime = Seconds(0);
+    Time kyberTime = Seconds(0);
 
     if (m_cryptoMode == CryptoMode::ECC_ONLY || m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
     {
         auto ecdhSs = m_ecdh->ComputeSharedSecret(myKeys.ecdhKeys.secretKey, responderEcdhPk);
         ecdhSecret = ecdhSs.sharedSecret;
-        totalTime += ecdhSs.computeTime;
+        ecdhTime = ScaleTime(ecdhSs.computeTime);
     }
 
-    if (m_cryptoMode == CryptoMode::KYBER_ONLY || m_cryptoMode == CryptoMode::KYBER_CACHED || m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
+    if (m_cryptoMode == CryptoMode::KYBER_ONLY || m_cryptoMode == CryptoMode::KYBER_CACHED ||
+        m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
     {
         auto kyberResult = m_kyber->Decapsulate(myKeys.kyberKeys.secretKey, kyberCiphertext);
-        kyberSecret = kyberResult.sharedSecret;
-        totalTime += kyberResult.decapsulationTime;
+        kyberTime = ScaleTime(kyberResult.decapsulationTime);
+        auto it = s_encapsSecretCache.find(SecretCacheKey(kyberCiphertext));
+        if (it != s_encapsSecretCache.end())
+        {
+            kyberSecret = it->second;
+        }
+        else
+        {
+            kyberSecret = kyberResult.sharedSecret;
+        }
+    }
+
+    if (m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH)
+    {
+        totalTime = CombineParallelTime(ecdhTime, kyberTime);
+    }
+    else
+    {
+        totalTime = MicroSeconds(ecdhTime.GetMicroSeconds() + kyberTime.GetMicroSeconds());
     }
 
     auto combined = SimulatedHkdf(ecdhSecret, kyberSecret);
-    totalTime += MicroSeconds(5);
+    auto cacheIt = s_encapsSecretCache.find(SecretCacheKey(kyberCiphertext));
+    if (cacheIt != s_encapsSecretCache.end())
+    {
+        combined = cacheIt->second;
+    }
+    totalTime += MicroSeconds(5 * m_hwProfile.cryptoTimingScale);
 
-    NS_LOG_INFO("Hybrid Decaps: time=" << totalTime.As(Time::US));
     m_hybridDecapsTrace(totalTime);
-
     return combined;
 }
 
@@ -194,8 +300,7 @@ HybridKemCombiner::DeriveSessionKeys(const std::vector<uint8_t>& combinedSecret)
     PqcSessionKeys keys;
     keys.combinedSecret = combinedSecret;
 
-    // Derive enc key, int key, nonce from the combined secret
-    // Simulated: split the 32-byte secret and expand with pseudo-randomness
+    // RRC KDF -> PDCP keys (simulated expand; mirrors 5G KDF chain extension point)
     keys.encryptionKey.resize(32);
     keys.integrityKey.resize(32);
     keys.nonceBase.resize(12);
@@ -212,11 +317,8 @@ HybridKemCombiner::DeriveSessionKeys(const std::vector<uint8_t>& combinedSecret)
 
     keys.nonceCounter = 0;
     keys.establishedAt = Simulator::Now();
-    keys.isHybrid = true;
+    keys.isHybrid = (m_cryptoMode == CryptoMode::HYBRID_KYBER_ECDH);
     keys.keyGeneration = 0;
-
-    NS_LOG_INFO("Session keys derived: enc=32B int=32B nonce_base=12B at t="
-                << keys.establishedAt.As(Time::MS));
 
     return keys;
 }
