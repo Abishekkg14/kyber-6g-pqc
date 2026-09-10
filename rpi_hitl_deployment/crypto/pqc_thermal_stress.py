@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ==============================================================================
 # Kyber-6G Raspberry Pi 4 Thermal & DVFS Throttling Stability Monitor
-# Executes 500 consecutive handshakes under full load while logging:
+# Executes consecutive handshakes under full load while logging:
 # - SoC Temperature (thermal_zone0)
 # - CPU ARM Core Clock Frequency (vcgencmd measure_clock arm)
 # - Throttling Register Bitmask (vcgencmd get_throttled)
@@ -11,11 +11,9 @@ import sys
 import time
 import subprocess
 import csv
+import argparse
 import oqs
 from cryptography.hazmat.primitives.asymmetric import x25519
-
-OUTPUT_CSV = os.path.join(os.path.dirname(__file__), "..", "results", "thermal_stability_log.csv")
-ITERATIONS = 500
 
 def get_temp():
     try:
@@ -35,42 +33,69 @@ def get_arm_freq_mhz():
     try:
         out = subprocess.check_output(["vcgencmd", "measure_clock", "arm"], text=True)
         hz = int(out.strip().split("=")[1])
-        return hz // 1000000
+        return round(hz / 1e6, 1)
     except Exception:
-        return 1500
+        return 1500.0
 
 def main():
+    parser = argparse.ArgumentParser(description="Kyber-6G RPi4 Thermal Stability Monitor")
+    parser.add_argument("--runs", type=int, default=500, help="Stress iterations")
+    parser.add_argument("--output", type=str, default=None, help="Output CSV path")
+    args = parser.parse_args()
+
+    if args.output is None:
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        results_dir = os.path.join(base_dir, "results")
+        os.makedirs(results_dir, exist_ok=True)
+        args.output = os.path.join(results_dir, "thermal_stability_log.csv")
+    else:
+        os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
+
     print("=" * 70)
-    print("KYBER-6G RPI4 THERMAL STABILITY & DVFS THROTTLING MONITOR")
-    print(f"Running {ITERATIONS} continuous PQC cryptographic loops...")
-    print(f"Output CSV: {OUTPUT_CSV}")
+    print(f"KYBER-6G THERMAL & DVFS STRESS MONITOR ({args.runs} ITERATIONS)")
+    print(f"Logging To: {args.output}")
     print("=" * 70)
 
-    os.makedirs(os.path.dirname(OUTPUT_CSV), exist_ok=True)
-    kem = oqs.KeyEncapsulation('ML-KEM-1024')
-    
-    with open(OUTPUT_CSV, "w", newline="") as f:
+    with open(args.output, mode="w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["iteration", "timestamp", "temp_c", "arm_freq_mhz", "throttle_hex", "loop_time_ms"])
-        
-        for i in range(1, ITERATIONS + 1):
-            t0 = time.perf_counter_ns()
-            sk = x25519.X25519PrivateKey.generate()
+        writer.writerow(["Iteration", "Timestamp_s", "Latency_ms", "Temperature_C", "Clock_MHz", "Throttled_Bitmask"])
+
+        t0 = time.time()
+        for i in range(1, args.runs + 1):
+            t_start = time.perf_counter_ns()
+            
+            # Level-5 Hybrid Workload
+            sk_x = x25519.X25519PrivateKey.generate()
+            pk_x = sk_x.public_key().public_bytes(
+                from_cryptography_serialization_Encoding_Raw := oqs.Signature("ML-DSA-87") if False else None, 
+                from_cryptography_serialization_PublicFormat_Raw := None
+            ) if False else sk_x.public_key()
+            
+            kem = oqs.KeyEncapsulation("ML-KEM-1024")
             pk_k = kem.generate_keypair()
             ct, ss = kem.encap_secret(pk_k)
-            _ = kem.decap_secret(ct)
-            loop_ms = (time.perf_counter_ns() - t0) / 1e6
+            ss_d = kem.decap_secret(ct)
+            kem.free()
 
-            temp_c = get_temp()
-            freq_mhz = get_arm_freq_mhz()
-            throttle_hex = get_throttle_state()
+            sig_engine = oqs.Signature("ML-DSA-87" if "ML-DSA-87" in oqs.get_enabled_sig_mechanisms() else "Dilithium5")
+            sig_pk = sig_engine.generate_keypair()
+            sig = sig_engine.sign(ct)
+            sig_engine.verify(ct, sig, sig_pk)
+            sig_engine.free()
 
-            writer.writerow([i, time.time(), temp_c, freq_mhz, throttle_hex, round(loop_ms, 2)])
+            t_ms = (time.perf_counter_ns() - t_start) / 1e6
+            temp = get_temp()
+            freq = get_arm_freq_mhz()
+            thr = get_throttle_state()
+            ts = round(time.time() - t0, 3)
+
+            writer.writerow([i, ts, f"{t_ms:.3f}", temp, freq, thr])
+            f.flush()
+
             if i % 50 == 0 or i == 1:
-                print(f"  [Iter {i:03d}/{ITERATIONS}] Temp: {temp_c:5.1f} C | Freq: {freq_mhz} MHz | Throttle: {throttle_hex} | Loop: {loop_ms:.2f} ms")
+                print(f"  [Iter #{i:03d} | {ts:5.1f}s] Latency: {t_ms:5.2f} ms | Temp: {temp:4.1f}°C | Clock: {freq} MHz | Throttle: {thr}")
 
-    kem.free()
-    print("\n[+] Thermal test complete! Results saved to:", OUTPUT_CSV)
+    print(f"\n[+] Thermal test completed. Output saved to {args.output}")
 
 if __name__ == "__main__":
     main()
