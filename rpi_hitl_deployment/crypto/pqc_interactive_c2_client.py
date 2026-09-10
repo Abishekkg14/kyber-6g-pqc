@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # ==============================================================================
 # Kyber-6G Interactive UAV Drone Companion Console & Flight Command Shell
-# - Connects over 3GPP RRC with Level-5 Hybrid PQC (ML-KEM-1024 + X25519 + ML-DSA-87)
-# - Allows operator to type arbitrary flight commands (TAKEOFF, GOTO, RTL, LAND, etc.)
-# - Encrypts and transmits high-res reconnaissance images (JPEG/PNG)
-# - Streams encrypted video frames (H.264/MJPEG chunks)
+# - Level-5 Hybrid PQC Authentication (ML-KEM-1024 + X25519 + ML-DSA-87)
+# - Strict Flight Command Whitelist & Input Range Validation
+# - Real-Time Avionics Flight State Tracking (Altitude, GPS, Speed, Battery, Mode)
+# - Encrypted AES-256-GCM Telemetry & C2 Protocol
 # ==============================================================================
 import socket
 import os
 import sys
 import time
 import struct
-import math
+import json
 import argparse
 import oqs
 from cryptography.hazmat.primitives.asymmetric import x25519
@@ -19,6 +19,9 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(line_buffering=True)
 
 MAX_DGRAM = 1352
 
@@ -57,6 +60,208 @@ def recv_framed_udp(sock, timeout=5.0):
             del buffers[key]
             return msg_type, full_payload, addr
 
+class DroneFlightModel:
+    """Maintains realistic drone companion computer avionics state."""
+    def __init__(self):
+        self.armed = False
+        self.altitude_m = 0.0
+        self.target_alt_m = 0.0
+        self.lat = 12.971600
+        self.lon = 77.594600
+        self.speed_ms = 0.0
+        self.heading_deg = 180.0
+        self.battery_pct = 98
+        self.flight_mode = "STANDBY"
+        self.home_lat = 12.971600
+        self.home_lon = 77.594600
+        self.home_alt = 0.0
+
+    def get_telemetry_dict(self):
+        return {
+            "armed": self.armed,
+            "altitude_m": round(self.altitude_m, 1),
+            "lat": round(self.lat, 6),
+            "lon": round(self.lon, 6),
+            "speed_ms": round(self.speed_ms, 1),
+            "heading_deg": round(self.heading_deg, 1),
+            "battery_pct": self.battery_pct,
+            "flight_mode": self.flight_mode
+        }
+
+    def execute_command(self, verb, args):
+        """Validates command logic and updates drone physics state machine."""
+        if verb == "ARM":
+            if self.armed:
+                return False, "Drone is already ARMED."
+            self.armed = True
+            self.flight_mode = "ARMED"
+            return True, "Motors ARMED. Ready for flight commands."
+
+        elif verb == "DISARM":
+            if not self.armed:
+                return False, "Drone is already DISARMED."
+            if self.altitude_m > 0.5:
+                return False, f"SAFETY REJECTION: Cannot DISARM in mid-air! Current altitude: {self.altitude_m}m. Execute 'land' first."
+            self.armed = False
+            self.flight_mode = "STANDBY"
+            self.speed_ms = 0.0
+            return True, "Motors DISARMED. Safe."
+
+        elif verb == "TAKEOFF":
+            if not self.armed:
+                return False, "REJECTED: Motors not armed. Execute 'arm' before takeoff."
+            if self.altitude_m > 2.0:
+                return False, f"REJECTED: Drone already airborne at {self.altitude_m}m. Use 'goto' to change altitude."
+            target_alt = float(args[0])
+            self.altitude_m = target_alt
+            self.target_alt_m = target_alt
+            self.speed_ms = 5.0
+            self.flight_mode = "TAKEOFF"
+            self.battery_pct = max(10, self.battery_pct - 1)
+            return True, f"Climbing to {target_alt}m AGL. Autopilot engaged."
+
+        elif verb == "GOTO":
+            if not self.armed or self.altitude_m < 0.5:
+                return False, "REJECTED: Drone is on ground. Execute 'takeoff' first."
+            new_lat, new_lon, new_alt = float(args[0]), float(args[1]), float(args[2])
+            self.lat = new_lat
+            self.lon = new_lon
+            self.altitude_m = new_alt
+            self.speed_ms = 15.0
+            self.flight_mode = "EN_ROUTE"
+            self.battery_pct = max(10, self.battery_pct - 2)
+            return True, f"Navigating to waypoint ({new_lat:.5f} N, {new_lon:.5f} E) @ {new_alt}m."
+
+        elif verb == "SPEED":
+            new_speed = float(args[0])
+            self.speed_ms = new_speed
+            return True, f"Cruising airspeed set to {new_speed} m/s."
+
+        elif verb == "MODE":
+            new_mode = args[0].upper()
+            self.flight_mode = new_mode
+            return True, f"Autopilot state machine switched to '{new_mode}'."
+
+        elif verb == "HOLD":
+            self.speed_ms = 0.0
+            self.flight_mode = "LOITER"
+            return True, f"Holding position at {self.altitude_m}m AGL. Loitering."
+
+        elif verb == "RTL":
+            if self.altitude_m < 0.5:
+                return False, "REJECTED: Drone is on ground."
+            self.lat = self.home_lat
+            self.lon = self.home_lon
+            self.altitude_m = 30.0  # Safe RTL altitude
+            self.speed_ms = 12.0
+            self.flight_mode = "RTL"
+            return True, f"Returning to Launch waypoint ({self.home_lat:.5f}, {self.home_lon:.5f}) @ 30m."
+
+        elif verb == "LAND":
+            if self.altitude_m < 0.5:
+                return False, "Drone is already on the ground."
+            self.altitude_m = 0.0
+            self.speed_ms = 0.0
+            self.armed = False
+            self.flight_mode = "LANDED"
+            return True, "Descent complete. Touchdown confirmed. Motors disarmed."
+
+        return False, "Unrecognized action."
+
+def validate_command_syntax(cmd_line):
+    """
+    Strict whitelist parser.
+    Returns: (is_valid, error_msg, verb, args)
+    """
+    parts = cmd_line.strip().split()
+    if not parts:
+        return False, "Empty command.", "", []
+
+    verb = parts[0].upper()
+    args = parts[1:]
+
+    # Allowed command syntax rules
+    if verb == "ARM":
+        if len(args) != 0:
+            return False, "Syntax: 'arm' (takes no arguments)", verb, args
+        return True, "", verb, args
+
+    elif verb == "DISARM":
+        if len(args) != 0:
+            return False, "Syntax: 'disarm' (takes no arguments)", verb, args
+        return True, "", verb, args
+
+    elif verb == "TAKEOFF":
+        if len(args) != 1:
+            return False, "Syntax: 'takeoff <altitude_m>' (e.g. 'takeoff 50')", verb, args
+        try:
+            alt = float(args[0])
+            if alt < 2.0 or alt > 500.0:
+                return False, "Altitude must be between 2.0m and 500.0m (safety ceiling).", verb, args
+        except ValueError:
+            return False, "Altitude must be a valid number (meters).", verb, args
+        return True, "", verb, args
+
+    elif verb == "LAND":
+        if len(args) != 0:
+            return False, "Syntax: 'land' (takes no arguments)", verb, args
+        return True, "", verb, args
+
+    elif verb == "RTL":
+        if len(args) != 0:
+            return False, "Syntax: 'rtl' (Return to Launch takes no arguments)", verb, args
+        return True, "", verb, args
+
+    elif verb == "HOLD" or verb == "HOVER":
+        if len(args) != 0:
+            return False, "Syntax: 'hold' (takes no arguments)", "HOLD", args
+        return True, "", "HOLD", args
+
+    elif verb == "SPEED":
+        if len(args) != 1:
+            return False, "Syntax: 'speed <m_per_s>' (e.g. 'speed 15')", verb, args
+        try:
+            spd = float(args[0])
+            if spd <= 0.0 or spd > 35.0:
+                return False, "Speed must be between 1.0 and 35.0 m/s (drone flight envelope).", verb, args
+        except ValueError:
+            return False, "Speed must be a valid number.", verb, args
+        return True, "", verb, args
+
+    elif verb == "GOTO":
+        if len(args) != 3:
+            return False, "Syntax: 'goto <lat> <lon> <alt_m>' (e.g. 'goto 12.9725 77.5955 80')", verb, args
+        try:
+            lat = float(args[0])
+            lon = float(args[1])
+            alt = float(args[2])
+            if not (-90.0 <= lat <= 90.0):
+                return False, "Latitude must be between -90.0 and +90.0.", verb, args
+            if not (-180.0 <= lon <= 180.0):
+                return False, "Longitude must be between -180.0 and +180.0.", verb, args
+            if alt < 2.0 or alt > 500.0:
+                return False, "Altitude must be between 2.0m and 500.0m.", verb, args
+        except ValueError:
+            return False, "Coordinates and altitude must be numeric.", verb, args
+        return True, "", verb, args
+
+    elif verb == "MODE":
+        if len(args) != 1 or args[0].upper() not in ["AUTO", "LOITER", "RTL", "MANUAL", "GUIDED"]:
+            return False, "Syntax: 'mode <AUTO|LOITER|RTL|MANUAL|GUIDED>'", verb, args
+        return True, "", verb, args
+
+    elif verb == "STATUS" or verb == "TELEMETRY":
+        return True, "", "STATUS", []
+
+    elif verb == "HELP":
+        return True, "", "HELP", []
+
+    elif verb in ["EXIT", "QUIT"]:
+        return True, "", "EXIT", []
+
+    else:
+        return False, f"Unknown command '{parts[0]}'. Type 'help' to view valid drone flight commands.", verb, args
+
 def perform_pqc_handshake(sock, dest, uav_id):
     print("\n[*] [PHASE 1] Initiating Level-5 Post-Quantum 3GPP RRC Handshake...")
     t_start = time.perf_counter_ns()
@@ -75,7 +280,6 @@ def perform_pqc_handshake(sock, dest, uav_id):
 
     msg1 = uav_id + struct.pack("!I", mobility_hash) + pk_drone_x + pk_drone_k + struct.pack("!H", len(drone_sig)) + drone_sig + pk_drone_sig
     send_framed_udp(sock, dest, 0x01, msg1)
-    print(f"[>] Transmitted RRCSetupRequest (0x01) -> Total Payload: {len(msg1)} Bytes")
 
     resp_type, resp_payload, _ = recv_framed_udp(sock, timeout=5.0)
     if resp_type != 0x02 or resp_payload is None:
@@ -114,127 +318,35 @@ def perform_pqc_handshake(sock, dest, uav_id):
     signer.free()
     return k_session
 
-def send_c2_command(sock, dest, uav_id, aesgcm, cmd_str, cmd_seq):
-    t0 = time.perf_counter_ns()
-    gcm_nonce = struct.pack("!Q", cmd_seq) + os.urandom(4)
-    ciphertext = aesgcm.encrypt(gcm_nonce, cmd_str.encode('utf-8'), None)
-    
-    pdu = uav_id + struct.pack("!Q", cmd_seq) + gcm_nonce + ciphertext
-    send_framed_udp(sock, dest, 0x08, pdu)
-
-    resp_type, resp_payload, _ = recv_framed_udp(sock, timeout=3.0)
-    rtt_ms = (time.perf_counter_ns() - t0) / 1e6
-
-    if resp_type == 0x09 and resp_payload is not None:
-        ack_seq = struct.unpack("!Q", resp_payload[:8])[0]
-        ack_nonce = resp_payload[8:20]
-        ack_ct = resp_payload[20:]
-        ack_plain = aesgcm.decrypt(ack_nonce, ack_ct, None).decode('utf-8')
-        print(f"[+] Response (RTT: {rtt_ms:5.2f} ms): {ack_plain}")
-    else:
-        print(f"[-] Command timeout or no ACK from Base Tower.")
-
-def send_encrypted_image(sock, dest, uav_id, aesgcm, image_path):
-    if not os.path.exists(image_path):
-        print(f"[-] Error: File '{image_path}' does not exist.")
-        return
-
-    with open(image_path, "rb") as f:
-        img_bytes = f.read()
-
-    total_size = len(img_bytes)
-    filename = os.path.basename(image_path)
-    chunk_size = 1000  # 1000 bytes per chunk to fit cleanly in MTU
-    total_chunks = (total_size + chunk_size - 1) // chunk_size
-
-    print(f"\n[*] [IMAGE UPLOAD] File: {filename} ({total_size} Bytes | {total_chunks} Chunks)")
-    print(f"[*] Encrypting with AES-256-GCM under Level-5 PQC Master Session Key...")
-
-    t0 = time.time()
-
-    # Step 1: Send Header (0x10)
-    meta = struct.pack("!HII", len(filename.encode('utf-8')), total_size, total_chunks) + filename.encode('utf-8')
-    hdr_nonce = os.urandom(12)
-    hdr_ct = aesgcm.encrypt(hdr_nonce, meta, None)
-    send_framed_udp(sock, dest, 0x10, uav_id + hdr_nonce + hdr_ct)
-
-    # Step 2: Send Chunks (0x11)
-    for i in range(total_chunks):
-        chunk_data = img_bytes[i * chunk_size : (i + 1) * chunk_size]
-        chunk_nonce = struct.pack("!I", i) + os.urandom(8)
-        chunk_ct = aesgcm.encrypt(chunk_nonce, chunk_data, None)
-        payload = uav_id + struct.pack("!I", i) + chunk_nonce + chunk_ct
-        send_framed_udp(sock, dest, 0x11, payload)
-        if (i + 1) % 20 == 0 or (i + 1) == total_chunks:
-            pct = ((i + 1) / total_chunks) * 100
-            print(f"    [Transmitting Chunks]: {i+1:03d}/{total_chunks} ({pct:5.1f}%) Sent")
-        time.sleep(0.01)  # small inter-chunk delay to avoid socket buffer congestion
-
-    # Step 3: Await Verification ACK (0x12)
-    ack_type, ack_payload, _ = recv_framed_udp(sock, timeout=5.0)
-    dur = time.time() - t0
-    if ack_type == 0x12 and ack_payload is not None:
-        ack_nonce = ack_payload[:12]
-        ack_ct = ack_payload[12:]
-        ack_str = aesgcm.decrypt(ack_nonce, ack_ct, None).decode('utf-8')
-        print(f"\n[+] [IMAGE TRANSMISSION COMPLETED IN {dur:.2f}s!]")
-        print(f"    Base Station ACK: {ack_str}")
-        print(f"    Throughput:       {total_size / 1024 / dur:.1f} KB/s")
-    else:
-        print(f"[-] Warning: Image sent but did not receive confirmation ACK.")
-
-def stream_encrypted_video(sock, dest, uav_id, aesgcm, duration_sec=5, fps=30):
-    print(f"\n[*] [VIDEO STREAM] Streaming Encrypted H.264/MJPEG Aerial Video ({duration_sec}s @ {fps} FPS)...")
-    interval = 1.0 / fps
-    total_frames = duration_sec * fps
-    t_start = time.time()
-
-    # Synthetic realistic video frame chunk (4 KB compressed H.264 I/P-frame)
-    sample_frame = os.urandom(4096)
-
-    for frame_id in range(1, total_frames + 1):
-        gcm_nonce = struct.pack("!I", frame_id) + os.urandom(8)
-        ct = aesgcm.encrypt(gcm_nonce, sample_frame, None)
-        pdu = uav_id + struct.pack("!IH", frame_id, fps) + gcm_nonce + ct
-        send_framed_udp(sock, dest, 0x20, pdu)
-
-        if frame_id % fps == 0:
-            print(f"    [Video FPS: {fps}] Encrypted & Transmitted Frame #{frame_id:04d} ({len(pdu)} Bytes)")
-        time.sleep(interval)
-
-    dur = time.time() - t_start
-    print(f"[+] [VIDEO STREAM COMPLETE] {total_frames} Frames Sent in {dur:.2f}s (Throughput: {total_frames * 4.0 / dur:.1f} KB/s)")
-
-def print_help():
+def print_help_menu():
     print("""
 ========================================================================
-KYBER-6G INTERACTIVE DRONE C2 COMMAND CONSOLE:
+VALID DRONE FLIGHT COMMANDS (Strict Whitelist):
 ------------------------------------------------------------------------
 Flight Control Commands:
-  takeoff <alt_m>         - Climb to target altitude (e.g. 'takeoff 50')
-  goto <lat> <lon> <alt>  - Navigate to GPS coordinates (e.g. 'goto 12.9720 77.5950 100')
-  land                    - Execute controlled vertical landing
-  rtl                     - Return to Launch (Autonomous RTH to base tower)
-  speed <m/s>             - Adjust flight cruise velocity (e.g. 'speed 25')
-  mode <AUTO|LOITER|RTL>  - Set flight autopilot state machine
+  arm                     - Arm drone motors (Pre-flight safety check)
+  disarm                  - Disarm drone motors (Only permitted on ground)
+  takeoff <alt_m>         - Ascend to altitude (e.g. 'takeoff 50', 2-500m)
+  goto <lat> <lon> <alt>  - Fly to coordinates (e.g. 'goto 12.9725 77.5955 80')
+  speed <m_per_s>         - Set airspeed (e.g. 'speed 15', 1-35 m/s)
+  hold                    - Loiter in-place at current coordinates and altitude
+  rtl                     - Return to Launch (Autonomous return to base origin)
+  land                    - Execute controlled vertical landing and disarm
+  mode <AUTO|LOITER|RTL>  - Set autopilot state machine
 
-Payload & Surveillance Commands:
-  image <filepath>        - Encrypt & transmit aerial photo (e.g. 'image assets/recon_sample.png')
-  video <seconds>         - Stream encrypted 30-FPS video stream (e.g. 'video 5')
-  status                  - Query drone avionics, battery, and PQC session cipher
-
-Utility:
-  help                    - Display this command manual
-  exit / quit             - Close C2 session and return to shell
+Telemetry & Session:
+  status                  - Display real-time drone avionics & PQC cipher state
+  help                    - Show this allowed command manual
+  exit / quit             - Disconnect from base station
 ========================================================================
 """)
 
 def main():
-    parser = argparse.ArgumentParser(description="Kyber-6G Interactive Drone Companion C2 Console")
+    parser = argparse.ArgumentParser(description="Kyber-6G Drone C2 Console with Strict Whitelist")
     parser.add_argument("--server", type=str, default="127.0.0.1", help="gNodeB Base Tower IP")
     parser.add_argument("--port", type=int, default=14000, help="UDP port")
     parser.add_argument("--uav-id", type=str, default="UAV-ALPH", help="8-character 3GPP UAV ID")
-    parser.add_argument("--auto-test", action="store_true", help="Run automated C2 sequence test without waiting for user typing")
+    parser.add_argument("--auto-test", action="store_true", help="Run automated flight command validation sequence")
     args = parser.parse_args()
 
     dest = (args.server, args.port)
@@ -242,7 +354,7 @@ def main():
     uav_id = args.uav_id.encode('ascii')[:8].ljust(8, b' ')
 
     print("=" * 75)
-    print("KYBER-6G INTERACTIVE DRONE COMPANION C2 CONSOLE")
+    print("KYBER-6G VALIDATED DRONE C2 FLIGHT CONSOLE")
     print(f"Target 6G Base Station: {args.server}:{args.port}")
     print(f"UAV Call-Sign:          {args.uav_id}")
     print("=" * 75)
@@ -251,69 +363,115 @@ def main():
     k_session = perform_pqc_handshake(sock, dest, uav_id)
     aesgcm = AESGCM(k_session)
     cmd_seq = 1
+    drone = DroneFlightModel()
 
-    # Default recon image path
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    default_img = os.path.join(base_dir, "assets", "recon_sample.png")
+    def send_validated_packet(cmd_string):
+        nonlocal cmd_seq
+        t0 = time.perf_counter_ns()
+        
+        # Bundle command + live drone telemetry state
+        telemetry = drone.get_telemetry_dict()
+        packet_obj = {
+            "cmd_seq": cmd_seq,
+            "cmd": cmd_string,
+            "telemetry": telemetry,
+            "timestamp_ms": int(time.time() * 1000)
+        }
+        json_payload = json.dumps(packet_obj).encode('utf-8')
+
+        gcm_nonce = struct.pack("!Q", cmd_seq) + os.urandom(4)
+        ciphertext = aesgcm.encrypt(gcm_nonce, json_payload, None)
+        
+        pdu = uav_id + struct.pack("!Q", cmd_seq) + gcm_nonce + ciphertext
+        send_framed_udp(sock, dest, 0x08, pdu)
+
+        resp_type, resp_payload, _ = recv_framed_udp(sock, timeout=3.0)
+        rtt_ms = (time.perf_counter_ns() - t0) / 1e6
+
+        if resp_type == 0x09 and resp_payload is not None:
+            ack_nonce = resp_payload[8:20]
+            ack_ct = resp_payload[20:]
+            ack_json = aesgcm.decrypt(ack_nonce, ack_ct, None).decode('utf-8')
+            ack_data = json.loads(ack_json)
+            print(f"[+] Base Tower ACK (RTT: {rtt_ms:5.2f} ms): {ack_data.get('status')}")
+            print(f"    [Confirmed Avionics]: Alt: {telemetry['altitude_m']}m | Mode: {telemetry['flight_mode']} | Lat: {telemetry['lat']}, Lon: {telemetry['lon']} | Bat: {telemetry['battery_pct']}%")
+        else:
+            print("[-] Timeout: No acknowledgment received from Base Tower.")
+
+        cmd_seq += 1
 
     if args.auto_test:
-        print("\n[*] RUNNING AUTOMATED C2 & IMAGE ENCRYPTION TEST SUITE...")
-        time.sleep(1.0)
-        
-        print("\n[Test 1/4] Sending C2: TAKEOFF 50.0m")
-        send_c2_command(sock, dest, uav_id, aesgcm, "TAKEOFF 50.0", cmd_seq)
-        cmd_seq += 1
-        time.sleep(0.5)
+        print("\n[*] RUNNING AUTOMATED FLIGHT SEQUENCE TEST...")
+        test_commands = [
+            "arm",
+            "takeoff 50",
+            "goto 12.972500 77.595500 75",
+            "speed 20",
+            "hold",
+            "rtl",
+            "land",
+            "disarm"
+        ]
+        for c in test_commands:
+            time.sleep(0.5)
+            is_valid, err, verb, c_args = validate_command_syntax(c)
+            print(f"\n[Command Input]> {c}")
+            if not is_valid:
+                print(f"[-] Validation Error: {err}")
+                continue
+            ok, msg = drone.execute_command(verb, c_args)
+            print(f"[*] Local Companion Logic: {msg}")
+            send_validated_packet(c)
 
-        print("\n[Test 2/4] Sending C2: GOTO WAYPOINT (12.9725 N, 77.5955 E, 100m)")
-        send_c2_command(sock, dest, uav_id, aesgcm, "GOTO 12.9725 77.5955 100.0", cmd_seq)
-        cmd_seq += 1
-        time.sleep(0.5)
-
-        print("\n[Test 3/4] Encrypted Aerial Image Transmission")
-        send_encrypted_image(sock, dest, uav_id, aesgcm, default_img)
-        time.sleep(0.5)
-
-        print("\n[Test 4/4] Encrypted 30-FPS Video Stream (3 seconds)")
-        stream_encrypted_video(sock, dest, uav_id, aesgcm, duration_sec=3, fps=30)
-        
-        print("\n[+] AUTOMATED TEST FINISHED SUCCESSFULLY!")
+        print("\n[+] AUTOMATED FLIGHT TEST COMPLETED SUCCESSFULLY!")
         return
 
-    print_help()
+    print_help_menu()
 
     while True:
         try:
-            cmd = input(f"\n[{args.uav_id} @ 6G-BaseTower]> ").strip()
+            cmd = input(f"\n[{args.uav_id} | Alt:{drone.altitude_m:4.1f}m | {drone.flight_mode}]> ").strip()
             if not cmd:
                 continue
 
-            parts = cmd.split()
-            verb = parts[0].lower()
+            is_valid, err, verb, c_args = validate_command_syntax(cmd)
 
-            if verb in ["exit", "quit"]:
-                print("[*] Terminating C2 flight session.")
+            if not is_valid:
+                print(f"[-] ERROR: {err}")
+                continue
+
+            if verb == "EXIT":
+                print("[*] Closing C2 flight session.")
                 break
-            elif verb == "help":
-                print_help()
-            elif verb == "status":
-                print(f"[*] Call-sign: {args.uav_id} | Connected: {args.server}:{args.port}")
-                print(f"[*] Security: Level-5 Hybrid (ML-KEM-1024 + X25519 + ML-DSA-87)")
-                print(f"[*] Data Cipher: AES-256-GCM (Master Key: {k_session.hex()[:16]}...)")
-                print(f"[*] Drone State: ARMED | Battery: 94% | GPS: 3D Fix (14 Sats) | Altitude: 100.5m")
-            elif verb == "image":
-                img_path = parts[1] if len(parts) > 1 else default_img
-                send_encrypted_image(sock, dest, uav_id, aesgcm, img_path)
-            elif verb == "video":
-                dur = int(parts[1]) if len(parts) > 1 else 5
-                stream_encrypted_video(sock, dest, uav_id, aesgcm, duration_sec=dur, fps=30)
-            elif verb in ["takeoff", "goto", "land", "rtl", "speed", "mode", "arm", "disarm"]:
-                send_c2_command(sock, dest, uav_id, aesgcm, cmd.upper(), cmd_seq)
-                cmd_seq += 1
-            else:
-                # Send custom arbitrary command string
-                send_c2_command(sock, dest, uav_id, aesgcm, cmd, cmd_seq)
-                cmd_seq += 1
+
+            elif verb == "HELP":
+                print_help_menu()
+                continue
+
+            elif verb == "STATUS":
+                t = drone.get_telemetry_dict()
+                print("\n" + "=" * 60)
+                print(f"DRONE ONBOARD AVIONICS TELEMETRY ({args.uav_id})")
+                print("=" * 60)
+                print(f"  Motors Armed:     {'YES (ARMED)' if t['armed'] else 'NO (DISARMED)'}")
+                print(f"  Flight Mode:      {t['flight_mode']}")
+                print(f"  Current Altitude: {t['altitude_m']} m AGL")
+                print(f"  GPS Position:     {t['lat']} N, {t['lon']} E")
+                print(f"  Ground Airspeed:  {t['speed_ms']} m/s")
+                print(f"  Battery Level:    {t['battery_pct']}% [█████████░]")
+                print(f"  Link Encryption:  ML-KEM-1024 + AES-256-GCM")
+                print("=" * 60)
+                send_validated_packet("STATUS_UPDATE")
+                continue
+
+            # Execute valid flight command through physics state machine
+            ok, msg = drone.execute_command(verb, c_args)
+            if not ok:
+                print(f"[-] SAFETY REJECTION: {msg}")
+                continue
+
+            print(f"[*] Companion Controller: {msg}")
+            send_validated_packet(cmd)
 
         except (KeyboardInterrupt, EOFError):
             print("\n[*] Exiting C2 console.")

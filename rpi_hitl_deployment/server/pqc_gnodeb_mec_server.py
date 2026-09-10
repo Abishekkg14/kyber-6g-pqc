@@ -2,17 +2,17 @@
 # ==============================================================================
 # Kyber-6G 3GPP gNodeB Base Tower & MEC Edge Server (Dual-Cipher Version)
 # - Level-5 Hybrid PQC Control Plane (ML-KEM-1024 + X25519 + ML-DSA-87)
+# - Real-time Drone Command & Telemetry Decryption & HUD Display
 # - Dual-Cipher Support: ChaCha20-Poly1305 (ARM NEON) & AES-256-GCM
 # - Replay Protection (Monotonic 64-bit sliding window)
-# - High-Resolution Drone Reconnaissance Image Receiver & Auto-Reassembler
-# - Real-Time 30-FPS Video Frame Decryption & Logging
-# - Flight Mission Telemetry CSV Logger
+# - Live Mission Telemetry CSV Logger
 # ==============================================================================
 import socket
 import os
 import sys
 import time
 import struct
+import json
 import csv
 import argparse
 import concurrent.futures
@@ -22,6 +22,9 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM, ChaCha20Poly1305
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(line_buffering=True)
 
 MAX_DGRAM = 1352
 
@@ -89,14 +92,7 @@ class SessionCache:
             return True
         return False
 
-def get_cipher_instance(cached_key, cipher_byte=1):
-    # 1: ChaCha20-Poly1305, 2: AES-256-GCM
-    if cipher_byte == 1:
-        return ChaCha20Poly1305(cached_key)
-    return AESGCM(cached_key)
-
 def decrypt_dual(cached_key, nonce, ciphertext, aad=None):
-    # Try ChaCha20-Poly1305 first, fallback to AESGCM
     try:
         return ChaCha20Poly1305(cached_key).decrypt(nonce, ciphertext, aad)
     except Exception:
@@ -135,16 +131,15 @@ def main():
     csv_writer = csv.writer(csv_file)
     csv_writer.writerow([
         "Timestamp_ms", "Seq", "Lat", "Lon", "Altitude_m", 
-        "Vx_ms", "Vy_ms", "Vz_ms", "Heading_deg", "Roll_deg", 
-        "Pitch_deg", "Battery_pct", "Flight_Mode", "E2E_Latency_ms"
+        "Speed_ms", "Battery_pct", "Flight_Mode", "Command", "Status"
     ])
     csv_file.flush()
 
     print("=" * 75)
     print(f"KYBER-6G 3GPP gNodeB BASE TOWER & MEC EDGE SERVER (UDP {args.host}:{args.port})")
     print(f"Signature Engine:     {SIG_ALG} (Level 5)")
-    print(f"Dual-Cipher Support:  ChaCha20-Poly1305 (ARM NEON) + AES-256-GCM")
-    print(f"Imagery Storage:      {rx_images_dir}")
+    print(f"Data Ciphers:         AES-256-GCM / ChaCha20-Poly1305 (ARM NEON)")
+    print(f"Mission Telemetry:    {args.log_csv}")
     print("=" * 75)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -170,7 +165,7 @@ def main():
                 drone_sig = payload[1614 : 1614 + sig_len]
                 drone_sig_pk = payload[1614 + sig_len :]
 
-                # 1. Verify Drone ML-DSA-87 Signature
+                # Verify Drone ML-DSA-87 Signature
                 verifier = oqs.Signature(SIG_ALG)
                 is_valid = verifier.verify(pk_drone_x + pk_drone_k, drone_sig, drone_sig_pk)
                 verifier.free()
@@ -178,7 +173,7 @@ def main():
                     print(f"[-] UAV Signature Verification FAILED from {client_addr}!")
                     continue
 
-                # 2. Key Generation & Encapsulation
+                # Key Generation & Encapsulation
                 sk_server_x = x25519.X25519PrivateKey.generate()
                 pk_server_x = sk_server_x.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
 
@@ -198,7 +193,6 @@ def main():
 
                 cache.put(ue_id, combined_secret, mobility_hash)
 
-                # 3. Sign and transmit Message 0x02
                 signed_body = pk_server_x + ct_server_k + hkdf_salt
                 gnb_sig = signer.sign(signed_body)
                 resp_payload = struct.pack("!H", len(gnb_sig)) + gnb_sig + gnb_sig_pk + signed_body
@@ -206,62 +200,7 @@ def main():
                 send_framed_udp(sock, client_addr, 0x02, resp_payload)
                 print(f"[+] [RRC-AUTH-OK] UAV {ue_id.decode('ascii', errors='ignore').strip()} Authenticated from {client_addr[0]}:{client_addr[1]}")
 
-            # Message 0x03: 0-RTT Rapid Rekeying Request
-            elif msg_type == 0x03:
-                ue_id = payload[:8]
-                mobility_hash = struct.unpack("!I", payload[8:12])[0]
-                ephemeral_salt = payload[12:28]
-
-                entry = cache.get(ue_id)
-                if entry and entry["mobility_hash"] == mobility_hash:
-                    cached_secret = entry["combined_secret"]
-                    new_session_key = HKDF(
-                        algorithm=hashes.SHA256(),
-                        length=32,
-                        salt=ephemeral_salt,
-                        info=b"Kyber6G-3GPP-0RTT-Rekey"
-                    ).derive(cached_secret)
-                    cache.put(ue_id, new_session_key, mobility_hash)
-                    send_framed_udp(sock, client_addr, 0x04, b"0RTT_ACK")
-                else:
-                    send_framed_udp(sock, client_addr, 0x05, b"CACHE_MISS_FALLBACK")
-
-            # Message 0x06: Avionics Telemetry Stream
-            elif msg_type == 0x06:
-                ue_id = payload[:8]
-                seq = struct.unpack("!Q", payload[8:16])[0]
-                if not cache.validate_nonce(ue_id, seq):
-                    continue
-                
-                gcm_nonce = payload[16:28]
-                ciphertext = payload[28:]
-                cached_key = cache.store[ue_id]["combined_secret"]
-                
-                plaintext = decrypt_dual(cached_key, gcm_nonce, ciphertext)
-                if plaintext is None:
-                    continue
-
-                if len(plaintext) == 32:
-                    ts, p_seq, lat_e7, lon_e7, alt_cm, vx_cms, vy_cms, vz_cms, hdg, roll, pitch, bat, mode, crc = struct.unpack("!IIiiihhhHhhBBH", plaintext)
-                    e2e_ms = max(0.5, ((time.time() * 1000) - ts) % 1000.0)
-                    csv_writer.writerow([
-                        ts, p_seq, f"{lat_e7/1e7:.7f}", f"{lon_e7/1e7:.7f}", f"{alt_cm/100:.2f}",
-                        f"{vx_cms/100:.2f}", f"{vy_cms/100:.2f}", f"{vz_cms/100:.2f}",
-                        f"{hdg/100:.1f}", f"{roll/100:.2f}", f"{pitch/100:.2f}",
-                        bat, mode, f"{e2e_ms:.2f}"
-                    ])
-                    csv_file.flush()
-                    telemetry_count += 1
-                    if telemetry_count % 10 == 0 or telemetry_count == 1:
-                        print(f"    [Avionics #{p_seq:04d}] Alt: {alt_cm/100:5.1f}m | Lat: {lat_e7/1e7:9.5f}, Lon: {lon_e7/1e7:9.5f} | Speed: {vx_cms/100:4.1f} m/s | Bat: {bat}%")
-                else:
-                    print(f"    [Telemetry #{seq:04d}] {plaintext.decode('utf-8', errors='ignore')}")
-
-                reply_nonce = os.urandom(12)
-                reply_ct = AESGCM(cached_key).encrypt(reply_nonce, b"CMD_ACK:WAYPOINT_HOLD", None)
-                send_framed_udp(sock, client_addr, 0x07, reply_nonce + reply_ct)
-
-            # Message 0x08: Interactive C2 Flight Command
+            # Message 0x08: Encrypted C2 Flight Command & Telemetry Packet
             elif msg_type == 0x08:
                 ue_id = payload[:8]
                 cmd_seq = struct.unpack("!Q", payload[8:16])[0]
@@ -271,25 +210,56 @@ def main():
 
                 cmd_bytes = decrypt_dual(cached_key, nonce, ciphertext)
                 if cmd_bytes:
-                    command_str = cmd_bytes.decode('utf-8', errors='ignore')
-                    print(f"\n[>>> C2 COMMAND]: \"{command_str}\" from UAV {ue_id.decode('ascii').strip()}")
-                    ack_msg = f"EXECUTED: {command_str} [gNodeB Base Tower ACK]"
-                    reply_nonce = os.urandom(12)
-                    reply_ct = AESGCM(cached_key).encrypt(reply_nonce, ack_msg.encode('utf-8'), None)
-                    send_framed_udp(sock, client_addr, 0x09, struct.pack("!Q", cmd_seq) + reply_nonce + reply_ct)
+                    try:
+                        pkt = json.loads(cmd_bytes.decode('utf-8'))
+                        cmd_str = pkt.get("cmd", "")
+                        t = pkt.get("telemetry", {})
 
-            # Message 0x10: Encrypted Aerial Reconnaissance Image Metadata Header
+                        print("\n" + "=" * 68)
+                        print(f"[6G BASE TOWER] DRONE C2 TELEMETRY UPDATE (UAV: {ue_id.decode('ascii').strip()} | Seq: #{cmd_seq})")
+                        print("-" * 68)
+                        print(f"  Command Executed:  {cmd_str}")
+                        print(f"  Motors Armed:      {'YES (ARMED)' if t.get('armed') else 'NO (DISARMED)'}")
+                        print(f"  Flight Mode:       {t.get('flight_mode')}")
+                        print(f"  Current Altitude:  {t.get('altitude_m'):5.1f} m AGL")
+                        print(f"  GPS Coordinates:   {t.get('lat'):.6f}° N, {t.get('lon'):.6f}° E")
+                        print(f"  Ground Airspeed:   {t.get('speed_ms'):4.1f} m/s ({t.get('speed_ms',0)*3.6:.1f} km/h)")
+                        print(f"  Battery Level:     {t.get('battery_pct')}%")
+                        print(f"  Security Verified: Level-5 Post-Quantum Hybrid (Authenticated)")
+                        print("=" * 68)
+
+                        # Log to CSV
+                        csv_writer.writerow([
+                            pkt.get("timestamp_ms", int(time.time()*1000)),
+                            cmd_seq, t.get("lat"), t.get("lon"), t.get("altitude_m"),
+                            t.get("speed_ms"), t.get("battery_pct"), t.get("flight_mode"),
+                            cmd_str, "EXECUTED_OK"
+                        ])
+                        csv_file.flush()
+
+                        # Return ACK (0x09)
+                        ack_payload = json.dumps({
+                            "status": f"ACK_EXECUTED: {cmd_str}",
+                            "seq": cmd_seq,
+                            "server_time": time.time()
+                        }).encode('utf-8')
+                        reply_nonce = os.urandom(12)
+                        reply_ct = AESGCM(cached_key).encrypt(reply_nonce, ack_payload, None)
+                        send_framed_udp(sock, client_addr, 0x09, struct.pack("!Q", cmd_seq) + reply_nonce + reply_ct)
+
+                    except Exception as e:
+                        print(f"[-] Error processing telemetry JSON: {e}")
+
+            # Message 0x10 & 0x11: Image Transfers
             elif msg_type == 0x10:
                 ue_id = payload[:8]
                 nonce = payload[8:20]
                 ciphertext = payload[20:]
                 cached_key = cache.store[ue_id]["combined_secret"]
-
                 plain_meta = decrypt_dual(cached_key, nonce, ciphertext)
                 if plain_meta:
                     name_len, total_size, total_chunks = struct.unpack("!HII", plain_meta[:10])
                     filename = plain_meta[10 : 10 + name_len].decode('utf-8', errors='ignore')
-
                     cache.image_transfers[ue_id] = {
                         "filename": filename,
                         "total_size": total_size,
@@ -297,59 +267,39 @@ def main():
                         "chunks": [None] * total_chunks,
                         "t_start": time.time()
                     }
-                    print(f"\n[+] [IMAGE TRANSFER INITIATED] File: {filename} ({total_size} Bytes in {total_chunks} Encrypted Chunks)")
+                    print(f"\n[+] [IMAGE INCOMING] {filename} ({total_size} Bytes)")
 
-            # Message 0x11: Encrypted Image Data Chunk
             elif msg_type == 0x11:
                 ue_id = payload[:8]
                 chunk_idx = struct.unpack("!I", payload[8:12])[0]
                 nonce = payload[12:24]
                 ciphertext = payload[24:]
                 cached_key = cache.store[ue_id]["combined_secret"]
-
                 chunk_data = decrypt_dual(cached_key, nonce, ciphertext)
                 transfer = cache.image_transfers.get(ue_id)
                 if transfer and chunk_data is not None:
                     transfer["chunks"][chunk_idx] = chunk_data
-                    rcvd = sum(1 for c in transfer["chunks"] if c is not None)
-                    if rcvd % 10 == 0 or rcvd == transfer["total_chunks"]:
-                        pct = (rcvd / transfer["total_chunks"]) * 100
-                        print(f"    [Image Decryption]: Chunk {chunk_idx+1:03d}/{transfer['total_chunks']} ({pct:5.1f}%) Verified")
-
-                    # Check if entire image received
                     if all(c is not None for c in transfer["chunks"]):
                         full_img = b"".join(transfer["chunks"])
-                        t_dur = time.time() - transfer["t_start"]
                         out_path = os.path.join(rx_images_dir, f"received_{transfer['filename']}")
                         with open(out_path, "wb") as img_f:
                             img_f.write(full_img)
-                        print(f"\n[+] [IMAGE RECONSTRUCTION SUCCESSFUL!]")
-                        print(f"    Saved To:        {out_path} ({len(full_img)} Bytes)")
-                        print(f"    Transfer Speed:  {len(full_img)/1024/t_dur:.1f} KB/s in {t_dur:.2f} s")
-                        print(f"    PQC Auth Status: 100% Dual-Cipher Integrity Verified\n")
-
+                        print(f"[+] [IMAGE SAVED] {out_path}")
                         reply_nonce = os.urandom(12)
                         reply_ct = AESGCM(cached_key).encrypt(reply_nonce, b"IMAGE_VERIFIED_AND_SAVED", None)
                         send_framed_udp(sock, client_addr, 0x12, reply_nonce + reply_ct)
                         del cache.image_transfers[ue_id]
 
-            # Message 0x20: Encrypted Video Stream Frame Chunk
+            # Message 0x20: Video Frames
             elif msg_type == 0x20:
                 ue_id = payload[:8]
                 frame_id, fps = struct.unpack("!IH", payload[8:14])
                 nonce = payload[14:26]
                 ciphertext = payload[26:]
                 cached_key = cache.store[ue_id]["combined_secret"]
-
                 video_frame_data = decrypt_dual(cached_key, nonce, ciphertext)
-                if video_frame_data:
-                    # Save first frame as sample
-                    if frame_id == 0:
-                        frame_save = os.path.join(rx_video_dir, "rx_frame_000.jpg")
-                        with open(frame_save, "wb") as vf:
-                            vf.write(video_frame_data)
-                    if (frame_id + 1) % fps == 0 or frame_id == 0:
-                        print(f"    [Decrypted Video Frame #{frame_id+1:03d}] Size: {len(video_frame_data)} B @ {fps} FPS | PQC Tag Valid")
+                if video_frame_data and (frame_id + 1) % fps == 0:
+                    print(f"    [Decrypted Video Frame #{frame_id+1:03d}] Size: {len(video_frame_data)} B @ {fps} FPS")
 
     except KeyboardInterrupt:
         print(f"\n[*] Server shut down.")
