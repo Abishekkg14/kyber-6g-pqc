@@ -1,0 +1,2 @@
+Total_Frames,Duration_s,Effective_FPS,Mean_Latency_ms,P99_Latency_ms,Cipher,GOP_Epochs
+90,3.00,30.0,0.19,0.59,CHACHA20,3

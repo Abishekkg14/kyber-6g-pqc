@@ -1,0 +1,2 @@
+Filename,Cipher,Size_Bytes,Chunks,Plaintext_Entropy,Ciphertext_Entropy,Avg_Encrypt_us,Throughput_MBs,Total_Time_s
+drone_recon_2.jpg,CHACHA20,25761,26,7.9540,7.9934,17.27,0.18,0.133
