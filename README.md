@@ -171,22 +171,6 @@ npm run dev
 
 ---
 
-## Citation
-
-If you utilize this framework, codebase, or empirical benchmark dataset in your research, please cite:
-
-```bibtex
-@article{abishek2026kyber6g,
-  author    = {Abishek, K. G.},
-  title     = {Hardware-in-the-Loop Calibrated Post-Quantum Cryptography for 6G Drone Swarms: Integrating ML-KEM-1024 with NS-3 Simulation},
-  journal   = {IEEE Access},
-  year      = {2026},
-  note      = {Empirical HITL Raspberry Pi 4 Model B dataset and NS-3 framework}
-}
-```
-
----
-
 ## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
