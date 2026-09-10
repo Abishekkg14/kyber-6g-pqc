@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect } from 'react'
 import Navigation from './components/Navigation'
 import Hero from './sections/Hero'
 import Overview from './sections/Overview'
@@ -32,7 +32,7 @@ export default function App() {
         <Simulation />
         <ResultsDashboard data={data} />
         <ThreatModel />
-        <Conclusions data={data} />
+        <Conclusions />
       </main>
       <footer className="footer">
         <p>Kyber-6G Project · Post-Quantum Secure Drone Swarm Communication · 2026</p>

@@ -6,7 +6,7 @@ print("Invoking final orchestration pipeline...", flush=True)
 try:
     cmd = [
         "wsl", "-d", "Ubuntu-22.04", "--exec", "bash", "-c",
-        "python3 '/home/abishek14/Kyber-6G project/ns-3-dev/run_pipeline.py'"
+        "python3 '/home/force123/roshyy/Kyber-6G project/Kyber-6G project/ns-3-dev/run_pipeline.py'"
     ]
     
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)

@@ -122,6 +122,10 @@ function Scene() {
         [-5, 0, -4], [5, 0, -4], [0, 0, 5], [-6, 0, 3], [6, 0, 3]
     ], [])
 
+    const droneSpeeds = useMemo(() => (
+        dronePositions.map((_, i) => 0.8 + (i % 5) * 0.08)
+    ), [dronePositions])
+
     return (
         <>
             <ambientLight intensity={0.3} />
@@ -132,7 +136,7 @@ function Scene() {
             <Ground />
 
             {dronePositions.map((pos, i) => (
-                <Drone key={i} position={pos} speed={0.8 + Math.random() * 0.4} index={i} />
+                <Drone key={i} position={pos} speed={droneSpeeds[i]} index={i} />
             ))}
 
             {gnbPositions.map((pos, i) => (

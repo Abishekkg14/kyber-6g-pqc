@@ -101,6 +101,38 @@ class PqcMetricsCollector : public Object
     void RecordAttackCostLog2Ops(double log2ops);
     void RecordThroughputMbps(double mbps);
 
+    /// Fragmentation tracking
+    void RecordFragmentCount(uint32_t fragments);
+
+    /// Crypto vs network timing breakdown
+    void RecordCryptoTimeUs(double us);
+    void RecordNetworkTimeUs(double us);
+    void RecordHandshakeOverheadUs(double us);
+
+    /// Per-packet trace for post-hoc analysis
+    struct PacketTraceEntry
+    {
+        double timestampMs;
+        std::string event;
+        std::string src;
+        std::string dst;
+        uint32_t sizeBytes;
+        double delayUs;
+        bool fragmented;
+        bool encrypted;
+    };
+
+    void RecordPacketTrace(double timestampMs,
+                           const std::string& event,
+                           const std::string& src,
+                           const std::string& dst,
+                           uint32_t sizeBytes,
+                           double delayUs,
+                           bool fragmented,
+                           bool encrypted);
+
+    void ExportPerPacketTrace(const std::string& filename) const;
+
     /**
      * \brief Compute 95% confidence interval half-width (t-distribution).
      * \param mean Sample mean
@@ -226,6 +258,7 @@ class PqcMetricsCollector : public Object
 
     std::map<std::string, MetricSeries> m_metrics;
     uint32_t m_nodeCount{10};
+    std::vector<PacketTraceEntry> m_packetTrace;
 
     void Record(const std::string& name, double value);
 };

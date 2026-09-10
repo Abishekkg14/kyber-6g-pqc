@@ -1,0 +1,16 @@
+\begin{table}[htbp]
+\centering
+\caption{Key Exchange Overhead Comparison}
+\label{tab:ke-overhead}
+\begin{tabular}{lrrrrr}
+\hline
+Mode & PK (B) & CT (B) & Frags & Latency ($\mu$s) & Security \\
+\hline
+X25519 & 32 & 32 & 2 & 120 & 128-bit classical \\
+ML-KEM-512 & 800 & 768 & 2 & 420 & 118-bit quantum \\
+ML-KEM-768 & 1184 & 1088 & 2 & 576 & 203-bit quantum \\
+ML-KEM-1024 & 1568 & 1568 & 3 & 890 & 230-bit quantum \\
+Hybrid-768 & 1216 & 1120 & 2 & 610 & 203-bit quantum \\
+\hline
+\end{tabular}
+\end{table}

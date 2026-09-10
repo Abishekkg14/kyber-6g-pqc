@@ -67,6 +67,14 @@ class PqcSecurityHelper
     void SetBatteryWh(double wh);
     void SetMobilityHash(uint32_t ueIndex, uint32_t hash);
 
+    // Ablation toggles
+    void SetDisableCsidhBypass(bool disable);
+    void SetUseMm1Queue(bool useMm1);
+    void SetRoutingProtocol(const std::string& routing);
+    void SetDisableMaskedSha3(bool disable);
+    void SetDisableCvqkd(bool disable);
+    void SetDisableEmulsion(bool disable);
+
     void ExportRunMetadata(const std::string& filename,
                            uint32_t seed,
                            uint32_t runIndex,
@@ -142,6 +150,14 @@ class PqcSecurityHelper
     double m_batteryWh{74.0};
     HardwareProfile m_hwProfile;
     PqcEnergyModel m_energyModel;
+
+    // Ablation state
+    bool m_disableCsidhBypass{false};
+    bool m_useMm1Queue{false};
+    std::string m_routingProtocol{"dora"};
+    bool m_disableMaskedSha3{false};
+    bool m_disableCvqkd{false};
+    bool m_disableEmulsion{false};
 
     // Per-device PQC objects
     struct UePqcContext

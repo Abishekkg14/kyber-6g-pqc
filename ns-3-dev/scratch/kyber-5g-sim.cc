@@ -284,7 +284,7 @@ main(int argc, char* argv[])
     }
 
     // Attach all UEs to the closest gNB
-    nrHelper->AttachToClosestEnb(ueNetDev, gnbNetDev);
+    nrHelper->AttachToClosestGnb(ueNetDev, gnbNetDev);
 
     Ipv4Address userAAddr = ueIpIfaces.GetAddress(0);
     Ipv4Address userBAddr = ueIpIfaces.GetAddress(1);
@@ -316,22 +316,22 @@ main(int argc, char* argv[])
 
     // --- Activate dedicated EPS bearer for the traffic ---
     // Bearer for User A (uplink: User A -> gNB -> EPC)
-    EpsBearer bearer(EpsBearer::NGBR_LOW_LAT_EMBB);
+    NrEpsBearer bearer(NrEpsBearer::NGBR_LOW_LAT_EMBB);
 
-    Ptr<EpcTft> tftUserA = Create<EpcTft>();
-    EpcTft::PacketFilter pfUplinkA;
+    Ptr<NrEpcTft> tftUserA = Create<NrEpcTft>();
+    NrEpcTft::PacketFilter pfUplinkA;
     pfUplinkA.remotePortStart = udpPort;
     pfUplinkA.remotePortEnd = udpPort;
-    pfUplinkA.direction = EpcTft::UPLINK;
+    pfUplinkA.direction = NrEpcTft::UPLINK;
     tftUserA->Add(pfUplinkA);
     nrHelper->ActivateDedicatedEpsBearer(ueNetDev.Get(0), bearer, tftUserA);
 
     // Bearer for User B (downlink: EPC -> gNB -> User B)
-    Ptr<EpcTft> tftUserB = Create<EpcTft>();
-    EpcTft::PacketFilter pfDownlinkB;
+    Ptr<NrEpcTft> tftUserB = Create<NrEpcTft>();
+    NrEpcTft::PacketFilter pfDownlinkB;
     pfDownlinkB.localPortStart = udpPort;
     pfDownlinkB.localPortEnd = udpPort;
-    pfDownlinkB.direction = EpcTft::DOWNLINK;
+    pfDownlinkB.direction = NrEpcTft::DOWNLINK;
     tftUserB->Add(pfDownlinkB);
     nrHelper->ActivateDedicatedEpsBearer(ueNetDev.Get(1), bearer, tftUserB);
 

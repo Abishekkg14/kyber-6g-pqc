@@ -1,0 +1,759 @@
+# MASTER RESEARCH DIRECTIVE & PROJECT SPECIFICATION
+
+**Project Title:** Kyber-6G: Next-Generation Quantum-Resistant Autonomous UAV Swarm Architecture in 140 GHz Terahertz Non-Terrestrial Networks
+
+**Execution Environment:** NS-3 (CTTC 5G-LENA Module), C++20 Core, Python 3.11 Scientific Stack, Hardware-Co-Design Emulation Suite
+
+**Target Venue:** IEEE Transactions on Mobile Computing / Elsevier Vehicular Communications / IEEE Journal on Selected Areas in Communications
+
+---
+
+## SECTION I: EXECUTIVE RESEARCH MANDATE & PROJECT VISION
+
+### 1.1 Project Overview
+
+The **Kyber-6G** project addresses the critical vulnerability of ultra-mobile 6G Non-Terrestrial Networks (NTNs) to post-quantum intelligence threats. As quantum computing capabilities advance toward Shor’s algorithm realization, traditional public-key cryptosystems—including Elliptic Curve Cryptography (ECC), RSA, and Diffie-Hellman—face absolute compromise. Concurrently, non-terrestrial 6G communication operating in the sub-terahertz (0.1–10 THz) and 140 GHz bands must support high-speed Unmanned Aerial Vehicle (UAV) swarms moving at extreme velocities ($v \ge 120\text{ m/s}$) under Ultra-Reliable Low-Latency Communication (URLLC) constraints ($\text{latency} < 1\text{ ms}$, $\text{reliability} \ge 99.999\%$).
+
+This directive establishes the architectural upgrade and simulation blueprint for **Kyber-6G**. By synthesizing Post-Quantum Cryptography (PQC), Continuous Variable Quantum Key Distribution (CV-QKD), advanced queueing theory, hardware acceleration, and dynamic multi-agent routing, Kyber-6G delivers a provably secure, latency-optimized, and resilient communication framework for autonomous aerial platforms.
+
+```
+                                  +-------------------------------------------------------+
+                                  |            CV-QKD FSO Link (Phase Matching)           |
+                                  +---------------------------+---------------------------+
+                                                              |
++------------------------------+   Uplink (140 GHz THz)     +---+    Setup Signaling    +-------------------------------+
+|     Drone Swarm (UEs)        |--------------------------->|   |---------------------->|  Hybrid Cryptographic Engine  |
+|  - Speed: 120 m/s            |                            | 6G|                       |  - ECDH (X25519)              |
+|  - Coherence: 17.8 us        |   Downlink (140 GHz THz)   |gNB|                       |  - ML-KEM-1024 (FIPS 203)     |
+|  - Mosaic Nodes (140)        |<---------------------------|   |<----------------------|  - ML-DSA-87 (FIPS 204)       |
++------------------------------+                            +---+                       +---------------+---------------+
+               |                                                                                        |
+               |                                                                                        v
++--------------v---------------+                                                        +---------------+---------------+
+| DORA Dynamic Random Access   |                                                        | Key Derivation (HKDF-SHA256)  |
+|  - PDR Optimization          |                                                        | $K_{final}=HKDF(S_{ecdh}||S_{kyber})$|
+|  - Benchmarked vs ZRP/DSRP   |                                                        +---------------+---------------+
++------------------------------+                                                                        |
+                                                                                                        v
+                                                                                        +---------------+---------------+
+                                                                                        | AES-256-GCM / MAYO Signature  |
+                                                                                        +-------------------------------+
+
+```
+
+---
+
+## SECTION II: COMPREHENSIVE THEORETICAL LITERATURE SYNTHESIS
+
+To ground the upgraded framework in proven physical, cryptographic, and algorithmic principles, the system incorporates the explicit findings of the 25 core reference studies:
+
+### 2.1 Post-Quantum Cryptography & Hardware Acceleration
+
+1. Hybrid Security Integration: Khurana et al. demonstrate that combining QKD (BB84/CV-QKD) for session key generation with PQC (ML-KEM/ML-DSA) for authentication introduces less than $0.1\%$ throughput overhead compared to classical systems, proving that physical-layer and computational quantum resilience can coexist under tight performance budgets.
+
+
+2. Modular Arithmetic Units (KDA): Nguyen et al. propose a unified polynomial arithmetic architecture utilizing the KRED modular reduction algorithm ($c \equiv k \cdot d_0 - d_1 \pmod q$) for Proth numbers ($q = k \cdot 2^m + 1$). This eliminates $n^{-1}$ multiplication in INTT and supports $4 \times 1$ configurable NTT for both ML-KEM ($q=3329$) and ML-DSA ($q=8380417$).
+
+
+3. Side-Channel Attack (SCA) Mitigation: Ji et al. show that FPGA implementations of Kyber768 are vulnerable to deep learning power analysis via multi-bit error injection across parallel computing units. To counteract this, Di Matteo et al. demonstrate a first-order Domain-Oriented Masking (DOM) Keccak core paired with an unrolled Trivium/Bivium randomness dispatcher delivering $1600\text{ bits/cycle}$ of fresh randomness, completely eliminating side-channel leakage at $\vert{}t\vert{} < 4.5$ under TVLA.
+
+
+4. Area-Time Efficient Memory Architectures: Nguyen et al., Lu et al., and Tan et al. establish that matrix-vector polynomial multiplication can be optimized using hierarchical interleaved folding transformations and partitioned memory banks. By deriving INTT twiddle factors $\zeta^{-i} = q - \zeta^{n-i}$ and PWM twiddle factors $\zeta^{2\text{BitRev7}(2k+1)+1} = q - \zeta^{2\text{BitRev7}(2k)+1}$ directly from forward NTT factors, twiddle factor storage is reduced threefold.
+
+
+
+### 2.2 Terahertz Communications & Physical Layer
+
+5. THz Device Performance: Li et al. and Gezimati & Singh review sub-THz/THz solid-state and optoelectronic systems (UTC-PD, Schottky diodes). Over the $0.1\text{--}10\text{ THz}$ band, molecular absorption and atmospheric attenuation dominate, requiring high-gain Cassegrain/pencil-beam directional antennas and precise channel modeling.
+
+
+6. Gilbert-Elliott Channel Modeling: Zhong et al. and Griffiths et al. formalize error-burst modeling in memory-prone wireless channels using 2-state Markov chains and Queue-Based Channel (QBC) approximations, demonstrating how block code transmission and frame fragmentation degrade exponentially under burst-error conditions.
+
+
+
+### 2.3 5G/6G Authentication Protocols & Security Formalisms
+
+7. Multi-Factor & D2D AKA Vulnerabilities: Yadav et al., Patel et al., and Ramadan et al. prove that standard 3GPP 5G-AKA and primary authentication protocols suffer from identity traceability, lack of Perfect Forward Secrecy (PFS), de-synchronization vulnerability, and malicious Serving Network (SN) exploitation. Multi-factor schemes combining biometric fuzzy extractors $\text{Gen}(\text{Bio}) = (\bar{K}, P)$ and Server-Aided Verification (SAV) drastically reduce user-side computational loads while enforcing strict unforgeability.
+
+
+8. Formal BAN Logic & Protocol Verification: Ahmad et al. analyze the MORNeS key exchange protocol using Burrows-Abadi-Needham (BAN) logic, revealing that symmetric challenge-response flows without explicit direction/nonce translation are vulnerable to reflection attacks where an adversary reflects a principal's challenge back to itself.
+
+
+9. Multivariate & Post-Quantum Signature Schemes: Reviews of multivariate quadratic (MQ) cryptography (e.g., MAYO, UOV, Rainbow) and general PQC digital signatures establish that MQ schemes provide exceptionally small signature sizes and fast verification, making them ideal for broadcast authentication (e.g., SIB messages) where signature size directly impacts serialization latency.
+
+
+
+### 2.4 UAV Swarm Networking, Signal Processing & NTN Integration
+
+10. Dynamic Random Access & Routing: Raghavendra & Deepa prove that in high-density Vehicle-to-Network (V2N) and aerial scenarios, the Dynamic Optimal Random Access (DORA) protocol outperforms legacy reactive/proactive schemes like Dynamic Source Routing (DSRP) and Zone Routing Protocol (ZRP) in Packet Delivery Ratio (PDR) and latency stability.
+
+
+11. Mosaic Warfare & Swarm Autonomy: Qi et al. formalize the decomposition of complex aerial missions into dynamic "mosaic" functional nodes: Reconnaissance, Interference, Integrated Rec-Attack, Cooperative Operation, and Attack nodes. Autonomous allocation utilizing K-means clustering, Distributed Model Predictive Control (DMPC), and Differential Evolution enables real-time resilience under node failure.
+
+
+12. Massive MIMO Signal Processing: Gao et al. present the Mixed Gibbs Sampling algorithm based on Multiple Random Parallel Markov Chains (MGS-MRPMC) to resolve local-optima stalling in high-order QAM signal detection for massive MIMO, offering near-ML detection capability with deterministic parallel execution delay.
+
+
+13. Non-Terrestrial Network (NTN) Architecture: Vehicular Communications (2024) details the multi-layered Satellite-Aerial-Terrestrial architecture where UAVs act as flying relays, utilizing Distributed Ledger Technology (DLT/DAG) for decentralized trust and identity verification.
+
+
+
+---
+
+## SECTION III: DEEP MATHEMATICAL FOUNDATIONS & PHYSICAL CHANNEL MODELS
+
+```
+                                      +-------------------------------+
+                                      | 140 GHz Atmospheric & Beam    |
+                                      | Loss Model (Beer-Lambert)     |
+                                      +---------------+---------------+
+                                                      |
+                                                      v
+                                      +---------------+---------------+
+                                      |  Gilbert-Elliott 2-State      |
+                                      |  Markov Channel (Burst Error) |
+                                      +---------------+---------------+
+                                                      |
+                                                      v
+                                      +---------------+---------------+
+                                      |  M/G/1 Pollaczek-Khinchine    |
+                                      |  TTI Queueing Model           |
+                                      +---------------+---------------+
+                                                      |
+                                                      v
+                                      +---------------+---------------+
+                                      |  CV-QKD FSO Transmissivity &  |
+                                      |  Holevo Bound Key Rate        |
+                                      +-------------------------------+
+
+```
+
+### 3.1 140 GHz Terahertz Channel & Atmospheric Loss Model
+
+The propagation path loss $PL(f, d)$ at $f = 140\text{ GHz}$ over a distance $d$ includes free-space path loss and molecular absorption loss defined by the Beer-Lambert law:
+
+$$PL(f, d) = \left( \frac{4 \pi f d}{c} \right)^2 \cdot \exp\left( K_{abs}(f) \cdot d \right)$$
+
+where $c$ is the speed of light, and $K_{abs}(f)$ is the frequency-dependent molecular absorption coefficient calculated from the HITRAN database based on temperature $T = 296.15\text{ K}$, pressure $p = 1\text{ atm}$, and relative humidity $RH = 50\%$.
+
+The coherence time $T_c$ of the channel under Doppler shift caused by UAV velocity $v = 120\text{ m/s}$ is modeled as:
+
+$$f_d = \frac{v}{\lambda_{thz}} = \frac{120\text{ m/s}}{2.14 \times 10^{-3}\text{ m}} \approx 56.07\text{ kHz}$$
+
+$$T_c \approx \frac{9}{16 \pi f_d} \approx \frac{9}{16 \pi (56074.7)} \approx 17.80\text{ }\mu\text{s}$$
+
+### 3.2 Gilbert-Elliott Markov Burst-Error Channel
+
+To model the severe fading bursts induced by $T_c = 17.80\text{ }\mu\text{s}$ relative to packet transmission duration, the link is structured as a two-state discrete-time Markov chain $S \in \{G, B\}$ (Good and Bad).
+
+The transition probability matrix $\mathbf{P}_{GE}$ is:
+
+$$\mathbf{P}_{GE} = \begin{bmatrix} P_{GG} & P_{GB} \\ P_{BG} & P_{BB} \end{bmatrix} = \begin{bmatrix} 1 - P_{GB} & P_{GB} \\ P_{BG} & 1 - P_{BG} \end{bmatrix}$$
+
+The stationary state probabilities $\pi_G$ and $\pi_B$ are given by:
+
+$$\pi_G = \frac{P_{BG}}{P_{GB} + P_{BG}}, \quad \pi_B = \frac{P_{GB}}{P_{GB} + P_{BG}}$$
+
+Let $p_G$ and $p_B$ denote the bit error rates in the Good and Bad states respectively ($p_G \ll 1, p_B \approx 0.5$). The average bit error rate $\bar{P}_e$ and correlation coefficient $\rho_{channel}$ are:
+
+$$\bar{P}_e = \pi_G p_G + \pi_B p_B$$
+
+$$\rho_{channel} = 1 - P_{GB} - P_{BG}$$
+
+For a PQC payload fragmented into $N_{frag}$ frames of size $L_{frame}$ bits, the Packet Delivery Ratio ($PDR$) under the Queue-Based Channel (QBC) approximation minimizing Kullback-Leibler divergence $D_{KL}(P_{GE} \parallel P_{QBC})$ is formulated as:
+
+$$PDR(N_{frag}) = \pi_G (1 - p_G)^{N_{frag} \cdot L_{frame}} + \pi_B (1 - p_B)^{N_{frag} \cdot L_{frame}}$$
+
+### 3.3 M/G/1 Pollaczek-Khinchine Queueing Mechanism
+
+Because PQC key generation, encapsulation, and verification introduce bimodal micro-burst service times at the 6G gNB, the queueing delay is strictly non-exponential. The arrival process follows a Poisson process with rate $\lambda_{arr}$, while service times $S_{pqc}$ follow a general distribution with mean $E[S_{pqc}]$ and variance $\text{Var}(S_{pqc})$.
+
+The traffic intensity is $\rho_{q} = \lambda_{arr} E[S_{pqc}] < 1$. The expected queue waiting time $W_q$ is governed by the Pollaczek-Khinchine formula:
+
+$$W_q = \frac{\lambda_{arr} E[S_{pqc}^2]}{2(1 - \rho_{q})} = \frac{\lambda_{arr} \left( \text{Var}(S_{pqc}) + (E[S_{pqc}])^2 \right)}{2(1 - \lambda_{arr} E[S_{pqc}])}$$
+
+Accounting for 3GPP 6G Transmission Time Interval (TTI) quantization boundaries $\tau_{tti}$ ($\mu \in \{3,4,5\}$, e.g., $\tau_{tti} = 125\text{ }\mu\text{s}, 62.5\text{ }\mu\text{s}, 31.25\text{ }\mu\text{s}$), the total queueing latency $T_{queue}$ is:
+
+$$T_{queue} = \left\lceil \frac{W_q + E[S_{pqc}]}{\tau_{tti}} \right\rceil \cdot \tau_{tti}$$
+
+### 3.4 CV-QKD Holevo Bound & Photon Catalysis Model
+
+For inter-UAV Free Space Optical (FSO) links, Continuous Variable Quantum Key Distribution (CV-QKD) uses Gaussian-modulated coherent states (GMCS). Under log-normal atmospheric turbulence with variance $\sigma_R^2$, the channel transmissivity $\mathrm{T}$ fluctuates. Applying single-photon catalysis to the state improves the secret key rate $K_{cvqkd}$ under the Holevo bound:
+
+$$K_{cvqkd} = \xi \cdot I(A; B) - \chi(B; E)$$
+
+where $\xi$ is reconciliation efficiency, $I(A; B)$ is mutual information between Alice and Bob, and $\chi(B; E)$ is the Holevo bound on Eve's information:
+
+$$\chi(B; E) = \sum_{i=1}^2 G\left( \frac{\lambda_i - 1}{2} \right) - \sum_{i=3}^5 G\left( \frac{\lambda_i - 1}{2} \right)$$
+
+where $G(x) = (x+1)\log_2(x+1) - x\log_2(x)$, and $\lambda_{1..5}$ are the symplectic eigenvalues of the covariance matrices describing the quantum state after photon catalysis.
+
+---
+
+## SECTION IV: PROTOCOL & HARDWARE ARCHITECTURE SPECIFICATIONS
+
+```
+  +---------------------------------------------------------------------------------------+
+  |                                   Memory Bank                                         |
+  |  +-------------------------+  +-------------------------+  +-----------------------+  |
+  |  |   RAM0 (512x64 bits)    |  |   RAM1 (512x64 bits)    |  |  RAM2 (256x64 bits)   |  |
+  |  | - Seeds (d,z,m)         |  | - Encryption Key (ek)   |  | - Temp Poly (y,A,e1)  |  |
+  |  | - Hash Results (G,H,J)    |  | - Decryption Key (dk)   |  | - Overwritten Space   |  |
+  |  | - Ciphertext (c)        |  |                         |  |                       |  |
+  |  +-------------------------+  +-------------------------+  +-----------------------+  |
+  +-------------------------------------------+-------------------------------------------+
+                                              |
+                                              v
+  +---------------------------------------------------------------------------------------+
+  |                           Polynomial Arithmetic Unit (PAU)                            |
+  |  +---------------------------+  +-----------------------+  +-----------------------+  |
+  |  |   4x1 Configurable BUs    |  | 1n Memory (32x24 x4)  |  | Reordering Units (RU) |  |
+  |  |  - KRED Modular Reduction |  | - Intermediate Poly   |  | - Mapping Logic M0/M1 |  |
+  |  |  - CT/GS Butterfly        |  | - MAC Accumulation    |  | - Delay Line D0/Dx    |  |
+  |  +---------------------------+  +-----------------------+  +-----------------------+  |
+  +-------------------------------------------+-------------------------------------------+
+                                              |
+                                              v
+  +---------------------------------------------------------------------------------------+
+  |                             Masked SHA-3 Accelerator                                  |
+  |  +---------------------------+  +-----------------------+  +-----------------------+  |
+  |  |   DOM Keccak Core (1600b) |  |  Multifunctional FIFO |  | Randomness Dispatcher |  |
+  |  |   - 1 Round/Cycle         |  |  - 21x64-bit Regs     |  | - 25x Unrolled        |  |
+  |  |   - Glitch-Resistant      |  |  - Modes 0, 1, and 2  |  |   Trivium / Bivium    |  |
+  |  +---------------------------+  +-----------------------+  +-----------------------+  |
+  +---------------------------------------------------------------------------------------+
+
+```
+
+### 4.1 Hardware-Software Co-Design for ML-KEM-1024 & ML-DSA-87
+
+To support sub-millisecond execution, the crypto-engine integrates specialized hardware optimizations:
+
+1. Partitioned Memory Bank: Hardware memory is partitioned into 3 SRAM blocks (RAM0: $512 \times 64\text{ bits}$, RAM1: $512 \times 64\text{ bits}$, RAM2: $256 \times 64\text{ bits}$). Intermediate values are dynamically destroyed via in-place overwriting to comply with FIPS 203 memory sanitization requirements.
+
+
+2. KRED Modular Multiplier & Unification: Uses the KRED reduction algorithm ($q = 3329$ for ML-KEM, $q = 8380417$ for ML-DSA). By calculating $c / 2^m = d_1 - k \cdot d_0 \equiv -k \cdot 2^m / n \cdot c \equiv c / n \pmod q$, multiplication by $n^{-1}$ in INTT is eliminated, allowing unified CT/GS butterfly execution.
+
+
+3. Hierleaved Folding & Twiddle Optimization: The $2k$ NTT processors are folded into two parallel processing elements ($BU_{even}, BU_{odd}$) operating on a 64-bit datapath using Radix-2 Multi-path Delay Commutator (R2MDC) units. Twiddle storage for INTT ($\zeta^{-i}$) and PWM ($\zeta^{2\text{BitRev7}(2k)+1}$) is computed on-the-fly from forward NTT tables using:
+
+
+
+$$\zeta^{-i} = q - \zeta^{n-i}$$
+
+$$\zeta^{2\text{BitRev7}(2k+1)+1} = q - \zeta^{2\text{BitRev7}(2k)+1}$$
+
+reducing ROM footprint by $66.7\%$.
+4. Side-Channel Protection via Masked SHA-3 & Randomness Dispatcher: First-order DOM masking protects the Keccak core against power-analysis attacks. A hardware Randomness Dispatcher featuring 25 parallel instances of 64-bit unrolled Trivium/Bivium stream ciphers generates $1600\text{ bits/cycle}$ of fresh randomness.
+
+---
+
+## SECTION V: SWARM INTELLIGENCE, ROUTING, & MOSAIC WARFARE OPERATIONS
+
+### 5.1 Mosaic Warfare Functional Abstraction
+
+Following Qi et al., the UAV swarm ($N_{swarm} = 24\text{ to }140\text{ nodes}$) dynamically instantiates functional "mosaic" roles across the 6G NTN overlay:
+
+* **Reconnaissance Nodes ($N_{rec}$):** Equipped with optical/infrared sensors and sub-THz radars; execute search and target identification.
+* **Interference/EW Nodes ($N_{int}$):** Generate active directional jamming to suppress adversary air-defense sensors.
+* **Integrated Rec-Attack Nodes ($N_{ira}$):** Carry modular munitions and real-time processing cores for high-value targets.
+* **Cooperative Control Nodes ($N_{cc}$):** Act as local swarm commanders/relays interfacing with gNB/satellite segments.
+
+
+* **Attack Nodes ($N_{att}$):** Precision strike units guided by real-time visual and sub-THz tracking from $N_{rec}$ nodes.
+
+
+
+Target clustering is performed via multi-agent $K$-means clustering, while real-time task allocation uses Distributed Model Predictive Control (DMPC) combined with Differential Evolution.
+
+### 5.2 Routing Protocol Mechanics: DORA vs. ZRP vs. DSRP
+
+Under high mobility ($120\text{ m/s}$), network topologies experience rapid link breaks. The **Dynamic Optimal Random Access (DORA)** protocol is integrated for high-density V2N/UAV access.
+
+```
+  DORA Operation Flow:
+  +-------------------------------+
+  |  1. Collect System Parameters  |
+  +---------------+---------------+
+                  |
+                  v
+  +---------------+---------------+
+  |  2. Set Boundary (t = T)      |
+  +---------------+---------------+
+                  |
+                  v
+  +---------------+---------------+
+  |  3. While (t > 1):            |
+  |     - Fetch data (p from s)   |
+  |     - Send request to AP      |
+  |     - Update s := s + sigma   |
+  |     - Decrement t := t - 1    |
+  +---------------+---------------+
+                  |
+                  v
+  +---------------+---------------+
+  |  4. Transmit Full Payloads    |
+  +---------------+---------------+
+                  |
+                  v
+  +---------------+---------------+
+  |  5. Increment Slot (t := t+1) |
+  +-------------------------------+
+
+```
+
+* **DORA:** Uses a two-stage sequential decision process (Planning and Transmission). In the planning phase, entering vehicles/UAVs announce parameters to the Access Point/gNB. In the transmission phase, slot allocation follows a dynamic optimal policy minimizing collision probability without requiring heavy routing table exchanges.
+
+
+* **ZRP (Zone Routing Protocol):** Hybrid scheme combining proactive Intra-zone Routing Protocol (IARP) within radius $R_{zone}$ and reactive Inter-zone Routing Protocol (IERP) outside. Highly sensitive to $R_{zone}$ tuning; rapidly degrades under $120\text{ m/s}$ mobility due to border-node flooding.
+
+
+* **DSRP (Dynamic Source Routing Protocol):** Purely reactive scheme appending full route paths to packet headers. High mobility causes extreme header overhead and route discovery storms, leading to low PDR.
+
+
+
+---
+
+## SECTION VI: FORMAL SECURITY PROOFS & VERIFICATION FRAMEWORKS
+
+### 6.1 SVO-PFS Formal Logic Proof for X-Wing Hybrid KEM
+
+We extend Syverson-Van Oorschot (SVO) logic to prove Perfect Forward Secrecy (PFS) for the X-Wing Hybrid scheme.
+
+**Axioms for Post-Quantum Hybrid Exchanging:**
+
+* **SVO-PQ1 (Hybrid Combination):** $\frac{P \equiv K_1 \wedge P \equiv K_2}{P \equiv \text{HKDF}(K_1 \parallel K_2)}$
+* **SVO-PQ2 (Ephemeral Freshness):** $\frac{P \equiv \#(r_{ecc}) \vee P \equiv \#(r_{pq})}{P \equiv \#(\text{HKDF}(S_{ecdh} \parallel S_{kyber}))}$
+* **SVO-PFS (Forward Secrecy):** $\frac{P \equiv \#(K_{final}) \wedge \text{Compromised}(sk_{identity})}{P \not\equiv K_{final} \text{ (Adversary cannot derive } K_{final} \text{)}}$
+
+**Proof Derivation:**
+
+1. Drone ($D$) generates ephemeral $r_{ecc}$ and $r_{pq}$. Thus, $D \equiv \#(r_{ecc})$ and $D \equiv \#(r_{pq})$.
+
+
+2. By SVO-PQ2, $D \equiv \#(K_{final})$ and $gNB \equiv \#(K_{final})$.
+
+
+3. Assume an adversary $\mathcal{A}$ compromises long-term static keys $sk_{D, static}$ and $sk_{gNB, static}$ at time $t_{future} > t_{session}$.
+4. $S_{ecdh} = \text{X25519}(sk_{ecc}, pk_{server\_ecc})$ relies solely on ephemeral keys. $\mathcal{A}$ cannot compute $S_{ecdh}$ without solving the CDH problem over Curve25519.
+5. $S_{kyber} = \text{Decaps}(sk_{pq}, C_{pq})$ relies solely on ephemeral $sk_{pq}$. $\mathcal{A}$ cannot compute $S_{kyber}$ without solving the MLWE problem for ML-KEM-1024.
+
+
+6. By SVO-PQ1 and SVO-PFS, $\mathcal{A} \not\equiv K_{final}$. The protocol satisfies Perfect Forward Secrecy ($\blacksquare$).
+
+
+
+### 6.2 BAN Logic Formal Verification for MORNeS & Server-Aided Authentication
+
+Using BAN Logic postulates:
+
+* **Message Meaning:** $\frac{P \equiv P \stackrel{K}{\leftrightarrow} Q, \quad P \triangleleft \{X\}_K}{P \equiv Q \sim X}$
+* **Nonce Verification:** $\frac{P \equiv \#(X), \quad P \equiv Q \sim X}{P \equiv Q \equiv X}$
+* **Jurisdiction:** $\frac{P \equiv Q \Rightarrow X, \quad P \equiv Q \equiv X}{P \equiv X}$
+
+We prove that in Server-Aided Verification (IBS-SAV) and MORNeS, adding explicit directional tags $T_{dir} \in \{\text{Req}, \text{Resp}\}$ and nonce translation prevents reflection attacks.
+
+**Reflection Attack Defeat Proof:**
+In standard MORNeS, adversary $\mathcal{I}$ reflects $A$'s challenge $\{N_A, \text{ID}_A, \text{ID}_B\}_{K_{AM}}$ back to $A$. Under our modified schema, messages are tagged as:
+
+$$M_1 = \{\text{TAG}_{A\to B}, N_A, \text{ID}_A, \text{ID}_B\}_{K_{AM}}$$
+
+When $\mathcal{I}$ reflects $M_1$ to $A$, $A$ attempts to parse $\text{TAG}_{B\to A}$. Since $\text{TAG}_{A\to B} \neq \text{TAG}_{B\to A}$, $A$ rejects the message immediately at the BAN Message-Meaning phase, preventing challenge reflection ($\blacksquare$).
+
+### 6.3 EUF-CMA Game-Hopping Proof for EMULSION
+
+We construct a sequence of games $\text{Game}_0, \text{Game}_1, \text{Game}_2, \text{Game}_3$ to prove unforgeability for EMULSION SIB broadcasts:
+
+* **$\text{Game}_0$:** Original EMULSION protocol execution with MAYO signatures.
+* **$\text{Game}_1$:** Challenger aborts if a collision occurs on the HMAC-SHA-256 key chain. Adv Difference: $\le \frac{q_{hash}^2}{2^{256}}$.
+* **$\text{Game}_2$:** Challenger replaces the TESLA-style HMAC verification with a random oracle. Adv Difference: Negligible under PRF security of HMAC-SHA-256.
+* **$\text{Game}_3$:** Adversary attempts to forge the anchoring MAYO signature on the epoch header. Adv Difference: Bounded by $\text{Adv}_{\text{MAYO}}^{\text{EUF-CMA}}(t)$.
+
+$$\text{Adv}_{\text{EMULSION}}^{\text{EUF-CMA}}(\mathcal{A}) \le \frac{q_{hash}^2}{2^{256}} + \text{Adv}_{\text{HMAC}}^{\text{PRF}}(\mathcal{A}) + \text{Adv}_{\text{MAYO}}^{\text{EUF-CMA}}(\mathcal{A})$$
+
+Since MAYO is secure under the hardness of solving multivariate quadratic equations ($MQ$ problem), $\text{Adv}_{\text{EMULSION}}^{\text{EUF-CMA}}(\mathcal{A})$ is negligible ($\blacksquare$).
+
+---
+
+## SECTION VII: ALGORITHMIC SUITE & COMPLEXITY SPECIFICATIONS
+
+```
+  +-----------------------------------------------------------------------------------------------+
+  | Algorithm 1: X-Wing Hybrid KEM RRC Setup Handshake                                            |
+  | Time Complexity: O(n log n + log p)  | Space Complexity: O(k^2)                               |
+  +-----------------------------------------------------------------------------------------------+
+  | Algorithm 2: Hardware-Accelerated Masked ML-KEM-1024 Processing                               |
+  | Time Complexity: O(n log n)          | Space Complexity: O(n)                                 |
+  +-----------------------------------------------------------------------------------------------+
+  | Algorithm 3: DORA Protocol for High-Mobility UAV Swarms                                       |
+  | Time Complexity: O(T * N_active)     | Space Complexity: O(N_active)                          |
+  +-----------------------------------------------------------------------------------------------+
+  | Algorithm 4: MGS-MRPMC Signal Detection for Massive MIMO                                      |
+  | Time Complexity: O(K * N_iter * M^2) | Space Complexity: O(K * M)                            |
+  +-----------------------------------------------------------------------------------------------+
+  | Algorithm 5: Autonomous Mosaic Swarm Reconnaissance & Attack Allocation                       |
+  | Time Complexity: O(I_dmpc * N_att^2) | Space Complexity: O(N_target + N_swarm)               |
+  +-----------------------------------------------------------------------------------------------+
+
+```
+
+### Algorithm 1: X-Wing Hybrid KEM RRC Setup Handshake
+
+* **Input:** Client Drone $D$, 6G Base Station $gNB$, System Parameters.
+* **Output:** Established $K_{final}$, AES-256-GCM Secure Channel.
+
+```python
+def xwing_rrc_setup_handshake(drone_id, gnb_id):
+    # Step 1: Drone Key Generation
+    sk_ecc_d, pk_ecc_d = x25519_keygen()
+    sk_pq_d, pk_pq_d = ml_kem_1024_keygen()
+    
+    # Step 2: RRC Setup Request (Uplink)
+    rrc_request = serialize(pk_ecc_d, pk_pq_d, drone_id)
+    send_over_thz_channel(rrc_request, gnb_id)
+    
+    # Step 3: gNB Processing
+    sk_ecc_g, pk_ecc_g = x25519_keygen()
+    s_ecdh_g = x25519_shared(sk_ecc_g, pk_ecc_d)
+    c_pq, s_kyber_g = ml_kem_1024_encaps(pk_pq_d)
+    k_final_g = hkdf_sha256(s_ecdh_g + s_kyber_g)
+    
+    # Step 4: RRC Setup Response (Downlink)
+    rrc_response = serialize(c_pq, pk_ecc_g, gnb_id)
+    send_over_thz_channel(rrc_response, drone_id)
+    
+    # Step 5: Drone Session Key Derivation
+    s_kyber_d = ml_kem_1024_decaps(sk_pq_d, c_pq)
+    s_ecdh_d = x25519_shared(sk_ecc_d, pk_ecc_g)
+    k_final_d = hkdf_sha256(s_ecdh_d + s_kyber_d)
+    
+    assert k_final_d == k_final_g
+    return k_final_d
+
+```
+
+* **Complexity:** Time: $\mathcal{O}(n \log n + \log p)$. Space: $\mathcal{O}(k^2)$ bytes memory overhead ($k=4$).
+
+
+
+---
+
+### Algorithm 2: Hardware-Accelerated Masked ML-KEM-1024 Processing
+
+* **Input:** Polynomials $f, g \in R_q$, Masking Randomness Seed $R_{seed}$, $q=3329$.
+* **Output:** Product Polynomial $h = f \cdot g \pmod{x^{256}+1}$.
+
+```python
+def hardware_accelerated_masked_poly_mult(f, g, r_seed):
+    # Step 1: Randomness Generation via Unrolled Trivium (1600 bits/cycle)
+    fresh_rand = trivium_dispatcher_generate(r_seed, bits=1600)
+    
+    # Step 2: DOM Masking - Split into Shares
+    f_sh0, f_sh1 = dom_mask_split(f, fresh_rand[0:800])
+    g_sh0, g_sh1 = dom_mask_split(g, fresh_rand[800:1600])
+    
+    # Step 3: Interleaved Folding NTT (2 Processing Elements: Even/Odd)
+    f_ntt_even = r2mdc_ntt_fold(f_sh0[0::2], f_sh1[0::2], mode='DIT')
+    f_ntt_odd  = r2mdc_ntt_fold(f_sh0[1::2], f_sh1[1::2], mode='DIT')
+    
+    g_ntt_even = r2mdc_ntt_fold(g_sh0[0::2], g_sh1[0::2], mode='DIT')
+    g_ntt_odd  = r2mdc_ntt_fold(g_sh0[1::2], g_sh1[1::2], mode='DIT')
+    
+    # Step 4: Pointwise Multiplication with KRED Reduction
+    h_ntt_even = kred_pwm(f_ntt_even, g_ntt_even, q=3329)
+    h_ntt_odd  = kred_pwm(f_ntt_odd,  g_ntt_odd,  q=3329)
+    
+    # Step 5: Inverse NTT without n^-1 Scaling
+    h_sh0 = r2mdc_intt_fold(h_ntt_even, mode='DIF')
+    h_sh1 = r2mdc_intt_fold(h_ntt_odd,  mode='DIF')
+    
+    # Step 6: Unmasking and Overwrite Sanitization
+    h = dom_unmask_combine(h_sh0, h_sh1)
+    sanitize_sram_bank(f_sh0, f_sh1, g_sh0, g_sh1)
+    return h
+
+```
+
+* **Complexity:** Time: $\mathcal{O}(n \log n)$ across 128 clock cycles. Space: $\mathcal{O}(n)$ in partitioned SRAM (7.37 kB total).
+
+
+
+---
+
+### Algorithm 3: DORA (Dynamic Optimal Random Access) Protocol for High-Mobility UAV Swarms
+
+* **Input:** Swarm Density $N_{active}$, Time Boundary $T_{max}$, Traffic Load $\sigma$.
+* **Output:** Allocated Access Slots, Minimized Collision PDR.
+
+```python
+def dora_protocol_access_schedule(uav_list, t_max, sigma):
+    access_schedule = {}
+    for uav in uav_list:
+        t = t_max
+        s = 0
+        # Phase 1: Planning Phase
+        while t > 1:
+            p_request = uav.get_traffic_state(s)
+            uav.send_ap_request(p_request)
+            s = s + sigma
+            t = t - 1
+            
+        # Phase 2: Transmission Phase
+        optimal_slot = compute_optimal_policy(uav.id, s, t_max)
+        access_schedule[uav.id] = optimal_slot
+        
+    return access_schedule
+
+```
+
+* **Complexity:** Time: $\mathcal{O}(T_{max} \cdot N_{active})$. Space: $\mathcal{O}(N_{active})$.
+
+
+
+---
+
+### Algorithm 4: MGS-MRPMC Signal Detection for Massive MIMO
+
+* **Input:** Received Vector $y \in \mathbb{R}^{2N_r}$, Channel Matrix $H \in \mathbb{R}^{2N_r \times 2N_t}$, Parallel Chains $K$.
+* **Output:** Detected Transmit Symbol Vector $\hat{x}_{opt}$.
+
+```python
+def mgs_mrPMC_signal_detection(y, H, QAM_order, N_t):
+    K = math.floor(QAM_order * math.sqrt(N_t))
+    chains = generate_uncorrelated_markov_chains(K, threshold_T=4)
+    candidate_solutions = []
+    
+    # Parallel Markov Chain Execution
+    for k in range(K):
+        x_k = initialize_random_vector(N_t)
+        stalling_count = 0
+        while stalling_count < max_stalling_limit:
+            for symbol_idx in chains[k]:
+                # Probabilistic Choice: Gibbs Sampling vs Uniform Random
+                if random.uniform(0, 1) < q_mix:
+                    x_k[symbol_idx] = sample_uniform(QAM_order)
+                else:
+                    x_k[symbol_idx] = sample_gibbs_conditional(y, H, x_k, symbol_idx)
+            stalling_count += 1
+        candidate_solutions.append((compute_ml_cost(y, H, x_k), x_k))
+        
+    # Select Candidate with Minimum ML Cost
+    best_cost, hat_x_opt = min(candidate_solutions, key=lambda item: item[0])
+    return hat_x_opt
+
+```
+
+* **Complexity:** Time: $\mathcal{O}(K \cdot N_{iter} \cdot M^2)$ where $M = 2N_t$. Space: $\mathcal{O}(K \cdot M)$.
+
+
+
+---
+
+### Algorithm 5: Autonomous Mosaic Swarm Reconnaissance & Attack Allocation
+
+* **Input:** Targets List $T_{targets}$, Swarm UAVs $U_{swarm}$, Mission Constraints.
+* **Output:** Optimal Target-to-Node Allocation Matrix $\mathbf{A}_{alloc}$.
+
+```python
+def mosaic_swarm_allocation(targets_list, swarm_uavs):
+    # Step 1: K-means Clustering to Eliminate Duplicate Detections
+    unique_targets = kmeans_clustering_fusion(targets_list)
+    
+    # Step 2: Dynamic Role Classification (Mosaic Components)
+    rec_nodes = [u for u in swarm_uavs if u.type == 'RECON']
+    att_nodes = [u for u in swarm_uavs if u.type == 'ATTACK']
+    
+    allocation_matrix = {}
+    
+    # Step 3: Distributed Model Predictive Control (DMPC) + Differential Evolution
+    for target in unique_targets:
+        assigned_rec = dmpc_select_closest_recon(target, rec_nodes)
+        assigned_att = differential_evolution_match(target, att_nodes, min_units=2)
+        
+        # Enforce Visual Guidance Pairings
+        allocation_matrix[target.id] = {
+            'guidance_recon': assigned_rec,
+            'primary_attack': assigned_att[0],
+            'secondary_attack': assigned_att[1]
+        }
+        
+    return allocation_matrix
+
+```
+
+* **Complexity:** Time: $\mathcal{O}(I_{dmpc} \cdot N_{attack}^2 + N_{targets} \log N_{targets})$. Space: $\mathcal{O}(N_{targets} + N_{swarm})$.
+
+
+
+---
+
+## SECTION VIII: COMPREHENSIVE ABLATION STUDY & COMPARATIVE MATRIX
+
+### 8.1 System Component Ablation Matrix
+
+To validate each architectural component, evaluate the full Kyber-6G platform against 8 specific ablation configurations in NS-3:
+
+| Scenario ID | Architectural Configuration Removed | Impact on Latency ($\text{ms}$) | Impact on PDR ($140\text{ GHz}$) | Vulnerability / Security Failure Mode |
+| --- | --- | --- | --- | --- |
+| **Full System** | None (Complete Kyber-6G Engine) | **$0.82\text{ ms}$** | **$99.98\%$** | Provably EUF-CMA and SVO-PFS Secure
+
+ |
+| **Ablation A1** | Remove CSIDH-512 MAC CE Bypass | $3.85\text{ ms}$ ($\uparrow 369\%$) | $94.20\%$ | RRC Handshake Delay Violation under URLLC
+
+ |
+| **Ablation A2** | Remove X-Wing Hybrid (Pure ML-KEM) | $0.61\text{ ms}$ ($\downarrow 25\%$) | $99.99\%$ | Vulnerable to pre-quantum algorithm failure
+
+ |
+| **Ablation A3** | Remove M/G/1 Tracker (Use M/M/1) | $0.82\text{ ms}$ (Est Error) | $82.10\%$ | TCP RTO Cascade under-prediction
+
+ |
+| **Ablation A4** | Replace DORA with ZRP Routing | $2.15\text{ ms}$ ($\uparrow 162\%$) | $76.40\%$ | Border-node flooding congestion
+
+ |
+| **Ablation A5** | Replace DORA with DSRP Routing | $4.10\text{ ms}$ ($\uparrow 400\%$) | $61.20\%$ | Severe Packet Header Overhead & Link Breaks
+
+ |
+| **Ablation A6** | Remove Masked SHA-3 (Unmasked Core) | $0.45\text{ ms}$ ($\downarrow 45\%$) | $99.98\%$ | Vulnerable to Deep Learning Power Attacks
+
+ |
+| **Ablation A7** | Remove CV-QKD FSO Link | $0.80\text{ ms}$ | $99.98\%$ | Physical-layer eavesdropping without trace
+
+ |
+| **Ablation A8** | Remove EMULSION MAYO Anchoring | $0.85\text{ ms}$ | $91.50\%$ | SIB Broadcast Forgery & Poisoning Attacks
+
+ |
+
+### 8.2 Baseline Comparison Matrix (Elsevier/IEEE Benchmarks)
+
+| Feature / Metric | Standard 5G-AKA
+
+ | MORNeS Protocol
+
+ | IBS-SAV Scheme
+
+ | D2D 5G-AKA (Relay)
+
+ | **Kyber-6G (Proposed)**<br> |
+| --- | --- | --- | --- | --- | --- |
+| **Quantum Resistance** | No (Breakable by Shor's) | No (Breakable by Shor's) | No (Breakable by Shor's) | No (Breakable by Shor's) | **Yes (Level 5 PQC)**<br> |
+| **Perfect Forward Secrecy** | No
+
+ | Partial
+
+ | No
+
+ | Yes
+
+ | **Yes (SVO-PFS Proven)**<br> |
+| **Reflection Attack Proof** | No | Vulnerable
+
+ | Yes
+
+ | Yes
+
+ | **Yes (Explicit Nonce Tags)**<br> |
+| **Anonymity Resistance** | Vulnerable
+
+ | Yes
+
+ | Yes
+
+ | Yes
+
+ | **Yes (SUCI/X-Wing Pseudonyms)**<br> |
+| **Queueing Modeling** | M/M/1 (Inaccurate) | None | None | None | **M/G/1 Pollaczek-Khinchine**<br> |
+| **140 GHz THz Channel** | No | No | No | No | **Yes (Gilbert-Elliott Markov)**<br> |
+| **Access Protocol** | Standard RACH | None | None | Standard D2D | **DORA Protocol**<br> |
+| **Hardware Optimization** | None | None | Server-Aided Only
+
+ | None | **Interleaved Folding + DOM**<br> |
+
+---
+
+## SECTION IX: NS-3 SIMULATION ARCHITECTURE & RERUN PIPELINE
+
+### 9.1 Simulation Execution Pipeline
+
+Execute the full rerun pipeline using the following command sequence:
+
+```bash
+# Step 1: Build Upgraded C++ Architecture in NS-3
+cd ns-3-dev/
+./ns3 configure --enable-examples --enable-tests --build-profile=optimized
+./ns3 build
+
+# Step 2: Execute Experiment Matrix Script
+cd ..
+bash run_experiments.sh --config=experiments/config.yaml --threads=16
+
+# Step 3: Aggregate Simulation Traces
+python3 scripts/aggregate_results.py --input-dir=ns-3-dev/trace_outputs/ --output=data/aggregated_metrics.csv
+
+# Step 4: Run Monte Carlo Physics & Channel Verifications
+python3 scripts/monte_carlo_mac_serialization.py
+python3 scripts/monte_carlo_gilbert_elliott.py
+python3 scripts/monte_carlo_cvqkd_keyrate.py
+
+# Step 5: Generate Publication-Ready Figures
+python3 scripts/build_results_and_plots.py --data=data/aggregated_metrics.csv --outdir=paper_figures/
+
+```
+
+### 9.2 Python Script Specifications for Figure Generation
+
+#### 1. Serialization Delay Plotter (`monte_carlo_mac_serialization.py`)
+
+Must plot Serialization Delay ($\mu\text{s}$) vs. Transport Block Size (TBS) across numerologies $\mu \in \{3, 4, 5\}$ ($\tau_{tti} = 125\text{ }\mu\text{s}, 62.5\text{ }\mu\text{s}, 31.25\text{ }\mu\text{s}$) comparing classical 64-byte payloads against ML-KEM-1024 (1568 bytes) and ML-DSA-87 (4595 bytes).
+
+#### 2. Gilbert-Elliott Channel PDR Collapse (`monte_carlo_gilbert_elliott.py`)
+
+Must simulate 100,000 Markov channel realizations at $120\text{ m/s}$ UAV speed. Plot PDR vs. Frame Fragmentation Count ($N_{frag} \in [1, 16]$) and highlight the TCP RTO cascade threshold where un-recovered packet loss exceeds $10^{-5}$.
+
+#### 3. CV-QKD Holevo Key Rate (`monte_carlo_cvqkd_keyrate.py`)
+
+Must plot Secret Key Rate (bits/pulse) vs. Inter-UAV FSO Distance ($0.1\text{ to }5\text{ km}$) under varying refractive index structure parameters $C_n^2 \in \{10^{-15}, 10^{-14}, 10^{-13}\}\text{ m}^{-2/3}$ with and without photon catalysis.
+
+#### 4. DORA vs. ZRP/DSRP PDR Comparison (`plot_routing_comparison.py`)
+
+Must generate a grouped bar chart displaying Mean PDR ($\%$) and Mean Loss ($\pm 1\text{ SD}$) across vehicle/UAV density $[20, 40, 60, 80, 100\text{ nodes/km}^2]$, showing DORA achieving $>95\%$ PDR while ZRP and DSRP collapse below $75\%$.
+
+---
+
+## SECTION X: DISCUSSIONS, LIMITATIONS, AND FUTURE DIRECTIONS
+
+### 10.1 Identified System Bottlenecks
+
+1. **TCP Head-of-Line (HoL) Blocking:** While hardware acceleration reduces ML-KEM decapsulation to $<50\text{ }\mu\text{s}$, frame fragmentation over sub-THz channels with $T_c = 17.8\text{ }\mu\text{s}$ causes burst losses. A single lost fragment stalls the TCP sliding window, triggering HoL blocking and RTO cascades.
+
+
+2. **Dynamic Beam Tracking Overhead:** Maintaining narrow sub-THz pencil beams between UAVs moving at $120\text{ m/s}$ requires continuous beam alignment signaling, consuming up to $14\%$ of available MAC frame capacity.
+
+
+3. **Masking Randomness Overhead:** Implementing first-order DOM masking on SHA-3/Keccak cores requires $1600\text{ bits/cycle}$ of fresh randomness. The Randomness Dispatcher (Trivium/Bivium ciphers) increases total hardware ASIC area by $300\%\text{--}500\%$, posing resource challenges for micro-UAV payloads.
+
+
+
+### 10.2 Future Architectural Extensions
+
+To overcome these limitations in Phase 3 of the project:
+
+* **Stochastic Network Calculus (SNC):** Replace deterministic queueing bounds with SNC to establish probabilistic latency-violation bounds under heavy THz fading.
+* **Application-Layer Application of Rateless Raptor Codes:** Implement fountain coding over fragmented PQC handshakes, allowing UAVs to recover key material from any arbitrary set of received symbols, eliminating TCP retransmissions and resolving HoL blocking completely.
+
+
+
+---
+
+## SECTION XI: MANUSCRIPT DRAFTING DIRECTIVE
+
+Compile the generated simulation data, mathematical proofs, and literature comparison into a complete, publication-ready research paper formatted according to Elsevier / IEEE guidelines. Ensure the manuscript includes:
+
+1. **Title & Abstract:** Emphasize 140 GHz THz constraints, URLLC bounds, X-Wing hybrid KEM, M/G/1 queueing, and DORA protocol performance.
+2. **Introduction & Literature Review:** Integrate citations `[122]` through `[146]` smoothly, contrasting classical 5G-AKA shortcomings against the proposed quantum-safe NTN framework.
+3. **System Model & Mathematical Formulations:** Present all equations for THz Beer-Lambert path loss, Gilbert-Elliott Markov chains, M/G/1 Pollaczek-Khinchine delay, and Holevo bounds using LaTeX (`$$...$$` and `$....$`) with zero internal margin spacing.
+4. **Hardware & Cryptographic Architecture:** Detail the DOM Keccak core, KRED reduction, interleaved folding, and X-Wing handshake.
+5. **Formal Security Analysis:** Detail the SVO-PFS logic proof, BAN logic reflection attack prevention proof, and EMULSION EUF-CMA game-hopping reduction.
+6. **Results & Ablation Studies:** Present the full ablation matrix (Scenarios A1–A8), routing comparison (DORA vs. ZRP vs. DSRP), and baseline performance comparisons supported by embedded vector figures.
+7. **Discussions & Limitations:** Provide a critical analysis of HoL blocking, beam tracking overhead, and randomness generation costs, concluding with Rateless Raptor Code solutions.
+
+**EXECUTION MANDATE:** Execute the research pipeline, rerun the simulations, generate all mathematical proofs and plots, and compile the full comprehensive manuscript text immediately.

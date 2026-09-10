@@ -197,6 +197,8 @@ main(int argc, char* argv[])
     double edgeBackhaulMs = 2.0;
     bool nlosEnabled = false;
     std::string hardwareProfile = "jetson-nano";
+    double lossRate = 0.0;
+    std::string band = "5g-3.5ghz";
 
     CommandLine cmd;
     cmd.AddValue("scenario", "Scenario: baseline, dense-urban, high-speed, quantum-attack, dense-urban-nlos", scenario);
@@ -214,6 +216,8 @@ main(int argc, char* argv[])
     cmd.AddValue("edgeBackhaulMs", "MEC backhaul latency ms", edgeBackhaulMs);
     cmd.AddValue("nlosEnabled", "Enable NLOS shadowing", nlosEnabled);
     cmd.AddValue("hardwareProfile", "Hardware profile name", hardwareProfile);
+    cmd.AddValue("lossRate", "Packet loss rate [0.0-1.0]", lossRate);
+    cmd.AddValue("band", "Frequency band: 5g-3.5ghz or 6g-140ghz", band);
     cmd.Parse(argc, argv);
 
     // Quantum attack scenario forces PQC + attacker
@@ -253,6 +257,13 @@ main(int argc, char* argv[])
     NS_LOG_UNCOND("  Sim time:     " << simTime << " s");
     NS_LOG_UNCOND("");
 
+    // ── Monte Carlo loop ──
+    for (uint32_t run = 0; run < numRuns; ++run)
+    {
+    RngSeedManager::SetSeed(seed + run);
+    RngSeedManager::SetRun(run + 1);
+    NS_LOG_UNCOND("Run " << (run + 1) << "/" << numRuns << " seed=" << (seed + run));
+
     // ── Create the scenario ──
     PqcScenarioHelper scenarioHelper;
     PqcScenarioConfig scfg;
@@ -260,6 +271,7 @@ main(int argc, char* argv[])
     scfg.nlosEnabled = nlosEnabled || (scenario == "dense-urban-nlos");
     scfg.urbanCanyon = (scenario == "dense-urban-nlos");
     scfg.speed = speed;
+    scfg.lossRate = lossRate;
     scenarioHelper.SetConfig(scfg);
 
     PqcScenarioHelper::ScenarioResult scenarioResult;
@@ -275,6 +287,10 @@ main(int argc, char* argv[])
     else if (scenario == "high-speed")
     {
         scenarioResult = scenarioHelper.CreateHighSpeedMobilityScenario(5, 10, speed);
+    }
+    else if (band == "6g-140ghz" || band == "6g")
+    {
+        scenarioResult = scenarioHelper.CreateSixGBandScenario(numUesPerGnb);
     }
     else
     {
@@ -355,7 +371,13 @@ main(int argc, char* argv[])
         // Export CSV
         if (outputCsv)
         {
-            pqcHelper.GetMetricsCollector()->ExportToCsv(csvPrefix + ".csv");
+            std::string csvName = csvPrefix;
+            if (numRuns > 1)
+            {
+                csvName += "_run" + std::to_string(run);
+            }
+            csvName += ".csv";
+            pqcHelper.GetMetricsCollector()->ExportToCsv(csvName);
         }
     }
 
@@ -367,11 +389,11 @@ main(int argc, char* argv[])
         pqcHelper.RunQuantumAttack();
     }
 
-    Simulator::Destroy();
-
     NS_LOG_UNCOND("");
     NS_LOG_UNCOND("═══ SIMULATION FINISHED ═══");
     NS_LOG_UNCOND("");
+
+    } // End Monte Carlo loop
 
     return 0;
 }

@@ -18,12 +18,14 @@ export default function ScrollReveal({ children, className = '', delay = 0, styl
             }
         )
 
-        if (ref.current) {
-            observer.observe(ref.current)
+        const element = ref.current
+
+        if (element) {
+            observer.observe(element)
         }
 
         return () => {
-            if (ref.current) observer.unobserve(ref.current)
+            if (element) observer.unobserve(element)
         }
     }, [])
 

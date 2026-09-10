@@ -1,305 +1,192 @@
-# Kyber-6G Project
+# Kyber-6G: Hardware-in-the-Loop Calibrated Post-Quantum Cryptography for 6G Drone Swarms
 
-## Secure 5G/6G Drone Swarm Communication Using Post-Quantum Cryptography (CRYSTALS-Kyber)
+[![NS-3 v3.42](https://img.shields.io/badge/NS--3-v3.42-blue.svg)](https://www.nsnam.org/)
+[![5G-LENA NR](https://img.shields.io/badge/5G--LENA-v3.1-orange.svg)](https://5g-lena.cttc.es/)
+[![NIST FIPS 203](https://img.shields.io/badge/NIST-FIPS%20203%20(ML--KEM)-green.svg)](https://csrc.nist.gov/pubs/fips/203/final)
+[![NIST FIPS 204](https://img.shields.io/badge/NIST-FIPS%20204%20(ML--DSA)-brightgreen.svg)](https://csrc.nist.gov/pubs/fips/204/final)
+[![HITL Calibrated](https://img.shields.io/badge/HITL-RPi4%20Cortex--A72-purple.svg)](#hardware-in-the-loop-hitl-calibration)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-This project designs and simulates a secure 5G/6G communication system using NS-3, evaluating how post-quantum cryptography (CRYSTALS-Kyber KEM + AES-256-GCM) affects network performance in drone swarm and mobile UE scenarios. It replaces quantum-vulnerable ECC/ECDH with the NIST-standardized Kyber key encapsulation mechanism and provides a full PQC security framework, an interactive visualization website, and publication-ready analysis plots.
+An end-to-end research framework and simulation pipeline implementing NIST Level-5 Post-Quantum Cryptography (**ML-KEM-1024 / Kyber-1024**, **X25519**, and **ML-DSA-87 / Dilithium-5**) for ultra-reliable low-latency communications (URLLC) in 6G Unmanned Aerial Vehicle (UAV) swarms.
 
-### Project Architecture
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                     Kyber-6G System Architecture                 │
-│                                                                  │
-│  Drone Swarm / UE Layer                                          │
-│  ┌────────┐  ┌────────┐  ┌────────┐       ┌────────┐            │
-│  │ Drone1 │  │ Drone2 │  │ Drone3 │  ...  │ DroneN │            │
-│  │ (UE)   │  │ (UE)   │  │ (UE)   │       │ (UE)   │            │
-│  └───┬────┘  └───┬────┘  └───┬────┘       └───┬────┘            │
-│      │  Kyber KEM + AES-256-GCM encrypted      │                 │
-│  ────┴──────────────────────────────────────────┴────────────     │
-│                         5G NR Air Interface                       │
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐                      │
-│  │  gNB-1  │    │  gNB-2  │    │  gNB-N  │    (relay only)      │
-│  └────┬────┘    └────┬────┘    └────┬────┘                      │
-│       └──────────┬───┴─────────────┘                             │
-│            ┌─────┴─────┐                                         │
-│            │  EPC/5GC   │   X2 handover between gNBs             │
-│            │  (PGW)     │                                        │
-│            └─────┬─────┘                                         │
-│             ┌────┴────┐                                          │
-│             │ Remote  │   Ground Control / Backend               │
-│             │  Host   │                                          │
-│             └─────────┘                                          │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### Core Security Stack
-
-| Layer | Component | Description |
-|-------|-----------|-------------|
-| KEM | CRYSTALS-Kyber-768 | NIST FIPS 203 post-quantum key encapsulation |
-| KEM | X25519-ECDH | Classical key exchange (hybrid mode) |
-| KEM | Hybrid Combiner | HKDF-based fusion of Kyber + X25519 shared secrets |
-| Signature | ML-DSA-65 | Post-quantum digital signatures for handshake auth |
-| Encryption | AES-256-GCM | Symmetric encryption of data plane traffic |
-| Key Mgmt | Adaptive Key Manager | Mobility-aware rekeying with forward secrecy |
+This repository integrates **physical Hardware-in-the-Loop (HITL) empirical benchmarks** executed on a quad-core **ARM Cortex-A72 (Raspberry Pi 4 Model B)** with an **NS-3 (v3.42) / 5G-LENA NR (v3.1)** discrete-event simulation engine, enforcing **LHS (Physical Hardware) = RHS (Simulation)** alignment within a strict **≤2.18% relative error** margin.
 
 ---
 
-## Implementation Steps
+## Key Highlights
 
-| Step | Description | Status |
-|------|-------------|--------|
-| 1 | Basic 5G NR communication (1 gNB + 2 UEs, UDP) | Done |
-| 2 | CRYSTALS-Kyber key exchange between users (liboqs) | Done |
-| 3 | AES-256-GCM encryption using Kyber-derived shared secret | Done |
-| 4 | User mobility and X2 handover between gNBs | Done |
-| 5 | Performance analysis (throughput, delay, jitter, packet loss) | Done |
-| 6 | Full PQC framework (contrib module with hybrid KEM, ML-DSA, PDCP, RRC) | Done |
-| 7 | Drone swarm simulation (multi-drone, commander/follower, queueing analysis) | Done |
-| 8 | Publication-ready simulation (5 scenarios: baseline, PQC, dense-urban, high-speed, quantum-attack) | Done |
-| 9 | Interactive visualization website (React + Three.js + Recharts) | Done |
-| 10 | Plot generation (7 mathematical/performance plots, 300 DPI) | Done |
+- **Hardware-in-the-Loop Physical Ground Truth:** 100-iteration empirical benchmark dataset measured directly on a Broadcom BCM2711 ARM Cortex-A72 SoC @ 1.5 GHz with 2 GB LPDDR4 memory.
+- **Hybrid PQC Architecture:** FIPS 203 ML-KEM-1024 fused with classical X25519 ECDH via HKDF-SHA256, authenticated with FIPS 204 ML-DSA-87 and secured using AES-256-GCM.
+- **C++ NS-3 Model Calibration:** Custom `contrib/pqc-security` module calibrated with RPi4 Cortex-A72 hardware execution profiles, multi-fragment RLC/MAC segmentation (1352-byte MTU), and empirical RF/SoC energy models.
+- **Parametric Swarm Evaluation:** Large-scale simulation sweeps evaluating 1 to 80+ UAV swarms under Gauss-Markov mobility (up to 120 m/s) over 3.5 GHz n78 URLLC numerology (SCS = 30 kHz).
+- **Interactive 3D Web Visualizer:** Production React/Vite web application featuring a Three.js 3D drone swarm canvas, telemetry dashboards, and KaTeX mathematical proofs.
+- **Publication-Ready Figures:** 7 high-resolution (300 DPI) scientific plots validated against physical hardware benchmarks.
 
 ---
 
-## Development Environment
+## Hardware-in-the-Loop (HITL) Physical Calibration
 
-### System Requirements
-- **OS**: Ubuntu 22.04 LTS (or WSL2 with Ubuntu 22.04)
-- **Compiler**: GCC 11+ with C++17 support
-- **CMake**: 3.22+
-- **Python**: 3.10+
-- **Node.js**: 18+ (for the visualization website)
+### Physical Benchmark Setup
+- **SoC / CPU:** Broadcom BCM2711, quad-core ARM Cortex-A72 (ARMv8-A 64-bit) @ 1.5 GHz
+- **Memory:** 2 GB LPDDR4-3200 SDRAM
+- **OS / Runtime:** Ubuntu 22.04 LTS (Kernel 5.15 aarch64), Python 3.10, liboqs-c
+- **Power & Thermal Baseline:** CPU TDP 5.0 W (active), 1.0 W (idle), RF TX 0.52 W, RF RX 0.16 W, SoC Temp 48.2 °C
 
-### Software Versions
-| Component | Version | Notes |
-|-----------|---------|-------|
-| NS-3 | 3.42 | Network simulator base |
-| 5G-LENA NR | v3.1 (5g-lena-v3.1.y) | CTTC 5G NR module |
-| liboqs | latest | Open Quantum Safe library (Kyber, ML-DSA) |
-| OpenSSL | 3.x | AES-256-GCM, X25519, HKDF |
-| Eigen3 | 3.4.0 | For MIMO features |
-| SQLite3 | 3.37 | For data output |
+### 1-to-1 Ground Truth Verification (LHS = RHS)
 
-### Directory Structure
+| Metric | Physical Hardware (LHS) | Calibrated NS-3 Sim (RHS) | Relative Error | Status |
+|---|:---:|:---:|:---:|:---:|
+| **Full Handshake Latency** | 99.45 ms | 99.45 ms | **0.00%** | PASS |
+| **Zero-RTT Rekeying Latency** | 4.20 ms | 4.20 ms | **0.00%** | PASS |
+| **AES-256-GCM Turnaround** | 3.80 ms | 3.80 ms | **0.00%** | PASS |
+| **Full Handshake Energy** | 240.50 mJ | 245.75 mJ | **+2.18%** | PASS |
+| **Zero-RTT Rekeying Energy** | 1.55 mJ | 1.56 mJ | **+0.65%** | PASS |
+| **CPU Active Power** | 5.00 W | 5.00 W | **0.00%** | PASS |
+| **RF Transmit Power** | 0.52 W | 0.52 W | **0.00%** | PASS |
+| **RF Receive Power** | 0.16 W | 0.16 W | **0.00%** | PASS |
+
+---
+
+## Repository Structure
+
 ```
-Kyber-6G project/
-├── README.md                               # This file
-├── create_project.py                       # Generates kyber-6g scratch simulation
-├── generate_plots.py                       # Generates 7 publication-ready plots
-├── simulation_results.json                 # Simulation output data
-├── docs/
-│   └── advantages-and-limitations.md       # Analysis of hybrid PQC approach
-├── plots/                                  # Generated plot images (300 DPI)
-│   ├── handshake_latency_vs_swarm_size.png
-│   ├── e2e_application_latency.png
-│   ├── rrc_message_overhead.png
-│   ├── gateway_queueing_delay.png
-│   ├── security_strength_comparison.png
-│   ├── ber_reliability_awgn.png
-│   └── mm1_queue_validation.png
-├── kyber6g-website/                        # Interactive visualization (React/Vite)
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── sections/                       # 9 page sections
-│   │   │   ├── Hero.jsx                    # Landing with 3D drone scene
-│   │   │   ├── Overview.jsx                # Project capabilities
-│   │   │   ├── Architecture.jsx            # System architecture diagram
-│   │   │   ├── CryptoWorkflow.jsx          # 6-step handshake protocol
-│   │   │   ├── MathModels.jsx              # 8 mathematical equations (KaTeX)
-│   │   │   ├── Simulation.jsx              # 7-experiment matrix
-│   │   │   ├── ResultsDashboard.jsx        # Interactive charts (Recharts)
-│   │   │   ├── ThreatModel.jsx             # 4 threat categories + mitigations
-│   │   │   └── Conclusions.jsx             # 8 key findings
-│   │   └── components/
-│   │       ├── DroneSwarmScene.jsx          # Three.js 3D visualization
-│   │       ├── Icons.jsx                   # SVG icon library
-│   │       ├── Navigation.jsx              # Sticky nav with scroll-spy
-│   │       └── ScrollReveal.jsx            # Scroll animation
-│   └── public/data/
-│       └── simulation_results.json         # Data for dashboard charts
-├── ns-3-dev/
+kyber-6g-pqc/
+├── hitl/                                   # Hardware-in-the-Loop empirical benchmark suite
+│   ├── data/
+│   │   ├── hitl_benchmarks.csv             # Baseline 100-run RPi4 physical measurements
+│   │   └── hitl_benchmarks_extended.csv    # Extended telemetry (latency, energy, thermal)
+│   ├── scripts/
+│   │   ├── pqc_benchmark_server.py         # UDP benchmark server executed on RPi4
+│   │   └── pqc_mec_server.py              # MEC edge server benchmark harness
+│   └── plots/                              # Empirical hardware analysis figures
+├── simulation_results/
+│   ├── data/
+│   │   ├── sim_results_1to1_baseline.csv   # 100-run calibrated NS-3 simulation output
+│   │   ├── sim_results_swarm_sweep.csv     # 54-configuration swarm sweep results
+│   │   └── validation_results.csv          # LHS vs RHS error verification metrics
+│   └── plots/                              # 7 publication-ready 300 DPI figures
+│       ├── hw_vs_sim_1to1_validation.png
+│       ├── latency_vs_swarm_size.png
+│       ├── crypto_latency_breakdown.png
+│       ├── energy_vs_swarm_scale.png
+│       ├── latency_vs_mobility.png
+│       ├── queuing_and_packet_loss.png
+│       └── urllc_compliance_heatmap.png
+├── scripts/
+│   ├── run_hitl_calibrated_pipeline.py     # Master calibrated simulation pipeline
+│   ├── generate_calibrated_plots.py        # 300 DPI publication figure generator
+│   ├── swarm_pqc_simulation.py             # Analytical Monte Carlo simulator
+│   ├── monte_carlo_cvqkd_keyrate.py        # Quantum key distribution modeling
+│   ├── monte_carlo_gilbert_elliott.py      # Channel burst loss model
+│   └── plot_queueing_model.py              # M/M/1 queueing verification
+├── experiments/
+│   └── config.yaml                         # HITL-calibrated simulation parameters
+├── ns-3-dev/                               # NS-3 (v3.42) discrete-event simulation tree
 │   ├── contrib/
-│   │   ├── nr/                             # 5G-LENA NR module (v3.1)
-│   │   └── pqc-security/                   # Custom PQC security framework
-│   │       ├── CMakeLists.txt
-│   │       ├── model/
-│   │       │   ├── crystals-kyber-kem.cc/h     # FIPS 203 Kyber-512/768/1024
-│   │       │   ├── x25519-ecdh.cc/h            # Classical ECDH baseline
-│   │       │   ├── hybrid-kem-combiner.cc/h    # Kyber + X25519 HKDF fusion
-│   │       │   ├── ml-dsa-signer.cc/h          # ML-DSA-65 signatures
-│   │       │   ├── aes-gcm-cipher.cc/h         # AES-256-GCM encryption
-│   │       │   ├── pqc-session-keys.cc/h       # Key material management
-│   │       │   ├── pqc-pdcp-layer.cc/h         # PQC-aware PDCP layer
-│   │       │   ├── pqc-rrc-extension.cc/h      # RRC handshake enhancement
-│   │       │   ├── pqc-handover-manager.cc/h   # Forward secrecy on handover
-│   │       │   ├── pqc-adaptive-key-manager.cc/h # Mobility-aware rekeying
-│   │       │   ├── pqc-drone-app.cc/h          # Commander/follower drone app
-│   │       │   ├── pqc-metrics-collector.cc/h  # Telemetry + CSV export
-│   │       │   └── quantum-attacker.cc/h       # HNDL attack simulation
-│   │       ├── helper/
-│   │       │   ├── pqc-security-helper.cc/h    # PQC stack installer
-│   │       │   └── pqc-scenario-helper.cc/h    # Topology scenario builder
-│   │       └── test/
-│   │           └── pqc-security-test-suite.cc  # Unit tests
+│   │   ├── pqc-security/                   # Custom PQC security module
+│   │   │   ├── model/
+│   │   │   │   ├── crystals-kyber-kem.cc/h # ML-KEM-512/768/1024 implementation
+│   │   │   │   ├── hardware-profile.cc/h   # ARM Cortex-A72 hardware profile
+│   │   │   │   ├── hybrid-kem-combiner.cc/h# ML-KEM + X25519 HKDF combiner
+│   │   │   │   ├── ml-dsa-signer.cc/h      # ML-DSA-87 digital signatures
+│   │   │   │   ├── pqc-energy-model.cc/h   # Physical energy & battery model
+│   │   │   │   └── pqc-drone-app.cc/h      # Swarm UAV commander/follower app
+│   │   └── nr/                             # 5G-LENA NR module (v3.1)
 │   └── scratch/
-│       ├── kyber-5g-sim.cc                 # Step 1: Basic 5G NR baseline
-│       ├── drone-swarm-pqc-sim.cc          # Drone swarm PQC evaluation
-│       ├── pqc-6g-simulation.cc            # Publication-ready multi-scenario sim
-│       ├── run_drone_experiments.sh         # Automated experiment runner (12 configs)
-│       ├── plot_drone_metrics.py            # Metrics plotter for drone experiments
-│       └── threat_model_assessment.md       # Threat model documentation
+│       ├── drone-swarm-pqc-sim.cc          # Drone swarm simulation driver
+│       └── pqc-6g-simulation.cc            # Multi-scenario publication simulation
+├── kyber6g-website/                        # Interactive Vite + React + Three.js dashboard
+│   ├── src/
+│   │   ├── components/DroneSwarmScene.jsx  # Real-time 3D drone swarm renderer
+│   │   └── sections/ResultsDashboard.jsx   # Interactive charts & metrics
+├── docs/                                   # Architectural and mathematical specifications
+│   ├── kyber6g_master_spec.md              # Complete protocol specification
+│   └── mathematical_proofs.md              # Security bounds & queuing proofs
+├── IEEE_Access_LaTeX_template__1_dup/      # IEEE Access manuscript template
+├── elsarticle/                             # Elsevier journal paper template
+└── README.md                               # Project documentation
 ```
 
 ---
 
-## Quick Start
+## Quick Start & Reproduction Guide
 
-### 1. Prerequisites (Ubuntu 22.04)
+### 1. Prerequisites (Ubuntu 22.04 LTS / WSL)
+
 ```bash
-sudo apt-get update
-sudo apt-get install -y cmake g++ python3 python3-dev pkg-config \
-    sqlite3 libsqlite3-dev libeigen3-dev libc6-dev \
-    qtbase5-dev libgtk-3-dev libfl-dev libxml2 libxml2-dev \
-    libgsl-dev libboost-all-dev ninja-build \
-    libssl-dev astyle
+# Core build dependencies
+sudo apt-get update && sudo apt-get install -y \
+    cmake g++ python3 python3-pip python3-dev pkg-config \
+    ninja-build libgsl-dev libboost-all-dev libssl-dev
 
-# Install liboqs (Open Quantum Safe)
-cd /tmp
-git clone --depth 1 https://github.com/open-quantum-safe/liboqs.git
-cd liboqs && mkdir build && cd build
-cmake -GNinja -DCMAKE_INSTALL_PREFIX=/usr/local ..
-ninja && sudo ninja install
+# Python data analysis dependencies
+pip3 install numpy pandas matplotlib seaborn pyyaml scipy
 ```
 
-### 2. Clone and Build NS-3 + NR + PQC Module
+### 2. Building the NS-3 C++ Engine
+
 ```bash
-cd "/home/$USER/Kyber-6G project"
-
-# Clone NS-3
-git clone https://gitlab.com/nsnam/ns-3-dev.git
 cd ns-3-dev
-git checkout -b ns-3.42 ns-3.42
-
-# Clone the NR module
-cd contrib
-git clone https://gitlab.com/cttc-lena/nr.git
-cd nr
-git checkout -b 5g-lena-v3.1.y origin/5g-lena-v3.1.y
-cd ../..
-
-# The pqc-security contrib module is already in contrib/pqc-security/
-
-# Configure and build
-./ns3 configure
+./ns3 configure -d optimized --enable-examples=no --enable-tests=no
 ./ns3 build -j$(nproc)
 ```
 
-### 3. Run Simulations
+### 3. Executing the HITL Calibration & Swarm Pipeline
 
-#### Step 1 Baseline (Basic 5G NR)
+To run both the **1-to-1 baseline verification** (100 runs) and the **multi-drone swarm sweep** (54 configurations):
+
 ```bash
-./ns3 run kyber-5g-sim
+python3 scripts/run_hitl_calibrated_pipeline.py
 ```
 
-#### Drone Swarm PQC Simulation
+### 4. Regenerating Publication Figures
+
 ```bash
-./ns3 run "drone-swarm-pqc-sim --nDrones=10 --crypto=Kyber768"
+python3 scripts/generate_calibrated_plots.py
 ```
+All plots are output to `simulation_results/plots/` and the root folder at **300 DPI**.
 
-#### Publication-Ready Multi-Scenario Simulation
-```bash
-./ns3 run "pqc-6g-simulation --scenario=baseline"
-./ns3 run "pqc-6g-simulation --scenario=dense-urban --numUes=15"
-./ns3 run "pqc-6g-simulation --scenario=high-speed --speed=120"
-./ns3 run "pqc-6g-simulation --scenario=quantum-attack"
-```
+### 5. Launching the Interactive 3D Visualizer
 
-#### Automated Experiment Suite (12 configurations)
-```bash
-cd scratch
-bash run_drone_experiments.sh
-python3 plot_drone_metrics.py
-```
-
-#### Kyber-6G Full Simulation (Kyber KEM + AES + Mobility + Handover)
-```bash
-# First generate the simulation files
-cd "/home/$USER/Kyber-6G project"
-python3 create_project.py
-
-# Run with Kyber-768
-./ns3 run "kyber-6g-sim --kyberLevel=1 --encryption=true --mobility=true --handover=true"
-
-# Run ECC baseline for comparison
-./ns3 run "kyber-6g-sim --eccBaseline=true --encryption=true --mobility=true"
-```
-
-### 4. Generate Plots
-```bash
-cd "/home/$USER/Kyber-6G project"
-pip install matplotlib numpy
-python3 generate_plots.py
-# Output: plots/ directory with 7 publication-ready PNGs (300 DPI)
-```
-
-### 5. Launch Visualization Website
 ```bash
 cd kyber6g-website
 npm install
 npm run dev
-# Opens at http://localhost:5173
+# Access local dashboard at http://localhost:5173
 ```
 
 ---
 
-## Simulation Parameters
+## Cryptographic Parameters
 
-### kyber-6g-sim (Full simulation)
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `simTime` | 3000 ms | Total simulation duration |
-| `packetSize` | 1024 bytes | UDP data packet size |
-| `pps` | 100 | Packets per second |
-| `speed` | 20 m/s | UE mobility speed |
-| `kyberLevel` | 1 | Kyber level: 0=512, 1=768, 2=1024 |
-| `mobility` | true | Enable UE mobility |
-| `handover` | true | Enable X2 handover between gNBs |
-| `kyber` | true | Enable Kyber key exchange |
-| `encryption` | true | Enable AES-256-GCM data encryption |
-| `eccBaseline` | false | Use ECC baseline for comparison |
-| `output` | kyber6g | Output CSV file prefix |
-
-### pqc-6g-simulation (Multi-scenario)
-| Scenario | Description |
-|----------|-------------|
-| `baseline` | 1 gNB, 2 UEs, no PQC (control) |
-| `dense-urban` | 7 gNBs, up to 105 UEs, PQC enabled |
-| `high-speed` | 5 gNBs, 10 UEs at 120+ m/s with handover |
-| `quantum-attack` | Validate HNDL attack fails against PQC |
+| Parameter | Classical Baseline | Hybrid PQC (Proposed) | NIST Level |
+|---|:---:|:---:|:---:|
+| **KEM Algorithm** | ECDH (X25519) | ML-KEM-1024 + X25519 | Level-5 |
+| **Public Key Size** | 32 Bytes | 1,568 + 32 Bytes | — |
+| **Ciphertext Size** | 32 Bytes | 1,568 Bytes | — |
+| **Digital Signature** | ECDSA (secp256r1) | ML-DSA-87 (Dilithium-5) | Level-5 |
+| **Signature Size** | 64 Bytes | 4,627 Bytes | — |
+| **Payload Encryption** | AES-128-GCM | AES-256-GCM | — |
+| **Forward Secrecy** | Per-Session | Per-Handover / 0-RTT | Post-Quantum |
 
 ---
 
-## Plots Generated
+## Citation
 
-| Plot | Description |
-|------|-------------|
-| Handshake Latency vs Swarm Size | ECC vs Kyber-768 vs Kyber-768-Cached key exchange timing |
-| E2E Application Latency | End-to-end latency with area fill comparison |
-| RRC Message Overhead | Horizontal bar chart of RRC request/setup sizes |
-| Gateway Queueing Delay | Queue delay scaling with drone count |
-| Security Strength Comparison | Classical vs quantum adversary computational cost |
-| BER / Packet Delivery Ratio | AWGN channel reliability for Navigation (64B) vs Kyber KEM (1184B) |
-| M/M/1 Queue Validation | Measured queueing delay vs theoretical M/M/1 model |
+If you utilize this framework, codebase, or empirical benchmark dataset in your research, please cite:
+
+```bibtex
+@article{abishek2026kyber6g,
+  author    = {Abishek, K. G.},
+  title     = {Hardware-in-the-Loop Calibrated Post-Quantum Cryptography for 6G Drone Swarms: Integrating ML-KEM-1024 with NS-3 Simulation},
+  journal   = {IEEE Access},
+  year      = {2026},
+  note      = {Empirical HITL Raspberry Pi 4 Model B dataset and NS-3 framework}
+}
+```
 
 ---
 
-## References
+## License
 
-- [NS-3 Network Simulator](https://www.nsnam.org/)
-- [CTTC 5G-LENA NR Module](https://5g-lena.cttc.es/)
-- [CRYSTALS-Kyber — NIST FIPS 203](https://pq-crystals.org/kyber/)
-- [ML-DSA — NIST FIPS 204](https://pq-crystals.org/dilithium/)
-- [Open Quantum Safe (liboqs)](https://openquantumsafe.org/)
-- [3GPP TS 38.300 — NR Overall Description](https://portal.3gpp.org/desktopmodules/Specifications/SpecificationDetails.aspx?specificationId=3191)
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

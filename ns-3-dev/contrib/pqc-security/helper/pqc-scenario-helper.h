@@ -38,7 +38,20 @@ enum class PqcScenarioId
     DENSE_URBAN_NLOS,
     HIGH_SPEED_HANDOVER,
     CORE_BOTTLENECK,
-    EDGE_BACKHAUL_LATENCY
+    EDGE_BACKHAUL_LATENCY,
+    BAND_6G_THZ,             ///< Projected 6G THz band analysis (140 GHz)
+    BAND_6G_THZ_BASELINE,
+    BAND_6G_XWING_HYBRID,
+    BAND_6G_DORA_ROUTING,
+    BAND_6G_MOSAIC_SWARM,
+    ABLATION_A1_NO_CSIDH,
+    ABLATION_A2_PURE_MLKEM,
+    ABLATION_A3_MM1_QUEUE,
+    ABLATION_A4_ZRP_ROUTING,
+    ABLATION_A5_DSRP_ROUTING,
+    ABLATION_A6_UNMASKED_SHA3,
+    ABLATION_A7_NO_CVQKD,
+    ABLATION_A8_NO_EMULSION
 };
 
 PqcScenarioId ParseScenarioId(const std::string& name);
@@ -57,6 +70,9 @@ struct PqcScenarioConfig
     bool enableHandover{false};
     bool coreBottleneck{false};
     double shadowingStdDb{4.0};
+    double lossRate{0.0};          ///< Packet loss rate [0.0–1.0] for lossy channel experiments
+    double frequency6gHz{140e9};   ///< 6G THz center frequency (default 140 GHz)
+    double bandwidth6gHz{400e6};   ///< 6G THz bandwidth (default 400 MHz)
 };
 
 /**
@@ -94,6 +110,15 @@ class PqcScenarioHelper
                                                      double gnbSpacing = 200.0);
 
     ScenarioResult CreateBaselineScenario(uint32_t numUes = 2);
+
+    /**
+     * \brief Create a projected 6G THz band scenario.
+     *
+     * Uses 140 GHz center frequency, 400 MHz bandwidth, Numerology 4 (240 kHz SCS).
+     * NOTE: 6G THz is beyond NS-3's validated channel models — labeled as
+     * projected analysis with extrapolated UMi-StreetCanyon model.
+     */
+    ScenarioResult CreateSixGBandScenario(uint32_t numUes = 2);
 
     ScenarioResult CreateFromScenarioId(PqcScenarioId id, uint32_t numUes);
 

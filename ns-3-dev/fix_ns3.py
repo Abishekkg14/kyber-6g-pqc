@@ -11,5 +11,5 @@ def convert_to_lf(filepath):
     except Exception as e:
         print(f"Failed to convert {filepath}: {e}")
 
-convert_to_lf('/home/abishek14/Kyber-6G project/ns-3-dev/ns3')
-convert_to_lf('/home/abishek14/Kyber-6G project/ns-3-dev/scratch/run_drone_experiments.sh')
+convert_to_lf('/home/force123/roshyy/Kyber-6G project/Kyber-6G project/ns-3-dev/ns3')
+convert_to_lf('/home/force123/roshyy/Kyber-6G project/Kyber-6G project/ns-3-dev/scratch/run_drone_experiments.sh')

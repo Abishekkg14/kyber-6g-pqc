@@ -1,0 +1,11 @@
+# Known Limitations: FDD Workaround for 6G High-Mobility Simulation
+
+**Context:** The Kyber-6G simulation relies on the 5g-lena (v3.3) module in NS-3 to model 6G THz links between UAV swarms moving at 120 m/s. The project architecture originally intended to use TDD, which is the realistic duplex mode for mmWave/THz bands where spectrum pairing is scarce.
+
+**Limitation:** The simulator uses FDD instead of TDD.
+
+**Root Cause:** The 5g-lena v3.3 fork lacks an implementation for the 3GPP Timing Advance (TA) mechanism. At 120 m/s on a 140 GHz carrier, UEs experience massive propagation delay drift. Without a TA command to advance their uplink transmission timers, UE UL symbols arrive late at the gNB, overlapping with DL symbols. This causes the NrSpectrumPhy state machine to crash with a Cannot TX while RX assertion. 
+
+**Workaround:** We explicitly configured the PHY layer to use FDD (allocating 2 separate Bandwidth Parts for DL and UL). This separates the frequencies, completely avoiding the TX/RX overlap crashes at the MAC/PHY layer.
+
+**Paper Implications:** When describing the simulation setup in publications, it must be noted that FDD was used as a simulator-level workaround to bypass TA limitations, even if TDD would be the theoretical deployment choice.

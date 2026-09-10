@@ -1,0 +1,101 @@
+# Kyber-6G experiment matrix — HITL-calibrated for Raspberry Pi 4 Model B
+# Updated: Sept 2026 — aligned with hitl_benchmarks_extended.csv ground truth
+# Hardware: BCM2711 Cortex-A72 @ 1.5 GHz, 2 GB LPDDR4-3200, ARMv8 Crypto Extensions
+defaults:
+  numRuns: 100
+  seed: 42
+  simTime: 10.0
+  hardwareProfile: rpi4-cortex-a72
+  batteryWh: 74.0
+  edgeBackhaulMs: 2.0
+  parallelHandshake: true
+  cacheTtl: 300.0
+  speed: 25.0               # Gauss-Markov UAV swarm velocity (m/s)
+  band: 5g-3.5ghz           # n78 band for HITL baseline validation
+  transportMtu: 1352         # Bytes — forces multi-fragment RLC/MAC segmentation
+
+# ── HITL Calibration Constants (from hitl_benchmarks_extended.csv) ──
+hitl_calibration:
+  full_handshake_ms: 99.45
+  zero_rtt_rekey_ms: 4.20
+  aes_gcm_turnaround_ms: 3.80
+  full_handshake_energy_mj: 240.50
+  zero_rtt_rekey_energy_mj: 1.55
+  cpu_power_w: 5.00
+  idle_power_w: 1.00
+  rf_tx_power_w: 0.52
+  rf_rx_power_w: 0.16
+  soc_temp_c: 48.20
+  parallel_formula: "T_parallel = max(T_X25519, T_MLKEM) * 1.10"
+
+# ── NIST Level-5 Sizes & MTU Fragmentation ──
+crypto_sizes:
+  ml_kem_1024:
+    public_key_bytes: 1568
+    ciphertext_bytes: 1568
+    shared_secret_bytes: 32
+  ml_dsa_87:
+    public_key_bytes: 2592
+    signature_bytes: 4627
+  x25519:
+    public_key_bytes: 32
+
+crypto_modes:
+  - ecc
+  - kyber
+  - kyber_cached
+  - hybrid
+
+kyber_levels:
+  - 512
+  - 768
+  - 1024
+
+# ── Swarm Sweep Sizes (HITL-calibrated pipeline) ──
+swarm_sizes:
+  - 1
+  - 10
+  - 20
+  - 30
+  - 40
+  - 50
+  - 60
+  - 70
+  - 80
+
+# 5G NR numerology (n78 band, SCS=30 kHz for URLLC)
+numerologies:
+  - mu: 1
+    scs_khz: 30
+    tti_us: 500
+
+# Channel parameters for 3.5 GHz n78
+channel:
+  carrier_freq_ghz: 3.5
+  velocity_ms: 25
+  base_bler: 0.001
+
+scenarios:
+  # ── HITL Validation Scenarios ──
+  - hitl-1to1-baseline          # Single UE, mirror RPi4 physical benchmark
+  - hitl-swarm-sweep            # Multi-drone parametric sweep
+  # ── Original scenarios ──
+  - baseline-ecc
+  - kyber768
+  - kyber768-cached
+  - hybrid-kyber768-x25519
+  - hybrid-kyber768-x25519-cached
+  - dense-urban-nlos
+  - high-speed-handover
+  - quantum-attack
+
+# URLLC threshold
+urllc:
+  deadline_ms: 10.0
+
+# Smoke subset (fast validation)
+smoke:
+  numRuns: 3
+  crypto_modes: [ecc, hybrid]
+  swarm_sizes: [1, 10]
+  band: 5g-3.5ghz

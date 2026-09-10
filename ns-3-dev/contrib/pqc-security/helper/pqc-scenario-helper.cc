@@ -60,6 +60,32 @@ ParseScenarioId(const std::string& name)
         return PqcScenarioId::CORE_BOTTLENECK;
     if (lower == "edge-backhaul-latency")
         return PqcScenarioId::EDGE_BACKHAUL_LATENCY;
+    if (lower == "band-6g-thz" || lower == "6g-140ghz" || lower == "6g")
+        return PqcScenarioId::BAND_6G_THZ;
+    if (lower == "6g-140ghz-baseline")
+        return PqcScenarioId::BAND_6G_THZ_BASELINE;
+    if (lower == "6g-xwing-hybrid")
+        return PqcScenarioId::BAND_6G_XWING_HYBRID;
+    if (lower == "6g-dora-routing")
+        return PqcScenarioId::BAND_6G_DORA_ROUTING;
+    if (lower == "6g-mosaic-swarm")
+        return PqcScenarioId::BAND_6G_MOSAIC_SWARM;
+    if (lower == "ablation-a1-no-csidh-bypass")
+        return PqcScenarioId::ABLATION_A1_NO_CSIDH;
+    if (lower == "ablation-a2-pure-mlkem")
+        return PqcScenarioId::ABLATION_A2_PURE_MLKEM;
+    if (lower == "ablation-a3-mm1-queue")
+        return PqcScenarioId::ABLATION_A3_MM1_QUEUE;
+    if (lower == "ablation-a4-zrp-routing")
+        return PqcScenarioId::ABLATION_A4_ZRP_ROUTING;
+    if (lower == "ablation-a5-dsrp-routing")
+        return PqcScenarioId::ABLATION_A5_DSRP_ROUTING;
+    if (lower == "ablation-a6-unmasked-sha3")
+        return PqcScenarioId::ABLATION_A6_UNMASKED_SHA3;
+    if (lower == "ablation-a7-no-cvqkd")
+        return PqcScenarioId::ABLATION_A7_NO_CVQKD;
+    if (lower == "ablation-a8-no-emulsion")
+        return PqcScenarioId::ABLATION_A8_NO_EMULSION;
     return PqcScenarioId::HYBRID_KYBER768_X25519;
 }
 
@@ -92,6 +118,32 @@ ScenarioIdToString(PqcScenarioId id)
         return "core-bottleneck";
     case PqcScenarioId::EDGE_BACKHAUL_LATENCY:
         return "edge-backhaul-latency";
+    case PqcScenarioId::BAND_6G_THZ:
+        return "band-6g-thz";
+    case PqcScenarioId::BAND_6G_THZ_BASELINE:
+        return "6g-140ghz-baseline";
+    case PqcScenarioId::BAND_6G_XWING_HYBRID:
+        return "6g-xwing-hybrid";
+    case PqcScenarioId::BAND_6G_DORA_ROUTING:
+        return "6g-dora-routing";
+    case PqcScenarioId::BAND_6G_MOSAIC_SWARM:
+        return "6g-mosaic-swarm";
+    case PqcScenarioId::ABLATION_A1_NO_CSIDH:
+        return "ablation-a1-no-csidh-bypass";
+    case PqcScenarioId::ABLATION_A2_PURE_MLKEM:
+        return "ablation-a2-pure-mlkem";
+    case PqcScenarioId::ABLATION_A3_MM1_QUEUE:
+        return "ablation-a3-mm1-queue";
+    case PqcScenarioId::ABLATION_A4_ZRP_ROUTING:
+        return "ablation-a4-zrp-routing";
+    case PqcScenarioId::ABLATION_A5_DSRP_ROUTING:
+        return "ablation-a5-dsrp-routing";
+    case PqcScenarioId::ABLATION_A6_UNMASKED_SHA3:
+        return "ablation-a6-unmasked-sha3";
+    case PqcScenarioId::ABLATION_A7_NO_CVQKD:
+        return "ablation-a7-no-cvqkd";
+    case PqcScenarioId::ABLATION_A8_NO_EMULSION:
+        return "ablation-a8-no-emulsion";
     }
     return "hybrid-kyber768-x25519";
 }
@@ -134,6 +186,8 @@ PqcScenarioHelper::CreateFromScenarioId(PqcScenarioId id, uint32_t numUes)
         return CreateDenseUrbanScenario((numUes + 6) / 7);
     case PqcScenarioId::EDGE_BACKHAUL_LATENCY:
         return CreateDenseUrbanScenario((numUes + 6) / 7);
+    case PqcScenarioId::BAND_6G_THZ:
+        return CreateSixGBandScenario(numUes);
     case PqcScenarioId::BASELINE_ECC:
     default:
         if (numUes > 20)
@@ -187,6 +241,14 @@ PqcScenarioHelper::SetupNrStack(NodeContainer& gnbNodes,
                                                     bandwidth,
                                                     1,
                                                     BandwidthPartInfo::UMi_StreetCanyon);
+                                                    
+    // [ARCHITECTURAL PIVOT TO FDD]
+    // 5G-LENA (v3.3) lacks a Timing Advance implementation. Without TA, TDD slot
+    // boundaries cannot absorb the propagation delay drift of 120 m/s UEs on THz bands,
+    // leading to severe "Cannot TX while RX" PHY crashes under dense load.
+    // We strictly use FDD (2 BWPs) as a simulator-level workaround for all scenarios.
+    bandConf.m_numBwp = 2;
+    
     OperationBandInfo band = ccBwpCreator.CreateOperationBandContiguousCc(bandConf);
 
     Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod", TimeValue(MilliSeconds(0)));
@@ -251,13 +313,27 @@ PqcScenarioHelper::SetupNrStack(NodeContainer& gnbNodes,
     randomStream += result.nrHelper->AssignStreams(result.gnbDevices, randomStream);
     randomStream += result.nrHelper->AssignStreams(result.ueDevices, randomStream);
 
-    // Configure gNB PHY
+    // Configure gNB PHY (FDD)
     for (uint32_t i = 0; i < result.gnbDevices.GetN(); ++i)
     {
-        result.nrHelper->GetGnbPhy(result.gnbDevices.Get(i), 0)
-            ->SetAttribute("Numerology", UintegerValue(1));
-        result.nrHelper->GetGnbPhy(result.gnbDevices.Get(i), 0)
-            ->SetAttribute("TxPower", DoubleValue(35.0));
+        Ptr<NetDevice> gnb = result.gnbDevices.Get(i);
+        // DL BWP (0)
+        result.nrHelper->GetGnbPhy(gnb, 0)->SetAttribute("Numerology", UintegerValue(1));
+        result.nrHelper->GetGnbPhy(gnb, 0)->SetAttribute("TxPower", DoubleValue(35.0));
+        result.nrHelper->GetGnbPhy(gnb, 0)->SetAttribute("Pattern", StringValue("DL|DL|DL|DL|DL|DL|DL|DL|DL|DL|"));
+        // UL BWP (1)
+        result.nrHelper->GetGnbPhy(gnb, 1)->SetAttribute("Numerology", UintegerValue(1));
+        result.nrHelper->GetGnbPhy(gnb, 1)->SetAttribute("Pattern", StringValue("UL|UL|UL|UL|UL|UL|UL|UL|UL|UL|"));
+        
+        // Link the two FDD BWPs
+        result.nrHelper->GetBwpManagerGnb(gnb)->SetOutputLink(1, 0);
+    }
+    
+    // Configure UE FDD Routing
+    for (uint32_t i = 0; i < result.ueDevices.GetN(); ++i)
+    {
+        Ptr<NetDevice> ue = result.ueDevices.Get(i);
+        result.nrHelper->GetBwpManagerUe(ue)->SetOutputLink(0, 1);
     }
 
     // Finalize configs
@@ -285,7 +361,23 @@ PqcScenarioHelper::SetupNrStack(NodeContainer& gnbNodes,
     }
 
     // Attach UEs to closest gNB
-    result.nrHelper->AttachToClosestEnb(result.ueDevices, result.gnbDevices);
+    result.nrHelper->AttachToClosestGnb(result.ueDevices, result.gnbDevices);
+
+    // ── Loss injection via RateErrorModel (for lossy channel experiments) ──
+    if (m_config.lossRate > 0.0)
+    {
+        NS_LOG_INFO("Injecting packet loss rate " << m_config.lossRate
+                    << " on EPC P2P links");
+        Ptr<RateErrorModel> em = CreateObject<RateErrorModel>();
+        em->SetAttribute("ErrorRate", DoubleValue(m_config.lossRate));
+        em->SetAttribute("ErrorUnit", StringValue("ERROR_UNIT_PACKET"));
+        // Apply to PGW -> remote host direction
+        auto pgwNode = result.epcHelper->GetPgwNode();
+        for (uint32_t d = 0; d < pgwNode->GetNDevices(); ++d)
+        {
+            pgwNode->GetDevice(d)->SetAttribute("ReceiveErrorModel", PointerValue(em));
+        }
+    }
 
     return result;
 }
@@ -298,7 +390,7 @@ PqcScenarioHelper::CreateDenseUrbanScenario(uint32_t numUesPerGnb,
 {
     const uint32_t numGnbs = 7; // Hexagonal: 1 center + 6
     const double gnbHeight = 25.0;
-    const double ueHeight = 1.5;
+    // const double ueHeight = 1.5;
 
     NS_LOG_INFO("Creating Dense Urban Scenario: " << numGnbs << " gNBs, "
                 << numUesPerGnb << " UEs/cell, ISD=" << isd << "m");
@@ -437,9 +529,18 @@ PqcScenarioHelper::CreateBaselineScenario(uint32_t numUes)
     gnbMobility.SetPositionAllocator(gnbPos);
     gnbMobility.Install(gnbNodes);
 
-    // UEs in a circle around gNB
+    // UEs: start on a circle around gNB, then move via Gauss-Markov at m_config.speed.
+    // Fixes Bug A: ConstantPositionMobilityModel silently ignored --speed.
     MobilityHelper ueMobility;
-    ueMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+    ueMobility.SetMobilityModel("ns3::GaussMarkovMobilityModel",
+        "Bounds",        BoxValue(Box(-500, 500, -500, 500, 1.5, 1.5)),
+        "TimeStep",      TimeValue(Seconds(0.5)),
+        "Alpha",         DoubleValue(0.85),
+        "MeanVelocity",  StringValue("ns3::UniformRandomVariable[Min=" +
+                             std::to_string(m_config.speed * 0.9) + "|Max=" +
+                             std::to_string(m_config.speed) + "]"),
+        "MeanDirection", StringValue("ns3::UniformRandomVariable[Min=0.0|Max=6.283185307]"),
+        "MeanPitch",     StringValue("ns3::UniformRandomVariable[Min=0.0|Max=0.0]"));
     Ptr<ListPositionAllocator> uePos = CreateObject<ListPositionAllocator>();
 
     for (uint32_t i = 0; i < numUes; ++i)
@@ -453,6 +554,76 @@ PqcScenarioHelper::CreateBaselineScenario(uint32_t numUes)
     ueMobility.Install(ueNodes);
 
     return SetupNrStack(gnbNodes, ueNodes, 3.5e9, 20e6);
+}
+
+PqcScenarioHelper::ScenarioResult
+PqcScenarioHelper::CreateSixGBandScenario(uint32_t numUes)
+{
+    // PROJECTED ANALYSIS: 6G THz band parameters.
+    // 140 GHz center frequency, 400 MHz bandwidth
+    // Uses UMi-StreetCanyon as closest available model (extrapolated; not validated at THz).
+    // Numerology 4 = 240 kHz SCS is set on gNB PHY below.
+    double frequency = m_config.frequency6gHz;   // default 140e9
+    double bandwidth = m_config.bandwidth6gHz;   // default 400e6
+
+    NS_LOG_INFO("Creating Projected 6G THz Band Scenario: "
+                << numUes << " UEs, freq=" << frequency / 1e9 << " GHz, BW="
+                << bandwidth / 1e6 << " MHz  [PROJECTED — not validated at THz]");
+
+    NodeContainer gnbNodes;
+    gnbNodes.Create(1);
+
+    NodeContainer ueNodes;
+    ueNodes.Create(numUes);
+
+    // gNB at center
+    MobilityHelper gnbMobility;
+    gnbMobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+    Ptr<ListPositionAllocator> gnbPos = CreateObject<ListPositionAllocator>();
+    gnbPos->Add(Vector(0.0, 0.0, 10.0));
+    gnbMobility.SetPositionAllocator(gnbPos);
+    gnbMobility.Install(gnbNodes);
+
+    // UEs: start on a tight circle (THz short range), then move via Gauss-Markov at m_config.speed.
+    // Fixes Bug A: ConstantPositionMobilityModel silently ignored --speed.
+    // Bounds capped at 500m: UAV swarm stays within gNB coverage during simTime.
+    MobilityHelper ueMobility;
+    ueMobility.SetMobilityModel("ns3::GaussMarkovMobilityModel",
+        "Bounds",        BoxValue(Box(-500, 500, -500, 500, 1.5, 1.5)),
+        "TimeStep",      TimeValue(Seconds(0.5)),
+        "Alpha",         DoubleValue(0.85),
+        "MeanVelocity",  StringValue("ns3::UniformRandomVariable[Min=" +
+                             std::to_string(m_config.speed * 0.9) + "|Max=" +
+                             std::to_string(m_config.speed) + "]"),
+        "MeanDirection", StringValue("ns3::UniformRandomVariable[Min=0.0|Max=6.283185307]"),
+        "MeanPitch",     StringValue("ns3::UniformRandomVariable[Min=0.0|Max=0.0]"));
+    Ptr<ListPositionAllocator> uePos = CreateObject<ListPositionAllocator>();
+    for (uint32_t i = 0; i < numUes; ++i)
+    {
+        double angle = 2.0 * M_PI * i / numUes;
+        double x = 10.0 * std::cos(angle);  // 10m radius initial position (THz short range)
+        double y = 10.0 * std::sin(angle);
+        uePos->Add(Vector(x, y, 1.5));
+    }
+    ueMobility.SetPositionAllocator(uePos);
+    ueMobility.Install(ueNodes);
+
+    // Use the standard SetupNrStack but with 6G frequency parameters.
+    // NOTE: NS-3's channel models are not validated above ~100 GHz.
+    // Numerology is set inside SetupNrStack to 1; we override to 4 after.
+    double baseFrequency = std::min(frequency, 99.9e9); // Bypass 3GPP assert for >100GHz
+    auto result = SetupNrStack(gnbNodes, ueNodes, baseFrequency, bandwidth);
+
+    // Override Numerology to 4 (240 kHz SCS) for 6G sub-THz
+    for (uint32_t i = 0; i < result.gnbDevices.GetN(); ++i)
+    {
+        result.nrHelper->GetGnbPhy(result.gnbDevices.Get(i), 0)
+            ->SetAttribute("Numerology", UintegerValue(4));
+        result.nrHelper->GetGnbPhy(result.gnbDevices.Get(i), 1)
+            ->SetAttribute("Numerology", UintegerValue(4));
+    }
+
+    return result;
 }
 
 } // namespace pqc

@@ -21,6 +21,7 @@
 #include "ns3/pqc-security-helper.h"
 #include "ns3/pqc-session-keys.h"
 #include "ns3/x25519-ecdh.h"
+#include "ns3/pqc-scenario-helper.h"
 
 #include "ns3/enum.h"
 #include "ns3/log.h"
@@ -476,6 +477,95 @@ class ParallelVsSequentialTimingTestCase : public TestCase
 };
 
 // ════════════════════════════════════════════════════════
+// Test 17: Fragmentation Estimate
+// ════════════════════════════════════════════════════════
+class FragmentationEstimateTestCase : public TestCase
+{
+  public:
+    FragmentationEstimateTestCase()
+        : TestCase("Verify fragmentation estimate logic")
+    {
+    }
+
+    void DoRun() override
+    {
+        uint32_t ipMtu = 1500;
+        
+        // Kyber-512 sizes
+        uint32_t kyber512Req = 32 + 800; // ECDH + Kyber PK
+        uint32_t kyber512Setup = 32 + 768; // ECDH PK + Kyber CT
+        
+        uint32_t kyber512ReqFrags = (kyber512Req + ipMtu - 1) / ipMtu;
+        uint32_t kyber512SetupFrags = (kyber512Setup + ipMtu - 1) / ipMtu;
+        NS_TEST_ASSERT_MSG_EQ(kyber512ReqFrags + kyber512SetupFrags, 2u, "Kyber-512 should fit in 2 packets");
+        
+        // Kyber-1024 sizes
+        uint32_t kyber1024Req = 32 + 1568; 
+        uint32_t kyber1024Setup = 32 + 1568; 
+        
+        uint32_t kyber1024ReqFrags = (kyber1024Req + ipMtu - 1) / ipMtu;
+        uint32_t kyber1024SetupFrags = (kyber1024Setup + ipMtu - 1) / ipMtu;
+        NS_TEST_ASSERT_MSG_EQ(kyber1024ReqFrags + kyber1024SetupFrags, 4u, "Kyber-1024 should require 4 packets");
+    }
+};
+
+// ════════════════════════════════════════════════════════
+// Test 18: Timing Breakdown
+// ════════════════════════════════════════════════════════
+class TimingBreakdownTestCase : public TestCase
+{
+  public:
+    TimingBreakdownTestCase()
+        : TestCase("Verify crypto and network timing breakdown")
+    {
+    }
+
+    void DoRun() override
+    {
+        auto collector = CreateObject<PqcMetricsCollector>();
+        collector->RecordCryptoTimeUs(500.0);
+        collector->RecordNetworkTimeUs(2000.0);
+        
+        auto cStat = collector->GetStats("crypto_time_us");
+        auto nStat = collector->GetStats("network_time_us");
+        
+        NS_TEST_ASSERT_MSG_EQ(cStat.count, 1u, "Crypto time recorded");
+        NS_TEST_ASSERT_MSG_EQ(cStat.mean, 500.0, "Crypto time value");
+        NS_TEST_ASSERT_MSG_EQ(nStat.count, 1u, "Network time recorded");
+        NS_TEST_ASSERT_MSG_EQ(nStat.mean, 2000.0, "Network time value");
+        
+        Simulator::Destroy();
+    }
+};
+
+// ════════════════════════════════════════════════════════
+// Test 19: 6G Scenario
+// ════════════════════════════════════════════════════════
+class SixGScenarioTestCase : public TestCase
+{
+  public:
+    SixGScenarioTestCase()
+        : TestCase("Verify 6G THz scenario creation")
+    {
+    }
+
+    void DoRun() override
+    {
+        PqcScenarioHelper helper;
+        PqcScenarioConfig config;
+        config.frequency6gHz = 140e9;
+        helper.SetConfig(config);
+        
+        auto res = helper.CreateSixGBandScenario(2);
+        
+        NS_TEST_ASSERT_MSG_EQ(res.numGnbs, 1u, "1 gNB");
+        NS_TEST_ASSERT_MSG_EQ(res.numUes, 2u, "2 UEs");
+        
+        Simulator::Destroy();
+    }
+};
+
+// ════════════════════════════════════════════════════════
 // Test Suite Registration
 // ════════════════════════════════════════════════════════
 class PqcSecurityTestSuite : public TestSuite
@@ -500,6 +590,9 @@ class PqcSecurityTestSuite : public TestSuite
         AddTestCase(new ConfidenceIntervalTestCase, TestCase::Duration::QUICK);
         AddTestCase(new HardwareProfileScalingTestCase, TestCase::Duration::QUICK);
         AddTestCase(new ParallelVsSequentialTimingTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new FragmentationEstimateTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new TimingBreakdownTestCase, TestCase::Duration::QUICK);
+        AddTestCase(new SixGScenarioTestCase, TestCase::Duration::QUICK);
     }
 };
 

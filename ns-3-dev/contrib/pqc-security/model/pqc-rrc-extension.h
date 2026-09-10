@@ -8,9 +8,12 @@
 
 #include "hybrid-kem-combiner.h"
 #include "hardware-profile.h"
+#include "mg1-queue-tracker.h"
 #include "ml-dsa-signer.h"
 #include "pqc-pdcp-layer.h"
 #include "pqc-session-keys.h"
+#include "thz-gilbert-elliott-channel.h"
+#include "raptor-fountain-coder.h"
 
 #include "ns3/object.h"
 #include "ns3/traced-callback.h"
@@ -69,6 +72,37 @@ class PqcRrcExtension : public Object
     void SetMlDsaLevel(MlDsaSigner::Level level);
     void SetHardwareProfile(const HardwareProfile& profile);
     void SetParallelHandshake(bool parallel);
+
+    /**
+     * \brief Set the 5G NR numerology index (mu = 0..5).
+     *
+     * Determines slot duration T_slot = 1ms / 2^mu and TBS scaling.
+     * mu=3 (120 kHz SCS), mu=4 (240 kHz), mu=5 (480 kHz) are typical for FR2/THz.
+     */
+    void SetNumerology(uint8_t mu);
+
+    /**
+     * \brief Enable CSIDH-512 MAC CE bypass.
+     *
+     * When enabled, public keys are embedded as 64-byte MAC Control Elements
+     * instead of RRC IEs, eliminating fragmentation (tau_frag = 0).
+     */
+    void SetCsidhMacCeBypass(bool enabled);
+
+    /**
+     * \brief Attach a Gilbert-Elliott channel model for fragmentation analysis.
+     */
+    void SetGilbertElliottChannel(Ptr<ThzGilbertElliottChannel> channel);
+
+    /**
+     * \brief Attach an M/G/1 queue tracker for service time recording.
+     */
+    void SetQueueTracker(Ptr<Mg1QueueTracker> tracker);
+
+    /**
+     * \brief Enable Application-Layer Rateless Raptor Fountain Coding.
+     */
+    void SetUseRaptor(bool enabled);
 
     // ═══════════════════════════════════════════════════
     // UE-side methods (initiator)
@@ -135,6 +169,8 @@ class PqcRrcExtension : public Object
     TracedCallback<Time> m_handshakeLatencyTrace;     // Total handshake time
     TracedCallback<Time> m_processingTimeTrace;       // Crypto processing only
     TracedCallback<bool> m_authResultTrace;           // ML-DSA verification result
+    TracedCallback<Time> m_serializationDelayTrace;   // TTI serialization delay
+    TracedCallback<uint32_t> m_fragmentCountTrace;    // Fragment count per message
 
   private:
     Role m_role;
@@ -153,6 +189,37 @@ class PqcRrcExtension : public Object
 
     CryptoMode m_cryptoMode;
     bool m_enableAuth; // Whether ML-DSA authentication is enabled
+
+    bool m_useRaptor{false};              ///< Whether to use Raptor fountain coding
+    Ptr<RaptorFountainCoder> m_coder;     ///< Application-layer fountain coder
+
+    // ── TTI serialization and fragmentation ──
+    uint8_t m_numerology{3};              ///< NR numerology index (default mu=3)
+    bool m_csidhMacCeBypass{false};       ///< Use 64-byte CSIDH MAC CE instead of RRC IE
+    Ptr<ThzGilbertElliottChannel> m_geChannel; ///< Gilbert-Elliott channel model
+    Ptr<Mg1QueueTracker> m_queueTracker;  ///< M/G/1 queue tracker
+
+    /**
+     * \brief Compute TTI serialization delay for a given payload size.
+     *
+     * tau_serial(B, mu) = ceil(B / TBS(mu)) * T_slot(mu)
+     *
+     * \param payloadBytes Total payload size in bytes
+     * \return Serialization delay as ns3::Time
+     */
+    Time ComputeSerializationDelay(uint32_t payloadBytes) const;
+
+    /**
+     * \brief Get the Transport Block Size for the current numerology.
+     * TBS values from 3GPP TS 38.214 Table 5.1.3.1-2 (MCS 27, 256QAM, 106 PRBs, 2 layers).
+     */
+    uint32_t GetTbs() const;
+
+    /**
+     * \brief Get the slot duration for the current numerology.
+     * T_slot = 1ms / 2^mu
+     */
+    Time GetSlotDuration() const;
 };
 
 } // namespace pqc

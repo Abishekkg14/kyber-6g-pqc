@@ -6,7 +6,7 @@ print("Invoking clean bash script...", flush=True)
 try:
     cmd = [
         "wsl", "-d", "Ubuntu-22.04", "--exec", "bash", "-c",
-        "export PYTHONPATH=\"\" && cd '/home/abishek14/Kyber-6G project/ns-3-dev' && bash scratch/run_drone_experiments.sh"
+        "export PYTHONPATH=\"\" && cd '/home/force123/roshyy/Kyber-6G project/Kyber-6G project/ns-3-dev' && bash scratch/run_drone_experiments.sh"
     ]
     
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)

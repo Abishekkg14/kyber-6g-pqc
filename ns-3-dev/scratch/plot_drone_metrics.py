@@ -191,12 +191,12 @@ def plot_ber_reliability(output_dir):
     # BPSK/QPSK theoretical BER: 0.5 * erfc(sqrt(Eb/N0))
     ber = 0.5 * math.erfc(np.sqrt(ebno_linear)) if isinstance(ebno_linear, float) else 0.5 * np.array([math.erfc(math.sqrt(x)) for x in ebno_linear])
     
-    # Small Packet (Navigation = 64B) vs Large Packet (Kyber Handshake = 1184B)
+    # Small Packet (Navigation = 64B) vs Large Packet (Kyber Handshake = 1568B)
     pdr_small = (1 - ber) ** (64 * 8)
-    pdr_large = (1 - ber) ** (1184 * 8)
+    pdr_large = (1 - ber) ** (1568 * 8)
     
     plt.plot(ebno_db, pdr_small, label='Navigation PDR (64B)', color='blue')
-    plt.plot(ebno_db, pdr_large, label='Kyber KEM PDR (1184B)', color='red', linestyle='--')
+    plt.plot(ebno_db, pdr_large, label='Kyber KEM PDR (1568B)', color='red', linestyle='--')
     
     plt.title('Link Reliability vs Additive Noise (AWGN Model)')
     plt.xlabel('Eb/N0 (dB)')

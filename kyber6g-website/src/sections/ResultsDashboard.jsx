@@ -25,7 +25,6 @@ const COLORS = {
 }
 
 export default function ResultsDashboard({ data }) {
-    const [activeChart, setActiveChart] = useState('latency')
     const [viewType, setViewType] = useState('all') // Added for the new UI
 
     const latencyData = useMemo(() => {
@@ -96,15 +95,7 @@ export default function ResultsDashboard({ data }) {
         return bits
     }, [])
 
-    const cryptos = useMemo(() => {
-        if (!data) return []
-        return [...new Set(data.map(d => d.crypto))]
-    }, [data])
-
     if (!data) return <div className="section"><div className="section-inner"><p>Loading results…</p></div></div>
-
-    const ecc10 = data.find(d => d.crypto === 'ECC' && d.nodes === 10)
-    const kyber10 = data.find(d => d.crypto === 'Kyber768' && d.nodes === 10)
 
     return (
         <section id="results" className="section" style={{ background: '#f8fafc' }} aria-label="Simulation Results">

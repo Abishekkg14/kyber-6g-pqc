@@ -9,7 +9,7 @@ try:
         "-d", "Ubuntu-22.04",
         "--",
         "bash", "-c",
-        "cd '/home/abishek14/Kyber-6G project/ns-3-dev' && bash scratch/run_drone_experiments.sh"
+        "cd '/home/force123/roshyy/Kyber-6G project/Kyber-6G project/ns-3-dev' && bash scratch/run_drone_experiments.sh"
     ]
     
     # Run the process and pipe output directly to stdout so we can see it live

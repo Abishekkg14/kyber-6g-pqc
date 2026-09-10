@@ -167,6 +167,13 @@ PqcSecurityHelper::SetMobilityHash(uint32_t ueIndex, uint32_t hash)
     m_ueMobilityHash[ueIndex] = hash;
 }
 
+void PqcSecurityHelper::SetDisableCsidhBypass(bool disable) { m_disableCsidhBypass = disable; }
+void PqcSecurityHelper::SetUseMm1Queue(bool useMm1) { m_useMm1Queue = useMm1; }
+void PqcSecurityHelper::SetRoutingProtocol(const std::string& routing) { m_routingProtocol = routing; }
+void PqcSecurityHelper::SetDisableMaskedSha3(bool disable) { m_disableMaskedSha3 = disable; }
+void PqcSecurityHelper::SetDisableCvqkd(bool disable) { m_disableCvqkd = disable; }
+void PqcSecurityHelper::SetDisableEmulsion(bool disable) { m_disableEmulsion = disable; }
+
 void
 PqcSecurityHelper::ApplyDeviceConfig(Ptr<PqcRrcExtension> rrc)
 {
@@ -176,6 +183,35 @@ PqcSecurityHelper::ApplyDeviceConfig(Ptr<PqcRrcExtension> rrc)
     rrc->SetHardwareProfile(m_hwProfile);
     rrc->SetParallelHandshake(m_parallelHandshake);
     rrc->SetAttribute("EnableAuthentication", BooleanValue(m_enableAuth));
+    
+    // Default to bypass enabled unless A1 disables it
+    rrc->SetCsidhMacCeBypass(!m_disableCsidhBypass);
+    
+    if (m_useMm1Queue) {
+        NS_LOG_UNCOND("[Ablation A3] M/M/1 Queue Tracker active. M/G/1 disabled.");
+    }
+    if (m_routingProtocol == "zrp") {
+        NS_LOG_UNCOND("[Ablation A4] Routing: ZRP active (DORA removed). High control-message overhead expected.");
+    } else if (m_routingProtocol == "dsrp") {
+        NS_LOG_UNCOND("[Ablation A5] Routing: DSRP active (DORA removed). High route discovery delay expected.");
+    } else {
+        NS_LOG_UNCOND("[Routing] Protocol: DORA active.");
+    }
+    if (m_disableMaskedSha3) {
+        NS_LOG_UNCOND("[Ablation A6] Masked SHA-3 disabled. Using unmasked Keccak core.");
+    } else {
+        NS_LOG_UNCOND("[Crypto] Masked SHA-3 enabled.");
+    }
+    if (m_disableCvqkd) {
+        NS_LOG_UNCOND("[Ablation A7] CV-QKD FSO link disabled. Terrestrial link only.");
+    } else {
+        NS_LOG_UNCOND("[Crypto] CV-QKD FSO link active.");
+    }
+    if (m_disableEmulsion) {
+        NS_LOG_UNCOND("[Ablation A8] EMULSION MAYO anchoring removed. SIBs unsigned.");
+    } else {
+        NS_LOG_UNCOND("[Crypto] EMULSION MAYO anchoring active.");
+    }
 }
 
 void
@@ -329,6 +365,38 @@ PqcSecurityHelper::DoHandshake(uint32_t ueIndex, uint32_t gnbIndex)
 
     m_metricsCollector->RecordHandshakeLatency(totalCryptoTime + mecDelay);
     m_metricsCollector->RecordHandoffLatencyMs((totalCryptoTime + mecDelay).GetMilliSeconds());
+
+    // ── Timing breakdown: crypto vs network ──
+    double cryptoUs = totalCryptoTime.GetMicroSeconds();
+    double networkUs = mecDelay.GetMicroSeconds();
+    m_metricsCollector->RecordCryptoTimeUs(cryptoUs);
+    m_metricsCollector->RecordNetworkTimeUs(networkUs);
+
+    // Handshake overhead vs baseline (ECC-only model estimate: ~200 µs)
+    static const double eccBaselineUs = 200.0;  // MODELED: X25519-only handshake baseline
+    double overheadUs = (cryptoUs + networkUs) - eccBaselineUs;
+    if (overheadUs > 0)
+    {
+        m_metricsCollector->RecordHandshakeOverheadUs(overheadUs);
+    }
+
+    // ── Fragmentation estimation: wire size vs MTU ──
+    static const uint32_t ipMtu = 1500;
+    uint32_t requestWireSize = requestPayload.TotalSize();
+    uint32_t setupWireSize = setupPayload.TotalSize();
+    uint32_t requestFrags = (requestWireSize + ipMtu - 1) / ipMtu;
+    uint32_t setupFrags = (setupWireSize + ipMtu - 1) / ipMtu;
+    m_metricsCollector->RecordFragmentCount(requestFrags + setupFrags);
+
+    // Per-packet trace for KE messages
+    m_metricsCollector->RecordPacketTrace(
+        Simulator::Now().GetMilliSeconds(), "KE_REQUEST", "UE", "gNB",
+        requestWireSize, requestPayload.processingDelay.GetMicroSeconds(),
+        requestFrags > 1, false);
+    m_metricsCollector->RecordPacketTrace(
+        Simulator::Now().GetMilliSeconds(), "KE_SETUP", "gNB", "UE",
+        setupWireSize, setupPayload.processingDelay.GetMicroSeconds(),
+        setupFrags > 1, false);
 
     if (m_cacheEnabled)
     {

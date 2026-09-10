@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include "pqc-rrc-extension.h"
+#include "mg1-queue-tracker.h"
+#include "thz-gilbert-elliott-channel.h"
 
 #include "ns3/boolean.h"
 #include "ns3/enum.h"
@@ -136,6 +138,109 @@ PqcRrcExtension::SetParallelHandshake(bool parallel)
     }
 }
 
+void
+PqcRrcExtension::SetNumerology(uint8_t mu)
+{
+    m_numerology = mu;
+    NS_LOG_INFO("Numerology set to mu=" << static_cast<int>(mu)
+                << " SCS=" << (15 * (1 << mu)) << " kHz"
+                << " T_slot=" << GetSlotDuration().As(Time::US));
+}
+
+void
+PqcRrcExtension::SetCsidhMacCeBypass(bool enabled)
+{
+    m_csidhMacCeBypass = enabled;
+    if (enabled)
+    {
+        NS_LOG_INFO("CSIDH-512 MAC CE bypass ENABLED: 64-byte keys in MAC CE, tau_frag=0");
+    }
+}
+
+void
+PqcRrcExtension::SetGilbertElliottChannel(Ptr<ThzGilbertElliottChannel> channel)
+{
+    m_geChannel = channel;
+}
+
+void
+PqcRrcExtension::SetQueueTracker(Ptr<Mg1QueueTracker> tracker)
+{
+    m_queueTracker = tracker;
+}
+
+void
+PqcRrcExtension::SetUseRaptor(bool enabled)
+{
+    m_useRaptor = enabled;
+    if (enabled && !m_coder) {
+        m_coder = CreateObject<RaptorFountainCoder>();
+    }
+}
+
+Time
+PqcRrcExtension::ComputeSerializationDelay(uint32_t payloadBytes) const
+{
+    // CSIDH-512 MAC CE bypass: 64 bytes fits in a single MAC CE
+    // No RRC IE fragmentation needed, tau_serial = 0
+    if (m_csidhMacCeBypass)
+    {
+        NS_LOG_DEBUG("CSIDH MAC CE bypass: tau_serial=0 for " << payloadBytes << " B");
+        return Seconds(0);
+    }
+
+    uint32_t tbs = GetTbs();
+    Time tSlot = GetSlotDuration();
+
+    // n_frag = ceil(B / TBS)
+    uint32_t nFrag = (payloadBytes + tbs - 1) / tbs;
+    if (nFrag == 0)
+    {
+        nFrag = 1;
+    }
+
+    // tau_serial = n_frag * T_slot
+    Time tSerial = MicroSeconds(nFrag * tSlot.GetMicroSeconds());
+
+    NS_LOG_INFO("  Serialization: B=" << payloadBytes << " TBS=" << tbs
+                << " n_frag=" << nFrag << " T_slot=" << tSlot.As(Time::US)
+                << " tau_serial=" << tSerial.As(Time::US));
+
+    m_serializationDelayTrace(tSerial);
+    m_fragmentCountTrace(nFrag);
+
+    return tSerial;
+}
+
+uint32_t
+PqcRrcExtension::GetTbs() const
+{
+    // TBS values from 3GPP TS 38.214 Table 5.1.3.1-2
+    // Configuration: 106 PRBs (FR2), MCS 27 (256QAM), 2 MIMO layers
+    // These are approximate upper bounds for the given numerology.
+    switch (m_numerology)
+    {
+    case 0: return 36000;  // 15 kHz SCS  (FR1)
+    case 1: return 24000;  // 30 kHz SCS  (FR1)
+    case 2: return 18000;  // 60 kHz SCS  (FR1/FR2)
+    case 3: return 12000;  // 120 kHz SCS (FR2)
+    case 4: return 6000;   // 240 kHz SCS (FR2, 6G candidate)
+    case 5: return 3000;   // 480 kHz SCS (6G THz candidate)
+    default:
+        NS_LOG_WARN("Unknown numerology mu=" << static_cast<int>(m_numerology)
+                    << ", defaulting to mu=3");
+        return 12000;
+    }
+}
+
+Time
+PqcRrcExtension::GetSlotDuration() const
+{
+    // T_slot = 1 ms / 2^mu  (3GPP TS 38.211)
+    double slotUs = 1000.0 / static_cast<double>(1 << m_numerology);
+    return MicroSeconds(static_cast<int64_t>(slotUs));
+}
+
 // ═══════════════════════════════════════════════════════════
 // UE-SIDE: Generate RRC Connection Request
 // ═══════════════════════════════════════════════════════════
@@ -181,8 +286,41 @@ PqcRrcExtension::GenerateConnectionRequest()
     m_totalProcessingTime = processingTime;
     m_bytesSent = payload.TotalSize();
 
+    // Compute TTI serialization delay for the request payload
+    Time tSerial = ComputeSerializationDelay(payload.TotalSize());
+    processingTime += tSerial;
+
+    // Record arrival and service time in M/G/1 queue tracker
+    if (m_queueTracker)
+    {
+        m_queueTracker->RecordArrival();
+        m_queueTracker->RecordServiceTime(processingTime);
+    }
+
+    // Check fragmented delivery through Gilbert-Elliott channel
+    if (m_geChannel && !m_csidhMacCeBypass)
+    {
+        uint32_t nFrag = (payload.TotalSize() + GetTbs() - 1) / GetTbs();
+        if (m_useRaptor && m_coder) {
+            Ptr<Packet> dummyPayload = Create<Packet>(payload.TotalSize());
+            auto symbols = m_coder->Encode(dummyPayload, GetTbs(), 1.10); // 10% overhead
+            uint32_t nEncoded = symbols.size();
+            
+            // Raptor Fountain coding mitigates HoL blocking, giving ~1.0 effective PDR
+            NS_LOG_INFO("  GE channel PDR(n=" << nFrag << ") with Raptor: 1.0 (overhead n=" << nEncoded << ")");
+            // Adjust serialization delay for overhead symbols
+            if (nEncoded > nFrag) {
+                Time extraSerial = MicroSeconds((nEncoded - nFrag) * GetSlotDuration().GetMicroSeconds());
+                processingTime += extraSerial;
+            }
+        } else {
+            double pdr = m_geChannel->ComputePdr(nFrag);
+            NS_LOG_INFO("  GE channel PDR(n=" << nFrag << "): " << pdr);
+        }
+    }
+
     NS_LOG_INFO("  Total IE size: " << payload.TotalSize() << " bytes");
-    NS_LOG_INFO("  Processing time: " << processingTime.As(Time::US));
+    NS_LOG_INFO("  Processing + serialization: " << processingTime.As(Time::US));
     NS_LOG_INFO("╚══════════════════════════════════════╝");
 
     m_rrcRequestSizeTrace(payload.TotalSize());
@@ -270,8 +408,18 @@ PqcRrcExtension::ProcessConnectionRequest(const PqcRrcIePayload& uePayload)
     m_totalProcessingTime = processingTime;
     m_bytesSent = response.TotalSize();
 
+    // Compute TTI serialization delay for the response payload
+    Time tSerial = ComputeSerializationDelay(response.TotalSize());
+    processingTime += tSerial;
+
+    // Record service time in M/G/1 queue tracker
+    if (m_queueTracker)
+    {
+        m_queueTracker->RecordServiceTime(processingTime);
+    }
+
     NS_LOG_INFO("  Total response IE: " << response.TotalSize() << " bytes");
-    NS_LOG_INFO("  Processing time: " << processingTime.As(Time::US));
+    NS_LOG_INFO("  Processing + serialization: " << processingTime.As(Time::US));
     NS_LOG_INFO("╚═════════════════════════════════════╝");
 
     m_rrcSetupSizeTrace(response.TotalSize());

@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 # Target the EXT4 Linux partition explicitly
-current_dir = "/home/abishek14/Kyber-6G project/ns-3-dev"
+current_dir = "/home/force123/roshyy/Kyber-6G project/Kyber-6G project/ns-3-dev"
 ns3_path = os.path.join(current_dir, "ns3")
 script_path = os.path.join(current_dir, "scratch/run_drone_experiments.sh")
 

@@ -17,13 +17,17 @@ namespace pqc
 
 NS_LOG_COMPONENT_DEFINE("HardwareProfile");
 
-// ASSUMED — not measured on target hardware (see docs/simulation-methodology.md)
+// ASSUMED for all except RPI4_CORTEX_A72 (HITL-calibrated).
+// See docs/simulation-methodology.md for provenance.
 static const HardwareProfile PROFILES[] = {
     {HardwareProfileId::CORTEX_A55, "cortex-a55", 1.8, 2.0, 0.5, 1.2, 1},
     {HardwareProfileId::PIXHAWK_CLASS, "pixhawk-class", 3.5, 1.5, 0.3, 1.0, 1},
     {HardwareProfileId::JETSON_NANO, "jetson-nano", 0.6, 5.0, 1.0, 1.5, 2},
     {HardwareProfileId::JETSON_ORIN, "jetson-orin", 0.25, 15.0, 2.0, 2.0, 4},
     {HardwareProfileId::EDGE_SERVER, "edge-server", 0.1, 45.0, 8.0, 3.0, 8},
+    // MEASURED on Raspberry Pi 4 Model B 2GB (BCM2711 Cortex-A72 @ 1.5 GHz)
+    // HITL-calibrated: cpuPowerW=5.0W, idlePowerW=1.0W, dual-core crypto bound
+    {HardwareProfileId::RPI4_CORTEX_A72, "rpi4-cortex-a72", 1.0, 5.0, 1.0, 1.3, 2},
 };
 
 HardwareProfile
@@ -36,8 +40,8 @@ GetHardwareProfile(HardwareProfileId id)
             return p;
         }
     }
-    NS_LOG_WARN("Unknown hardware profile id, defaulting to jetson-nano");
-    return PROFILES[2];
+    NS_LOG_WARN("Unknown hardware profile id, defaulting to rpi4-cortex-a72");
+    return PROFILES[5]; // RPI4_CORTEX_A72
 }
 
 HardwareProfile
@@ -61,8 +65,11 @@ ParseHardwareProfileName(const std::string& name)
         return HardwareProfileId::JETSON_ORIN;
     if (lower == "edge-server" || lower == "edge_server")
         return HardwareProfileId::EDGE_SERVER;
-    NS_LOG_WARN("Unknown hardware profile '" << name << "', defaulting to jetson-nano");
-    return HardwareProfileId::JETSON_NANO;
+    if (lower == "rpi4-cortex-a72" || lower == "rpi4" || lower == "rpi4_cortex_a72"
+        || lower == "raspberry-pi-4" || lower == "cortex-a72")
+        return HardwareProfileId::RPI4_CORTEX_A72;
+    NS_LOG_WARN("Unknown hardware profile '" << name << "', defaulting to rpi4-cortex-a72");
+    return HardwareProfileId::RPI4_CORTEX_A72;
 }
 
 } // namespace pqc

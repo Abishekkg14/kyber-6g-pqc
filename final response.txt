@@ -1,0 +1,55 @@
+📋 Comprehensive Master Prompt for Execution on Higher-Performance Machine
+Instructions for the AI Assistant on the target machine: You are tasked with running the end-to-end NS-3 simulation pipeline, aggregating the simulation metrics, regenerating all figures (including dual-tier figures), and compiling the Elsevier LaTeX paper.
+
+1. Root Directory & Environment Setup
+Replace <TARGET_PROJECT_PATH> with your project's root folder path on the new machine (e.g., C:\Users\Username\Projects\Kyber-6G project or /home/user/Kyber-6G-project).
+
+Important Path Verification Checklist:
+
+Check ns-3-dev/wsl_invoke.py and update line 9 if using WSL:
+python
+# Update distro name if needed (e.g., "Ubuntu" vs "Ubuntu-22.04")
+"-d", "Ubuntu"
+Update sync_wsl.py paths to match the new system's directory layout:
+python
+wsl_root = r"\\wsl.localhost\Ubuntu\home\<YOUR_USER>\Kyber-6G project\Kyber-6G project\ns-3-dev"
+linux_root = "/home/<YOUR_USER>/Kyber-6G project/Kyber-6G project/ns-3-dev"
+2. Prompt To Feed to Agent on the New Machine
+markdown
+You are assisting in executing the complete NS-3 simulation matrix, plot generation, and LaTeX compilation for the Kyber-6G project in Elsevier format.
+Please execute the following steps in sequence:
+### STEP 1: Execute NS-3 Simulations
+Run the paper experiment matrix from the root of the project directory. 
+On Linux / WSL:
+cd "<TARGET_PROJECT_PATH>"
+bash scripts/run_paper_experiments.sh
+Or via Python WSL wrapper on Windows:
+python ns-3-dev/wsl_invoke.py
+Note: This generates raw CSV metrics into `ns-3-dev/results/`.
+### STEP 2: Results Aggregation
+Once the simulations complete, aggregate all CSV outputs into `simulation_results.json` and generate summary stats:
+python aggregate_results.py
+### STEP 3: Plot & Figure Regeneration
+Run the main plotting suite to build all publication-quality vector figures (Figure 1 through Figure 9, and new Dual-Tier Figures 10–13):
+python build_results_and_plots.py
+python scripts/paper_analysis.py
+Verify that the output directory `paper_figures/` contains all updated `.pdf` and `.png` plots.
+### STEP 4: Elsevier LaTeX Compilation
+Compile the updated `kyber6g_elsevier.tex` paper (which has been converted to `elsarticle` class and updated with dual-tier ML-KEM-1024 parameters, X25519 standardization, and corrected table math):
+Using Tectonic (if available):
+tectonic_bin/tectonic.exe kyber6g_elsevier.tex
+Or using pdflatex:
+pdflatex kyber6g_elsevier.tex
+bibtex kyber6g_elsevier
+pdflatex kyber6g_elsevier.tex
+pdflatex kyber6g_elsevier.tex
+### STEP 5: Verification
+Confirm that:
+1. `kyber6g_elsevier.pdf` is generated cleanly without errors.
+2. All figures in `paper_figures/` render properly without missing image errors.
+3. All author order (ABISHEK K G, ROSHAN PARVEEN, RAMANA SREE K V, corresponding author: Jai Vinita L) and VIT Chennai affiliations are maintained.
+Summary of Work Prepared on Current Machine:
+Cleaned Stale Data: Removed outdated legacy figures and invalid CSVs.
+Fixed Script Logic: Fixed size/mode definitions in scripts/paper_analysis.py & build_results_and_plots.py (PK/CT sizes set to 1568B for ML-KEM-1024, standardized on X25519).
+Table 4 Math & Footnotes Fixed: Corrected parallel execution math ($\max(T_{\text{keygen,ECDH}}, T_{\text{keygen,K}}) + T_{\text{encaps}} + T_{\text{decaps}} + T_{\text{HKDF}} + 2 \times T_{\text{RTT}}$).
+Elsevier Template Formatted: Generated kyber6g_elsevier.tex adhering to elsarticle document class with updated dual-tier abstract, section structure, and corrected citations.

@@ -6,7 +6,7 @@ print("Invoking clean bash script...", flush=True)
 try:
     cmd = [
         "wsl", "-d", "Ubuntu-22.04", "--",
-        "bash", "/home/abishek14/Kyber-6G project/ns-3-dev/invoke_clean.sh"
+        "bash", "/home/force123/roshyy/Kyber-6G project/Kyber-6G project/ns-3-dev/invoke_clean.sh"
     ]
     
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)

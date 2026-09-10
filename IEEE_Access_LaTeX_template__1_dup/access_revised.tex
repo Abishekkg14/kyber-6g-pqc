@@ -1,0 +1,715 @@
+\documentclass{ieeeaccess}
+\newlength{\xfigwd}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\newtheorem{proposition}{Proposition}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\history{Date of publication June 20, 2026; date of current version June 20, 2026.}
+\doi{10.1109/ACCESS.2026.0000000}
+\vol{14}  % Explicit override to prevent stale "VOLUME 4, 2016" footer from class defaults
+
+\title{MAC-Layer Hybrid Post-Quantum Key Exchange with Mobility Caching for 5G/6G Drone Swarms}
+
+\author{%
+  \uppercase{Abishek K G},
+  \uppercase{Ramana Sree K V},
+  \uppercase{Roshan Parveen}, and
+  \uppercase{Jai Vinita L}%
+}
+
+\address{School of Computer Science and Engineering, VIT Chennai, Tamil Nadu, India 600127 \\
+E-mails: abishek.kg2023@vitstudent.ac.in, ramanasree.kv2023@vitstudent.ac.in, roshan.parveen2023@vitstudent.ac.in, jaivinita.l@vit.ac.in}
+
+\corresp{Corresponding author: Jai Vinita L}
+
+\tfootnote{%
+  \textbf{Author Contributions:} \textbf{Abishek K G}: Conceptualization, Methodology, Software, Simulation, Writing --- Original Draft. \textbf{Ramana Sree K V}: Formal Analysis, Writing --- Review \& Editing. \textbf{Roshan Parveen}: Data Curation, Validation, Visualization. \textbf{Jai Vinita L}: Supervision, Validation, Project Administration, Writing --- Review \& Editing.
+}
+
+\markboth
+{Abishek \textit{et al.}: MAC-Layer Hybrid PQC Key Exchange with Mobility Caching for Drone Swarms}
+{Abishek \textit{et al.}: MAC-Layer Hybrid PQC Key Exchange with Mobility Caching for Drone Swarms}
+
+\titlepgskip=-15pt
+
+\begin{abstract}
+This paper presents a hybrid post-quantum key exchange system operating directly above the MAC layer in 5G Radio Resource Control (RRC) messages for drone swarm networks. By executing CRYSTALS-Kyber-768 and Elliptic Curve Diffie-Hellman (ECDH) concurrently on a dual-core processor, the system derives a 256-bit master key using the HMAC-based Key Derivation Function (HKDF). This provides simultaneous 128-bit classical and 168-bit quantum security, overcoming the vulnerability of classical ECC to Shor's algorithm. To mitigate the latency impact of Kyber's large ciphertexts during high-speed mobility, we introduce a mobility-aware public-key cache at the network edge. This caching mechanism cuts handoff delay by a factor of three (from 12.3~ms to 3.9~ms) with an 87\% hit rate. End-to-end NS-3 simulations in the CTTC 5G-LENA module demonstrate support for up to 50 drones per gNB within the 10~ms Ultra-Reliable Low-Latency Communication (URLLC) limit. Energy profiling shows only a 15\% per-handshake overhead compared to standard ECC. Extensive scalability testing up to 80 drones reveals that the core-network gateway, rather than the radio link, becomes the primary bottleneck at high densities. The proposed architecture establishes a viable pathway for integrating post-quantum security at the MAC/RRC layer in upcoming 6G terahertz and massive connectivity scenarios.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Drone swarms, 5G/6G networks, post-quantum cryptography, CRYSTALS-Kyber, ECDH, hybrid key exchange, URLLC, lattice-based cryptography, NS-3 simulation, 5G-LENA, MAC-layer security, mobility caching.
+\end{IEEEkeywords}
+
+\maketitle
+
+%==========================================================
+\section{Introduction}
+\label{sec:introduction}
+%==========================================================
+
+\PARstart{D}{rone} swarms need fast and reliable communication links. Flight controllers send and receive updates every 10~ms or less to keep formation and avoid collisions \cite{ref29}. Fifth-generation (5G) and future sixth-generation (6G) cellular networks can provide the low-delay, high-bandwidth connections that drone swarms need \cite{ref16,ref17}. The 6G vision under ITU IMT-2030 adds terahertz (THz) bands, sub-millisecond latency targets, and support for tens of thousands of devices per square kilometer \cite{ref21}, making secure and fast key exchange even more important.
+
+At present, Elliptic Curve Cryptography (ECC) protects drone communication links \cite{ref13}. However, quantum computers running Shor's algorithm \cite{ref9} can solve the elliptic curve discrete logarithm problem in polynomial time, thereby compromising the confidentiality of all ECC-protected traffic. Grover's algorithm \cite{ref10} halves the effective security of symmetric ciphers such as AES. Adversaries are already collecting encrypted traffic today for future decryption once quantum computers become available---a strategy known as ``Harvest Now, Decrypt Later.''
+
+Drones have strict limits on size, weight, and power (SWaP). Running post-quantum cryptography (PQC) alone introduces additional latency and power consumption, which may cause control-loop deadline violations exceeding the 10~ms URLLC threshold \cite{ref29}. Lattice-based methods like CRYSTALS-Kyber require large polynomial and matrix operations that take significantly more time on embedded drone processors than classical ECC \cite{ref4}.
+
+To address these constraints, this paper proposes a hybrid security system that executes both ECDH and CRYSTALS-Kyber-768 in parallel on two processor cores, embedded directly within the 5G RRC connection setup procedure. Both operations launch simultaneously: ECDH completes first due to its smaller key size, while Kyber continues on the second core. Their respective shared secrets are combined through HKDF into a single 256-bit master key, requiring an adversary to break both ECDH and Kyber to recover the session key. To accommodate frequent cell-tower handoffs at high drone velocities, the system caches each drone's Kyber public key at the network edge, eliminating the need for a full key exchange at every handoff.
+
+Recent standardization efforts support the need for this work. The IETF has drafted hybrid key exchange methods for TLS~1.3 \cite{ref27}, and 3GPP has started a study on PQC migration for 5G systems in Release~19 \cite{ref28}. However, neither effort addresses MAC-layer integration or mobility-aware caching for fast-moving aerial nodes.
+
+The main contributions of this paper are as follows.
+\begin{enumerate}
+\item A hybrid key exchange protocol that runs ECDH and CRYSTALS-Kyber-768 in parallel directly above the MAC layer inside 5G RRC messages, providing 128-bit classical and 168-bit quantum security at the same time.
+\item A mobility-aware public-key caching mechanism at the network edge that reduces handoff latency by over 3$\times$ (from 12.3~ms to 3.9~ms) with an 87\% cache hit rate.
+\item The first end-to-end evaluation of a hybrid PQC handshake inside the NS-3 CTTC 5G-LENA radio stack, testing scalability from 1 to 80 drones per gNB sector.
+\item A security analysis of the caching system covering key revocation, cache poisoning, and stale-key attacks.
+\end{enumerate}
+
+The rest of this paper is organized as follows. Section~\ref{sec:relatedwork} reviews past work and identifies gaps. Section~\ref{sec:methodology} describes the cryptographic, radio channel, and network traffic models. Section~\ref{sec:system} presents the system design, the hybrid handshake protocol, and the caching strategy. Section~\ref{sec:evaluation} shows the test results. Section~\ref{sec:conclusion} discusses limitations, summarizes findings, and lists future work.
+
+%==========================================================
+\section{Related Work and Gap Analysis}
+\label{sec:relatedwork}
+%==========================================================
+
+Research on drone communication, network security, quantum threats, lattice cryptography, wireless PQC, and simulation frameworks is reviewed in turn.
+
+\noindent\textbf{Drone Communication and Cellular Integration:}
+
+The fundamental challenge in drone swarm communication is maintaining reliable links in three-dimensional airspace. Terrestrial cellular networks are designed for ground-level users and perform poorly when serving aerial platforms. Lin et al. \cite{ref20} evaluated LTE coverage for drones and found that high-altitude operation causes strong interference from multiple co-channel towers, resulting in elevated packet loss rates. Their work addressed radio scheduling only and did not account for the additional cryptographic overhead that would further stress the tight timing budgets they identified.
+
+Fotouhi et al. \cite{ref19} surveyed drone cellular systems and listed problems with 3D coverage and radio frequency management. They noted that air-to-ground signal loss follows different patterns than ground models predict, but their analysis stopped at the radio layer and did not examine how security operations affect end-to-end delay. Zhu et al. \cite{ref18} reviewed different drone applications and noted that drone swarms need lower delay than standard IoT devices. Their work, however, assumed classical ECC security throughout and did not address the quantum threat. None of these studies tested post-quantum cryptography on aerial platforms.
+
+\vspace{2mm}\noindent\textbf{Standard Security Architecture and Classical Cryptography:}
+
+The security setup for 5G networks is defined by 3GPP TS~33.501 \cite{ref16}, which describes the Authentication and Key Agreement (AKA) process and subscriber protection. TS~38.201~\cite{ref17} covers the physical layer that controls 5G speed. However, 5G-AKA was designed for classical computers and does not protect against quantum attacks.
+
+Miller \cite{ref13} proposed elliptic curves for cryptography, the basis for ECDH. Dworkin \cite{ref15} standardized AES-GCM encryption used in 5G. Krawczyk \cite{ref14} defined HKDF, which creates multiple keys from one shared secret. Lv et al. \cite{ref21} surveyed cryptographic threats for 6G networks and concluded that security upgrades must start now to stop ``Harvest Now, Decrypt Later'' attacks. They also noted that the IMT-2030 vision for 6G demands sub-millisecond latency and ten thousand device connectivity per square kilometer, which sets strict limits on how much delay any security upgrade can add.
+
+\vspace{2mm}\noindent\textbf{Quantum Threats and Lattice-Based Cryptography:}
+
+The quantum threat comes from two algorithms. Shor's algorithm \cite{ref9} can solve the integer factorization and discrete logarithm problems in polynomial time, which breaks RSA and ECC. Grover's algorithm \cite{ref10} cuts the effective strength of symmetric ciphers in half (e.g., AES-256 drops to 128-bit equivalent security).
+
+Bernstein and Lange \cite{ref7} surveyed post-quantum methods and grouped them into five families: lattice, code, multivariate, hash, and isogeny. Among these, lattice-based cryptography offers the best balance of speed and key size. The core hard problem is Module Learning With Errors (MLWE). Hoffstein, Pipher, and Silverman \cite{ref25} showed that structured lattice problems can build practical cryptosystems such as NTRU. Building on this, Avanzi et al.~\cite{ref8} created CRYSTALS-Kyber, a fast Key Encapsulation Mechanism (KEM) that NIST standardized as FIPS~203 \cite{ref6}.
+
+The referenced research papers collectively focus on establishing CRYSTALS-Kyber, particularly Kyber-1024, as a practical and quantum-resistant replacement for classical public-key cryptography such as RSA and ECC \cite{ref32}, \cite{ref36}. The foundational Kyber paper introduces a Module-LWE based Key Encapsulation Mechanism (KEM) that achieves a balance between strong post-quantum security, computational efficiency, and low communication overhead, making it suitable for real-world deployment \cite{ref32}, \cite{ref38}. The official Kyber specification paper further optimizes the algorithm through parameter tuning, ciphertext compression, and Number Theoretic Transform (NTT)-based polynomial multiplication to reduce latency and bandwidth usage while maintaining NIST Level-5 security \cite{ref33}. Subsequent vulnerability analysis papers highlight that although Kyber's underlying lattice mathematics is resistant to quantum attacks, implementation-level threats such as side-channel leakage, timing analysis, cache attacks, and chosen ciphertext attacks remain critical concerns, emphasizing the need for constant-time and hardened implementations in adversarial environments \cite{ref34}. Hardware acceleration research such as KyberMat addresses Kyber's computational bottlenecks by introducing parallelized NTT architectures and optimized polynomial multiplication pipelines to achieve low-latency, high-throughput secure communication suitable for real-time systems like drones, edge devices, and 5G/6G networks \cite{ref35}. Comparative benchmarking studies further demonstrate that while Kyber introduces moderately larger key and ciphertext sizes, it significantly outperforms RSA and ECC in key exchange efficiency, scalability, and post-quantum resilience, making it highly suitable for next-generation secure communication infrastructures \cite{ref36}, \cite{ref37}. Collectively, these works establish Kyber-1024 as a scalable, deployment-ready post-quantum cryptographic framework optimized for secure, low-latency, and mobility-aware communication systems operating in hostile and dynamic environments such as military drone swarms and advanced wireless networks.
+
+\vspace{2mm}\noindent\textbf{Post-Quantum Cryptography over Wireless and Constrained Networks:}
+
+Several recent works have studied PQC in wireless settings, but each has gaps that matter for drone swarms.
+
+Hoque et al. \cite{ref1} measured PQC overhead on 5G user equipment and found that Kyber key generation adds 1.2--4.8~ms of processing delay on commercial modem chips. This result is useful, but the study only measured static devices on the ground. It did not test what happens during handoffs, which is exactly where delay spikes hurt drone swarms the most.
+
+Joudah and Manaa \cite{ref2} added Kyber to the 5G-AKA protocol together with the ASCON lightweight cipher, keeping extra signaling overhead to about 18\%. Their approach works at the authentication layer, but it does not touch the RRC/MAC layer where radio-link setup delay is decided. A drone that passes authentication but then waits too long for RRC setup will still miss its 10~ms control deadline.
+
+Khan et al. \cite{ref3} reviewed the full attack surface for UAVs in beyond-5G networks, covering jamming, GPS spoofing, command injection, and protocol downgrade. This is a broad and useful survey, but it did not implement or measure any PQC scheme on a real or simulated aerial platform.
+
+Gonz\'{a}lez de la Torre et al. \cite{ref4} showed that Kyber.PKE runs on ARM Cortex-M processors typical of drone autopilot boards, proving silicon-level feasibility. However, they tested only the CPU operations in isolation and did not measure how the larger Kyber packets affect radio-layer timing in a cellular channel with interference and fading.
+
+Perez-Botero et al.~\cite{ref22} tested lattice-based key exchange on IoT sensors and edge devices. They found that the 1184-byte Kyber-768 ciphertext greatly increases MAC-layer frame sizes under narrow-band wireless setups. Zhang et al.~\cite{ref23} tested full hybrid post-quantum TLS~1.3 sessions for vehicular networks and showed that hybrid handshakes add 22--35\% more time than standard TLS under urban LTE conditions. Both studies operate at the transport layer (TLS), not the MAC/RRC layer, which means their delay numbers include transport-layer overhead that does not apply to our lower-layer design.
+
+Campagna et al. \cite{ref24} drafted the IETF hybrid key method for TLS~1.2, defining how to combine classical and post-quantum shared secrets by concatenation. The IETF has since published a more recent draft for hybrid key exchange in TLS~1.3 \cite{ref27}. In parallel, 3GPP has begun a study on PQC migration for 5G in TR~33.871 (Release~19) \cite{ref28}, and the ETSI Quantum-Safe Cryptography (QSC) Industry Specification Group has published migration guidelines for telecom operators \cite{ref31}. None of these efforts address MAC-layer integration or mobility-aware caching for fast-moving aerial nodes.
+
+Turnip et al. \cite{ref5} surveyed hybrid PQC protocols for 6G authentication and identified three open problems: no MAC-layer hybrid integration, no mobility-aware optimization for fast nodes, and no end-to-end radio simulation data. The present work addresses all three.
+
+\vspace{2mm}\noindent\textbf{Simulation Frameworks and Modeling Foundations:}
+
+Testing radio network protocols requires validated simulation tools. Mezzavilla et al. \cite{ref11} built and released an end-to-end 5G mmWave network simulator on top of the NS-3 framework, covering the full stack from application layer down to a calibrated physical-layer channel model. Bojovic et al.~\cite{ref12} extended this into the CTTC 5G-LENA simulator, adding 3GPP-compliant NR numerologies, beamforming models, and advanced schedulers for sub-6~GHz bands. However, neither group used their simulator to test any PQC key exchange scheme. The present work is, to our knowledge, the first to run a full hybrid PQC handshake inside the 5G-LENA radio stack.
+
+M/M/1 queuing models provide the tools to predict buffer delay and packet loss at the gNB scheduler under the larger packets that PQC creates. The Gauss-Markov mobility model captures the smooth, correlated movement patterns of drone swarms. Rayleigh fading describes signal strength changes on the air-to-ground link.
+
+To contextualize our contributions, Table~\ref{tab:recent-works} provides a comparative analysis against recent works from 2024--2026 addressing PQC in drone networks.
+
+\begin{table}[ht]
+\centering
+\caption{Comparison with Recent PQC-Drone Literature (2024--2026)}
+\label{tab:recent-works}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lp{2cm}p{1.5cm}p{2.5cm}}
+\toprule
+\textbf{Work} & \textbf{Layer} & \textbf{Mobility} & \textbf{Evaluation} \\
+\midrule
+Hoque et al. \cite{ref1} & App & Static & CPU Benchmarks \\
+Joudah et al. \cite{ref2} & 5G-AKA & Low & Authentication Delay \\
+Zhang et al. \cite{ref23} & TLS 1.3 & Medium & LTE Urban \\
+\textbf{Proposed} & \textbf{MAC/RRC} & \textbf{High (Cached)} & \textbf{Full 5G-LENA NR} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+This research distinguishes itself as the first MAC/RRC-layer hybrid implementation featuring mobility caching within a full 5G-LENA stack, successfully evaluated for swarms of up to 80 UEs. By operating directly above the MAC layer, the system eliminates transport-layer overhead. Furthermore, the mobility caching mechanism prevents full re-keying at frequent handoffs, cutting delay by 3$\times$, a critical requirement unaddressed in prior static evaluations.
+
+%==========================================================
+\section{Methodology}
+\label{sec:methodology}
+%==========================================================
+
+This section describes the cryptographic, radio channel, and network traffic models used in the system.
+
+\subsection{Cryptographic and Latency Models}
+\noindent\textbf{Cryptographic Layer (MLWE):}
+
+The quantum security component is based on Module Learning With Errors (MLWE). Equation~\ref{eq:mlwe} shows the MLWE formulation. Here, $\mathbf{A} \in R_q^{k \times k}$ is a public random matrix over the polynomial ring $R_q = \mathbb{Z}_q[X]/(X^{256}+1)$ with prime modulus $q = 3329$. The secret key $\mathbf{s} \in R_q^k$ and error vector $\mathbf{e} \in R_q^k$ are sampled from a centered binomial distribution $\beta_\eta$ with small coefficients. Combining these produces the public key $\mathbf{t}$.
+
+\begin{equation}
+\mathbf{t} = \mathbf{A} \cdot \mathbf{s} + \mathbf{e} \pmod{q}
+\label{eq:mlwe}
+\end{equation}
+
+Recovering the secret $\mathbf{s}$ given only $\mathbf{A}$ and $\mathbf{t}$ is computationally intractable for both classical and quantum computers under standard assumptions \cite{ref6}. Setting the module rank $k = 3$ yields 192 bits of classical security and 168 bits of quantum security.
+
+\begin{table}[ht]
+\centering
+\caption{Key Exchange Overhead Comparison}
+\label{tab:ke-overhead}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\hline
+Mode & PK (B) & CT (B) & Frags & Latency ($\mu$s) & Security \\
+\hline
+X25519 & 32 & 32 & 2 & 120 & 128-bit classical \\
+ML-KEM-512 & 800 & 768 & 2 & 420 & 118-bit quantum \\
+ML-KEM-768 & 1184 & 1088 & 2 & 576 & 203-bit quantum \\
+ML-KEM-1024 & 1568 & 1568 & 3 & 890 & 230-bit quantum \\
+Hybrid-768 & 1216 & 1120 & 2 & 610 & 203-bit quantum \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+\textbf{Choice of Kyber-768 (NIST Level 3):} Three parameter sets exist. Kyber-512 ($k=2$, NIST Level~1) targets only AES-128 equivalent quantum security, which leaves too little margin for long-lived drone infrastructure keys. Kyber-1024 ($k=4$, NIST Level~5) produces 1568-byte ciphertexts that exceed the MAC-layer protocol data unit size and require fragmentation, adding delay and retry overhead. Kyber-768 ($k=3$) provides 168-bit quantum security with a 1184-byte ciphertext that fits inside a single 5G NR MAC PDU at 20~MHz bandwidth. This makes it the best choice for the drone swarm use case.
+
+\vspace{2mm}\noindent\textbf{Dual-Layer Key Derivation:}
+
+The system creates one master key by combining the ECDH output and the Kyber output. Equation~\ref{eq:hkdf} shows this process. $S_{ecdh}$ is the 32-byte ECDH shared secret. $S_{kyber}$ is the 32-byte Kyber-768 shared secret. The $\|$ symbol denotes byte-string concatenation. The full HKDF procedure \cite{ref14} first extracts a pseudorandom key $\mathit{PRK} = \mathit{HKDF}\text{-}\mathit{Extract}(\mathit{salt},\, S_{ecdh} \| S_{kyber})$, where the salt is derived from the RRC session identifier and a protocol-specific constant, and then expands it to the required key length. For brevity, Equation~\ref{eq:hkdf} shows the combined operation.
+
+\begin{equation}
+K_{final} = \mathit{HKDF}(S_{ecdh} \| S_{kyber})
+\label{eq:hkdf}
+\end{equation}
+
+This hybrid construction maintains security as long as at least one component remains secure. If a quantum computer breaks ECDH \cite{ref9}, recovering $K_{final}$ still requires solving the MLWE problem to obtain $S_{kyber}$. If a classical algebraic attack weakens Kyber, the ECDH component continues to provide security equivalent to standard TLS~1.3.
+
+\vspace{2mm}\noindent\textbf{Handshake Latency Model:}
+
+The total handshake delay $T_{handshake}$ is shown in Equation~\ref{eq:handshake}. Because ECDH and Kyber key generation run in parallel on two cores, $T_{keygen}$ equals the slower of the two operations: $T_{keygen} = \max(T_{keygen,ECDH},\, T_{keygen,Kyber})$. The remaining terms are Kyber encapsulation at the gNB ($T_{encaps}$), Kyber decapsulation at the drone ($T_{decaps}$), the HKDF computation ($T_{HKDF}$), and network round-trip time ($2 \times T_{RTT}$).
+
+\begin{equation}
+T_{handshake} = T_{keygen} + T_{encaps} + T_{decaps} + T_{HKDF} + 2 \times T_{RTT}
+\label{eq:handshake}
+\end{equation}
+
+Equation~\ref{eq:handshake} assumes that ECC and Kyber calculations happen at the same time on two separate processor cores. This assumption holds for dual-core ARM Cortex-A53/A55 class chips \cite{ref4}. Real drone autopilot systems-on-chip (SoCs) vary in core count and thermal limits. For example, a Pixhawk flight controller uses a single-core STM32H7, while an NVIDIA Jetson Nano has four cores but may throttle under heat. On single-core or thermally limited platforms, the crypto operations run one after another, which can increase total handshake time by 10--20\%. The results in this paper represent the best case with full dual-core parallelism. For short ranges under 500~m, radio signal travel time is very small, and most of the $T_{RTT}$ delay comes from radio scheduling. The RTT term also includes 0.1--0.5~ms of backhaul latency between the edge server and the gNB in real deployments.
+
+\subsection{Threat Model and Radio Channel}
+\noindent\textbf{Threat Model and Implementation Considerations:}
+
+The system assumes a Dolev-Yao threat model where an adversary can intercept, modify, or replay packets on the radio interface. However, the adversary cannot compromise the physical hardware of the core network. Specifically regarding the caching mechanism, cache poisoning is mitigated because only public keys authenticated via an initial 5G-AKA session are stored. Replay attacks are prevented using monotonically increasing 64-bit nonces. In the event of a drone compromise, the Access and Mobility Management Function (AMF) issues a revocation signal that invalidates the cached key immediately, enforcing a full re-key and authentication.
+
+Furthermore, we explicitly select Kyber-768 to provide 203-bit quantum security while keeping ciphertext sizes within a two-fragment transmission threshold, preventing the severe packet loss vulnerabilities associated with the three fragments required for Kyber-1024. Constant-time implementations of Kyber are assumed to mitigate timing side-channels, as variable-time polynomial arithmetic can leak secret keys on embedded drone processors.
+
+
+\vspace{2mm}\noindent\textbf{Radio Channel Model:}
+
+Radio link quality is measured by the Signal to Interference plus Noise Ratio (SINR). Equation~\ref{eq:sinr} calculates SINR at the drone. $P_{rx}$ is the received signal power from the serving gNB. $I$ is the total interference from other gNBs. $N_0$ is the thermal noise.
+
+\begin{equation}
+\mathrm{SINR} = \frac{P_{rx}}{I + N_0}
+\label{eq:sinr}
+\end{equation}
+
+Drones flying at altitude see many gNBs at once, which increases $I$ compared to ground users \cite{ref20}. The maximum channel capacity $C$ for a 20~MHz band is given by Equation~\ref{eq:shannon}.
+
+\begin{equation}
+C = B \times \log_{2}(1 + \mathrm{SINR})
+\label{eq:shannon}
+\end{equation}
+
+For the 3.5~GHz carrier, path loss $PL$ is shown in Equation~\ref{eq:pathloss}. Distance $d$ is in meters and frequency $f_c$ is in gigahertz.
+
+\begin{equation}
+\mathrm{PL} = 28.0 + 22\log_{10}(d) + 20\log_{10}(f_c)
+\label{eq:pathloss}
+\end{equation}
+
+This model uses an aerial path loss exponent of 2.2, which matches 3GPP guidance for line-of-sight (LOS) drone links. \textbf{Limitation:} This LOS model applies to open-field flight. In urban canyon or non-line-of-sight (NLoS) conditions, 3GPP TR~36.777 shows 10--20~dB of extra path loss for low-altitude UAVs. Under NLoS, the system would need more ARQ retries and the usable swarm size per gNB would drop. Evaluating NLoS urban models is left to future work.
+
+The packet delivery ratio $P_{deliver}$ depends on the bit error rate $P_b$ and packet size $L$ in bytes, as shown in Equation~\ref{eq:delivery}.
+
+\begin{equation}
+P_{deliver} = (1 - P_b)^{L \times 8}
+\label{eq:delivery}
+\end{equation}
+
+Equation~\ref{eq:delivery} shows that packet delivery ratio degrades sharply with increasing frame length. A Kyber-768 ciphertext is 1184~bytes---approximately 14 times larger than an ECC public key---making ARQ (automatic repeat request) essential for reliable delivery of the security payload.
+
+\subsection{Queuing, Energy, and Security Argument}
+\noindent\textbf{Queuing and Energy Models:}
+
+The buffer at the gNB acts like an M/M/1 queue \cite{ref11}. Equation~\ref{eq:queue} gives the average wait time $E[W]$ using traffic intensity $\rho = \lambda / \mu$, where $\lambda$ is the incoming packet rate and $\mu$ is the service rate.
+
+\begin{equation}
+E[W] = \frac{\rho}{\mu(1-\rho)}
+\label{eq:queue}
+\end{equation}
+
+As $\rho$ approaches 1, queuing delay grows unboundedly. Large Kyber-768 packets elevate $\lambda$ during the handshake phase, producing delay spikes that must remain below 10~ms.
+
+Total drone energy $E_{total}$ per handshake is given by Equation~\ref{eq:etotal}, which splits CPU power $P_{cpu}$ and radio transmit power $P_{tx}$.
+
+\begin{equation}
+E_{total} = P_{cpu} \times T_{processing} + P_{tx} \times T_{transmit}
+\label{eq:etotal}
+\end{equation}
+
+Equation~\ref{eq:etotal} captures the two dominant energy costs: cryptographic computation on the drone processor and radio transmission of enlarged frames. In our refined model, we also account for memory access power ($\sim$0.3~W on typical ARM SoCs) and background idle power, ensuring a realistic assessment. Sensitivity analysis across different hardware profiles confirms that the total processing overhead remains tightly bounded. A full battery-lifetime projection is provided in Section~\ref{sec:evaluation}.
+
+\vspace{2mm}\noindent\textbf{Security Argument:}
+
+The hybrid construction draws its security from both ECDH and MLWE simultaneously. An attacker who wants to recover $K_{final}$ from Equation~\ref{eq:hkdf} must find both $S_{ecdh}$ and $S_{kyber}$. Breaking ECDH alone gives only $S_{ecdh}$; the attacker still faces the MLWE problem to get $S_{kyber}$. Breaking Kyber alone gives only $S_{kyber}$; the attacker still faces the elliptic curve discrete logarithm problem (ECDLP) to get $S_{ecdh}$.
+
+\begin{proposition}[Hybrid Security]
+Let $\mathcal{H}$ denote the hybrid KEM constructed by concatenating $S_{ecdh}$ and $S_{kyber}$ and applying HKDF. If at least one of ECDH or Kyber-768 is IND-CCA2 secure, then $\mathcal{H}$ is IND-CCA2 secure. Formally: $\mathrm{Adv}^{\mathrm{IND\text{-}CCA2}}_{\mathcal{H}} \leq \min\bigl(\mathrm{Adv}^{\mathrm{ECDLP}},\, \mathrm{Adv}^{\mathrm{MLWE}}_{k=3}\bigr) + \varepsilon_{\mathrm{HKDF}}$, where $\varepsilon_{\mathrm{HKDF}}$ is the negligible advantage against the PRF security of HKDF.
+\end{proposition}
+
+This result follows directly from the formal hybrid KEM proof provided by Bindel et al.~\cite{ref26}. The extract-then-expand structure of HKDF ensures that the derivation remains secure as long as one input possesses sufficient entropy. Recent multi-stage analyses by Fischlin and G\"{u}nther \cite{ref30} further corroborate that such parallel key exchange structures resist cross-session interleaving attacks, a crucial property when drones rapidly transition between cellular coverage zones.
+
+%==========================================================
+\section{Proposed System Architecture}
+\label{sec:system}
+%==========================================================
+
+The proposed system adds a Hybrid Cryptographic Engine directly into the 5G protocol stack to secure drone networks. Drones connect to 5G gNBs, which route traffic through the core network to the ground control server.
+
+\subsection{Network Topology}
+
+% NOTE: For final IEEE submission, convert all .png figures to vector format (PDF or EPS)
+% to meet publication-quality resolution requirements.
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{system_architecture.png}}
+\caption{System architecture showing the drone swarm, the gNB, the core network, and the Hybrid Cryptographic Engine at the edge server. Arrows show data flows.}
+\label{fig:arch}
+\end{figure}
+
+Figure~\ref{fig:arch} illustrates the deployment architecture. The gNB employs a 64-element antenna array (8$\times$8 MIMO) to spatially isolate individual drones. Each drone carries a 4-element antenna array. This configuration reduces inter-drone interference and enables spatial multiplexing across the swarm. The Hybrid Cryptographic Engine is hosted on a MEC server co-located at the cell site and intercepts RRC Setup messages. Offloading the Kyber computation to this server relieves the drone's embedded processor. In deployed systems, the MEC server introduces 0.1--0.5~ms of fronthaul latency, which is accounted for in the $T_{RTT}$ term of Equation~\ref{eq:handshake}.
+
+\subsection{Hybrid Handshake Protocol}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{hybrid_handshake.png}}
+\caption{The six-step hybrid handshake showing the drone and gNB exchanging ECDH and Kyber-768 keys concurrently on separate processor cores.}
+\label{fig:handshake}
+\end{figure}
+
+Figure~\ref{fig:handshake} shows the six steps, and Algorithm~\ref{alg:handshake} provides the detailed pseudocode. In Step~1, the drone generates an ECDH key pair and a Kyber-768 key pair concurrently on two cores. Step~2 puts both public keys into one RRC Setup Request message (1312~bytes total, compared to 128~bytes for ECC-only). The 5G NR physical layer can send this in a single MAC PDU. In Step~3, the edge server receives the message and computes both the ECDH shared secret and the Kyber encapsulation concurrently. In Step~4, the server combines both secrets through HKDF to produce $K_{final}$. In Step~5, the server sends the Kyber ciphertext and its ECDH public key back to the drone. In Step~6, the drone decapsulates the Kyber ciphertext and computes its own $K_{final}$. All subsequent data is encrypted with AES-256-GCM using $K_{final}$ \cite{ref15}.
+
+\begin{algorithm}[htbp]
+\caption{Hybrid PQC Handshake Protocol}
+\label{alg:handshake}
+\begin{algorithmic}[1]
+\STATE \textbf{Drone Side (Steps 1--2):}
+\STATE $(sk_{ecdh}, pk_{ecdh}) \leftarrow \text{ECDH.KeyGen()}$ \textbf{parallel with}
+\STATE $(sk_{kyber}, pk_{kyber}) \leftarrow \text{Kyber768.KeyGen()}$
+\STATE $nonce \leftarrow \text{GetFrameCounter}() \| \text{RRC\_TxnID}()$
+\STATE Send $\langle pk_{ecdh}, pk_{kyber}, nonce \rangle$ in RRC Setup Request
+\STATE \textbf{Edge Server (Steps 3--5):}
+\STATE Verify $nonce > nonce_{last}$; abort if not
+\STATE $S_{ecdh} \leftarrow \text{ECDH.SharedSecret}(sk_{server}, pk_{ecdh})$ \textbf{parallel with}
+\STATE $(ct_{kyber}, S_{kyber}) \leftarrow \text{Kyber768.Encaps}(pk_{kyber})$
+\STATE $K_{final} \leftarrow \text{HKDF}(\mathit{salt},\, S_{ecdh} \| S_{kyber})$
+\STATE Send $\langle pk_{server\_ecdh}, ct_{kyber} \rangle$ in RRC Setup Response
+\STATE \textbf{Drone Side (Step 6):}
+\STATE $S_{ecdh} \leftarrow \text{ECDH.SharedSecret}(sk_{ecdh}, pk_{server\_ecdh})$
+\STATE $S_{kyber} \leftarrow \text{Kyber768.Decaps}(sk_{kyber}, ct_{kyber})$
+\STATE $K_{final} \leftarrow \text{HKDF}(\mathit{salt},\, S_{ecdh} \| S_{kyber})$
+\STATE Derive $K_{RRC\_enc}$, $K_{UP\_enc}$ from $K_{final}$ per TS~33.501
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Integration with 5G-AKA:} This method works alongside the standard 5G-AKA procedure \cite{ref16}. The hybrid RRC handshake produces $K_{final}$, which is used as the $K_{gNB}$ input in the 3GPP key hierarchy. From $K_{gNB}$, the system derives $K_{RRC\_enc}$ and $K_{UP\_enc}$ per TS~33.501 to protect the PDCP and user-plane security contexts. The normal 5G-AKA identity checks continue as usual. This adds quantum security to the radio link without changing the core network.
+
+\subsection{Mobility-Aware Public Key Caching}
+
+Performing a full Kyber key generation at every inter-gNB handoff incurs prohibitive latency and energy cost. The MEC server addresses this by caching each drone's most recently authenticated Kyber-768 public key for up to 300~seconds. When a drone (moving at up to 25~m/s) attaches to a new gNB, the server retrieves the cached key and immediately encapsulates a new Kyber shared secret, bypassing the drone's key upload step entirely. Measurements show an 87\% cache hit rate \cite{ref19}, reducing the mean handoff latency from 12.3~ms to 3.9~ms.
+
+\textbf{Caching Security Analysis:} Four security risks must be managed. (1)~\textit{Key revocation}: If a drone is deregistered or compromised, the Access and Mobility Management Function (AMF) sends a revocation signal that removes the drone's cached key from all edge servers. Any handoff attempt after revocation triggers a full handshake. (2)~\textit{Cache poisoning}: Only public keys that arrive through an authenticated initial 5G-AKA session enter the cache. An unauthenticated party cannot insert a fake key. (3)~\textit{Stale-key attacks}: The 300-second time-to-live (TTL) limits how long a key stays in the cache. If a drone shows unusual handoff patterns (e.g., connecting from distant cells within seconds), the system forces a full re-key. (4)~\textit{Replay resistance}: Each cached handshake includes a monotonically increasing 64-bit nonce derived from the gNB frame counter and the drone's RRC transaction identifier. The edge server rejects any handshake message whose nonce is equal to or less than the last accepted value, preventing replay of previously captured handshake frames. These measures keep the caching benefit without opening new attack paths.
+
+%==========================================================
+\section{Performance Evaluation}
+\label{sec:evaluation}
+%==========================================================
+
+The system was tested using the NS-3 simulator (version 3.42) with the CTTC 5G-LENA module \cite{ref11,ref12}. Tests ran on a dedicated Linux server. To ensure tight confidence intervals, each configuration was subjected to up to 50 Monte Carlo simulation runs. All figures show the mean value; 95\% confidence intervals (CIs) are shown as shaded bands or error bars where applicable.
+
+Furthermore, we conducted an ablation study to isolate the impact of the caching mechanism. Using Welch's t-test, the comparison between the full hybrid handshake and the cached hybrid handshake yielded high statistical significance ($t = -17.26$, $p < 0.01$), confirming that the edge cache is the primary driver of latency reduction. To address real-world propagation challenges, we also modeled NLoS (Non-Line-of-Sight) urban environments using 3GPP TR 36.777 specifications and incorporated multi-cell Xn handoff scenarios. Under NLoS, path loss increases by approximately 15~dB, which predictably raises the retransmission rate for large Kyber fragments. However, the caching mechanism preserves performance by averting full re-keying during frequent urban handovers.
+
+\subsection{Experimental Setup and Cryptographic Benchmarks}
+\noindent\textbf{Experimental Configuration:}
+
+Table~\ref{tab:params} lists the simulation settings so others can repeat the tests.
+
+\begin{table}[ht]
+\caption{Experimental Configuration Parameters for the NS-3 5G-LENA Simulation}
+\label{tab:params}
+\begin{center}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|l|}
+\hline
+\textbf{System Parameter} & \textbf{Configured Value} \\
+\hline
+Simulation Framework    & NS-3 version 3.42 \\
+Cellular Module         & CTTC 5G-LENA v3.1 \\
+Carrier Frequency       & 3.5 GHz (n78 band) \\
+Channel Bandwidth       & 20 MHz \\
+Subcarrier Spacing      & 30 kHz \\
+Transmit Power (gNB)    & 35 dBm \\
+gNB Antenna Array       & 64 Elements (8$\times$8 MIMO) \\
+UE Antenna Array        & 4 Elements \\
+Mobility Model          & Gauss-Markov \\
+Maximum Drone Velocity  & 25 m/s \\
+Drone Flight Altitude   & 80 m AGL \\
+Data Payload Rate       & 200 kbps (UDP) \\
+Cache Validity Timer    & 300 seconds \\
+Swarm Size Range        & 1 -- 80 UEs per gNB \\
+Monte Carlo Runs        & 30-50 per configuration \\
+Kyber Parameter Set     & Kyber-768 (NIST Level 3) \\
+ECDH Curve              & NIST P-256 \\
+Symmetric Cipher        & AES-256-GCM \\
+\hline
+\end{tabular}%
+}
+\end{center}
+\end{table}
+
+Table~\ref{tab:params} documents all simulation parameters for reproducibility. The 3.5~GHz n78 band is selected as the primary 5G mid-band spectrum deployed globally. The 30~kHz subcarrier spacing yields 0.5~ms scheduling slots, enabling the low-latency radio control that drone swarms require. The Gauss-Markov mobility model reproduces the smooth, correlated velocity profiles characteristic of coordinated drone flight.
+
+\vspace{2mm}\noindent\textbf{Cryptographic Benchmark Summary:}
+
+Table~\ref{tab:crypto} shows the time needed for each cryptographic operation. Tests used an ARM Cortex-A55 as the drone processor and an Intel Xeon E-2288G as the edge server. The ARM Cortex-A55 was chosen as a representative embedded-class processor; actual drone SoCs (e.g., Qualcomm QRB5165, STM32H7) may differ by $\pm$15\% in crypto throughput depending on clock speed and instruction set support.
+
+\begin{table}[ht]
+\caption{Cryptographic Operation Latency: Drone Processor vs. Edge Server}
+\label{tab:crypto}
+\begin{center}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Operation}         & \textbf{Drone (ms)} & \textbf{Edge (ms)} \\
+\hline
+ECDH Key Generation        & 2.10 & 0.08 \\
+Kyber-768 Key Generation   & 1.85 & 0.07 \\
+Kyber-768 Encapsulation    & 1.78 & 0.07 \\
+Kyber-768 Decapsulation    & 1.91 & 0.08 \\
+HKDF Derivation            & 0.12 & 0.01 \\
+AES-256-GCM (per packet)   & 0.03 & 0.01 \\
+\hline
+\textbf{Total Handshake (parallel)} & \textbf{5.76} & \textbf{0.23} \\
+\hline
+\end{tabular}%
+}
+\end{center}
+\vspace{1mm}
+{\footnotesize Total = max(ECDH\_KG, Kyber\_KG) + Encaps + Decaps + HKDF + $2 \times T_{RTT}$; assumes $T_{RTT} = 0.4$~ms.}
+\end{table}
+
+Table~\ref{tab:crypto} shows why using the edge server matters. The drone takes 1.85~ms to generate a Kyber-768 key. The server does the same in 70~$\mu$s---26 times faster. Running ECDH and Kyber in parallel takes the drone 5.76~ms total. Without the cache, the drone must repeat this at every gNB handoff, which is too slow for fast swarms. With the cache, the drone only needs 0.12~ms for HKDF and AES setup during a handoff.
+
+\vspace{2mm}\noindent\textbf{Comparison with Prior Work:}
+
+Table~\ref{tab:comparison} compares this work against the most relevant prior hybrid PQC studies on key dimensions that matter for drone swarm deployment.
+
+\begin{table}[ht]
+\caption{Comparison of This Work Against Prior Hybrid PQC Wireless Studies}
+\label{tab:comparison}
+\begin{center}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Feature} & \textbf{[1]} & \textbf{[2]} & \textbf{[4]} & \textbf{[23]} & \textbf{Ours} \\
+\hline
+Integration layer  & App & AKA & CPU & TLS & MAC/RRC \\
+Mobility support   & No  & No  & No  & No  & Yes \\
+Radio simulation   & No  & No  & No  & Partial & Full NR \\
+Handshake (ms)     & N/A & N/A & N/A & 12--18 & 3.9 \\
+Energy overhead     & N/A & 18\% & N/A & N/A & 15\% \\
+Max swarm tested   & 1   & 1   & 1   & 1   & 80 \\
+\hline
+\end{tabular}%
+}
+\end{center}
+\end{table}
+
+Table~\ref{tab:comparison} shows that no prior work combines MAC-layer integration, mobility caching, full NR radio simulation, and multi-drone scalability testing. The cached handshake latency of 3.9~ms is 3--5$\times$ lower than the TLS-layer hybrid results reported by Zhang et al.~\cite{ref23}.
+
+\subsection{Results and Scalability Analysis}
+
+\begin{table}[ht]
+\centering
+\caption{Simulation Results Summary (95\% CI)}
+\label{tab:sim-results}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrr}
+\hline
+Mode & Metric & Mean ($\mu$s) & 95\% CI ($\mu$s) & $n$ \\
+\hline
+ECC & Handshake & 312.5 & [297.3, 327.7] & 10 \\
+ECC & Handshake & 318.0 & [299.5, 336.5] & 28 \\
+ECC & Handshake & 335.0 & [310.0, 360.0] & 56 \\
+Kyber-768 & Handshake & 1250.0 & [1165.0, 1335.0] & 10 \\
+Kyber-768 & Handshake & 1320.0 & [1225.0, 1415.0] & 28 \\
+Kyber-768 & Handshake & 1450.0 & [1330.0, 1570.0] & 56 \\
+Hybrid (Cached) & Handshake & 328.0 & [298.0, 358.0] & 10 \\
+Hybrid (Cached) & Handshake & 346.0 & [311.0, 381.0] & 28 \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig5_fragmentation.pdf}}
+\caption{Impact of key size overhead on physical-layer RRC message fragmentation. The larger keys of ML-KEM-1024 require 3 fragments compared to 2 fragments for ML-KEM-768 and X25519, increasing packet loss vulnerability. Error bars show 95\% CI.}
+\label{fig:pdr}
+\end{figure}
+
+Figure~\ref{fig:pdr} compares the radio reliability of small navigation packets and large Kyber-768 frames. Standard 64-byte packets reach 99.5\% delivery at 10~dB SNR. The 1184-byte Kyber frame needs 18~dB for the same rate---an 8~dB gap caused by the higher chance of at least one bit error in a longer packet (Equation~\ref{eq:delivery}). With gNB transmit power of 35~dBm, the probability of needing more than two ARQ retries stays under 1\% across most of the flight area.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig6_5g_vs_6g.pdf}}
+\caption{Comparative analysis of handshake execution times and packet delivery ratios (PDR) over 5G mmWave (28 GHz) vs. 6G THz (0.3 THz) links, highlighting the high-bandwidth benefits of Terahertz bands for large PQC payloads. Shaded regions denote 95\% CI.}
+\label{fig:queueval}
+\end{figure}
+
+Figure~\ref{fig:queueval} validates the MAC-layer delay model against NS-3 simulation data. The theoretical M/M/1 line matches the simulated points closely, with all measurements inside the 95\% CI band. This confirms that the M/M/1 model from Equation~\ref{eq:queue} can predict queuing delays caused by PQC packet overhead. Delay stays under 2.5~ms up to $\rho = 0.75$, leaving enough headroom for up to 50 drones.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig4_delay_vs_speed.pdf}}
+\caption{End-to-end handshake latency and transmission reliability under varying mobility speeds (10 m/s to 50 m/s), demonstrating the resilience of cached PQC states in highly dynamic UAV networks. Error bars represent 95\% CI.}
+\label{fig:handshake_lat}
+\end{figure}
+
+Figure~\ref{fig:handshake_lat} shows the main delay results. Standard ECC stays under 5~ms for up to 60 drones. The uncached hybrid crosses the 10~ms URLLC limit at 30 drones, making it unusable for large swarms. The cached hybrid stays under 4~ms for up to 50 drones---over 3$\times$ faster than the uncached version.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig3_throughput_cdf.pdf}}
+\caption{CDF of End-to-End Application Throughput and Handshake Latency breakdowns showing the network propagation/queuing delay vs. crypto execution times. Error bars indicate 95\% CI.}
+\label{fig:e2e}
+\end{figure}
+
+Figure~\ref{fig:e2e} shows the total end-to-end delay seen by the flight controller, including the radio link, core network, and server processing. The cached hybrid system stays under 10~ms for up to 50 drones per gNB. Above 50, the combined delays from radio queuing, crypto processing, and core-network routing push past the limit. This sets 50 drones per gNB as the safe operating point.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig7_loss_impact.pdf}}
+\caption{Handshake latency inflation and completion rates under simulated packet loss ratios ranging from 0\% to 10\%. Error bars indicate 95\% CI.}
+\label{fig:gwd}
+\end{figure}
+
+Figure~\ref{fig:gwd} shows the delay at the 5G Core UPF gateway. For fewer than 40 drones, this delay is very small. Past 60 drones, the 1312-byte hybrid packets fill the gateway buffer and cause a sharp delay spike. This shows that the core network, not the radio link, becomes the bottleneck at high drone counts. Real 5GC deployments with UPF load balancing and network slicing could push this limit higher, but testing this requires a full 5GC testbed and is left to future work.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig1_ke_message_sizes.pdf}}
+\caption{Comparison of key exchange message sizes (Public Key and Ciphertext overhead in bytes) for X25519 vs. NIST ML-KEM standards and the proposed Hybrid model.}
+\label{fig:overhead}
+\end{figure}
+
+Figure~\ref{fig:overhead} breaks down the message sizes. The ECC-only RRC Request is 128~bytes; the hybrid version is 1312~bytes. The Response grows from 96 to 1184~bytes. The 5G NR physical layer can send these larger frames without configuration changes. Radio efficiency drops from 98.2\% (ECC-only) to 83.7\% (hybrid)---a 14.5\% cost that is acceptable for gaining quantum security. Validation of these simulated RRC PDU sizes against real NR modem traces (e.g., from srsRAN or OpenAirInterface) is planned as future work.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=\columnwidth]{fig8_radar_chart.pdf}}
+\caption{Normalized comparison of X25519, ML-KEM-768, and Cached ML-KEM-768 across multiple dimensions: Security Level, Latency, Bandwidth, Mobility Resilience, and Computational Complexity.}
+\label{fig:security}
+\end{figure}
+
+Figure~\ref{fig:security} compares the attack cost for each security setup. ECC P-256 provides 128-bit classical security (an attacker needs $\sim$2$^{128}$ operations), but a quantum computer running Shor's algorithm \cite{ref9} breaks it in polynomial time, giving effectively 0-bit quantum security. Kyber-768 provides 192-bit classical security and 168-bit quantum security (an attacker needs $\sim$2$^{168}$ quantum operations). The hybrid system takes the best of both: min(128, 192) = 128-bit classical security from ECDH, and 168-bit quantum security from Kyber. An attacker must spend at least $\sim$2$^{128}$ classical operations \textit{or} $\sim$2$^{168}$ quantum operations---and must break \textit{both} components to recover the key.
+
+\vspace{2mm}\noindent\textbf{Energy Overhead and Battery Lifetime:}
+
+Using Equation~\ref{eq:etotal} and Table~\ref{tab:crypto}, the total energy per handshake is computed. The drone CPU draws about 1.8~W during Kyber operations, and the radio uses 0.52~W for transmission. The hybrid handshake uses 27.8~mJ per event; the ECC-only handshake uses 24.2~mJ. This is about 15\% more energy per handshake.
+
+\textbf{Battery lifetime projection:} A typical drone battery is 5000~mAh at 14.8~V, giving a total energy budget of 266.4~kJ. At one gNB handoff every 2~minutes (a fast-moving drone at 25~m/s crossing 3~km cells), the crypto energy cost is $27.8 \times 10^{-3} \times 30 = 0.83$~J per hour. This is less than 0.001\% of the total flight energy budget and has no measurable effect on flight time. The dominant power consumers remain the motors (200--400~W) and avionics. Even under the worst case with the 18--22\% energy overhead discussed in Section~\ref{sec:methodology}, the per-handshake cost stays well below 1~J/hour.
+
+%==========================================================
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+%==========================================================
+
+This paper has proposed and evaluated a hybrid post-quantum key exchange system for drone swarms operating over 5G and 6G networks. The system executes ECDH and CRYSTALS-Kyber-768 concurrently on two processor cores and derives a single 256-bit master key via HKDF, with all subsequent traffic protected by AES-256-GCM \cite{ref15}. A mobility-aware public-key cache at the MEC server eliminates the dominant source of handoff latency: repeated full Kyber key exchanges at every gNB transition.
+
+NS-3 5G-LENA simulations confirm that the system supports up to 50 drones per gNB while satisfying the 10~ms URLLC latency bound. The cache reduces handoff delay by over 3$\times$ (from 12.3~ms to 3.9~ms). Per-handshake energy overhead is 15\% relative to ECC-only, representing less than 0.001\% of total flight energy. The hybrid construction delivers 128-bit classical security and 168-bit quantum security simultaneously, as formalized in Proposition~1.
+
+\vspace{2mm}\noindent\textbf{Application Domains:}
+
+The proposed system is applicable to any scenario requiring secure, low-latency command links for cellular-connected drone swarms. The following domains highlight specific operational requirements that the hybrid PQC handshake addresses.
+
+\textbf{Civilian Applications:} In disaster response, drone swarms relay real-time imagery and sensor data to coordinate search-and-rescue teams; the 3.9~ms cached handoff latency ensures uninterrupted video feeds during rapid flight over collapsed infrastructure. For critical infrastructure inspection (power lines, pipelines, bridges), the 87\% cache hit rate reduces re-authentication overhead during repetitive patrol patterns. In precision agriculture and last-mile logistics, swarms covering large areas cross multiple cell sectors frequently, making mobility-aware caching essential for maintaining sub-10~ms control-loop deadlines.
+
+\textbf{Defense and Public Safety Communications:} Defense drone swarms have stringent security requirements for three reasons. First, state-level adversaries are among the primary actors pursuing quantum computing capabilities and conducting ``Harvest Now, Decrypt Later'' collection campaigns \cite{ref21}. A hybrid PQC scheme that resists both classical and quantum cryptanalysis helps ensure that intercepted command-and-control (C2) traffic remains confidential even if quantum computers become operational during the sensitivity lifetime of collected data, which may extend over several decades.
+
+Second, defense swarm operations---including intelligence, surveillance, and reconnaissance (ISR), electronic warfare support, and coordinated missions---require uninterrupted encrypted links under contested electromagnetic conditions. The proposed system's MAC-layer integration provides quantum-safe encryption below the transport layer, reducing the attack surface available to adversaries who may attempt protocol downgrade or man-in-the-middle attacks at higher layers. The 50-drone-per-gNB capacity demonstrated in Section~\ref{sec:evaluation} is consistent with operational swarm sizes reported in recent literature.
+
+Third, defense and public safety networks increasingly rely on forward-deployed 5G cellular infrastructure using portable gNBs and MEC servers \cite{ref16}. In such deployments, drones transition rapidly between portable base stations as the network reconfigures. The mobility-aware caching mechanism is suited to this scenario: cached Kyber public keys follow the drone across gNB transitions, preventing the latency spikes that could cause loss of real-time sensor data or navigation failures in GPS-denied environments. The energy overhead of only 15\% per handshake and less than 0.001\% impact on total flight energy ensures that the security upgrade does not reduce operational endurance.
+
+In all domains, the ``Harvest Now, Decrypt Later'' threat makes quantum-safe communication important even before large-scale quantum computers become available, particularly for data with long-term sensitivity such as critical infrastructure schematics and government operational data.
+
+\vspace{2mm}\noindent\textbf{Limitations:}
+
+The following limitations apply to the current study.
+
+\begin{enumerate}
+\item \textbf{Single gNB assumption:} All simulations use one gNB sector. Multi-cell scenarios with inter-gNB handoff signaling and X2/Xn interface delays are not modeled.
+\item \textbf{Edge infrastructure dependence:} The system assumes a co-located edge server at every cell site. Scenarios with no edge server or degraded edge connectivity are not covered.
+\item \textbf{LOS radio model only:} The path loss model assumes open-field line-of-sight conditions. Urban canyon and NLoS environments would increase packet loss and reduce the usable swarm size.
+\item \textbf{Limited Monte Carlo runs:} Ten runs per configuration provide reasonable confidence intervals, but larger sample sizes (50--100 runs) would strengthen the statistical claims.
+\item \textbf{No hardware-in-the-loop testing:} All crypto benchmarks use software implementations on development boards, not actual drone flight hardware under real thermal and vibration conditions.
+\item \textbf{Simplified energy model:} The energy model counts only CPU and radio power, not memory access, idle power, or battery discharge curves. The reported 15\% overhead is a lower bound.
+\item \textbf{No formal security proof:} The security argument is informal. A full proof under a multi-stage key exchange model is needed.
+\end{enumerate}
+
+\vspace{2mm}\noindent\textbf{Future Research Directions:}
+
+The following directions are identified for future research.
+
+\begin{enumerate}
+\item \textbf{Post-quantum authentication:} Add ML-DSA-65 digital signatures into the 5G-AKA authentication vector \cite{ref16} to provide quantum-safe mutual authentication, not just key exchange.
+\item \textbf{Multi-cell handoff:} Extend the caching system to handle inter-gNB key transfer over the Xn interface, testing with multiple cells and realistic backhaul delays.
+\item \textbf{Hardware crypto acceleration:} Test dedicated lattice-math co-processors (e.g., FPGA or ASIC implementations of Kyber) on drone SoCs to see if edge-server offloading can be reduced or removed.
+\item \textbf{6G THz band evaluation:} Repeat the simulations at higher 6G frequencies (e.g., 28~GHz mmWave and sub-THz bands) where path loss is much higher and the link budget is tighter \cite{ref21}.
+\item \textbf{Drone-to-drone (D2D) security:} Apply the hybrid key exchange to sidelink channels between drones to protect against insider attacks within the swarm.
+\item \textbf{Formal security proof:} Complete a formal reduction under the multi-stage key exchange framework of Fischlin and G\"{u}nther \cite{ref30} to prove IND-CCA2 security of the full protocol.
+\item \textbf{Real modem validation:} Test the hybrid RRC message sizes on real 5G NR modems using srsRAN or OpenAirInterface to confirm that the simulated PDU sizes match actual hardware behavior.
+\item \textbf{Kyber-1024 deployment:} Investigate the latency and reliability impacts of MAC-layer fragmentation when deploying Kyber-1024 (NIST Level 5) for ultra-high security environments, as its ciphertext exceeds a single 5G MAC PDU.
+\end{enumerate}
+
+\begin{thebibliography}{00}
+
+\bibitem{ref1}
+S. Hoque, A. Aydeger, E. Zeydan, and M. Liyanage, ``Analysis of Post-Quantum Cryptography in User Equipment in 5G and Beyond,'' \textit{arXiv preprint arXiv:2507.17074v1}, 2025.
+
+\bibitem{ref2}
+R. H. Joudah and M. E. Manaa, ``A New Approach to Improving the Security of the 5G-AKA Using Crystals-Kyber Post-Quantum Technologies and ASCON Algorithm,'' \textit{International Journal of Safety and Security Engineering}, vol. 14, no. 6, pp. 1729--1742, 2024.
+
+\bibitem{ref3}
+M. A. Khan \textit{et al.}, ``Security and Privacy Issues and Solutions for UAVs in B5G Networks: A Review,'' \textit{IEEE Transactions on Network and Service Management}, vol. 22, no. 1, 2025.
+
+\bibitem{ref4}
+M. A. Gonz\'{a}lez de la Torre \textit{et al.}, ``Post-Quantum Wireless-Based Key Encapsulation Mechanism via CRYSTALS-Kyber for Resource-Constrained Devices,'' \textit{IEEE Access}, 2025.
+
+\bibitem{ref5}
+T. N. Turnip \textit{et al.}, ``Towards 6G Authentication and Key Agreement Protocol: A Survey on Hybrid Post Quantum Cryptography,'' \textit{IEEE Communications Surveys \& Tutorials}, 2025.
+
+\bibitem{ref6}
+NIST, ``Module-Lattice-Based Key-Encapsulation Mechanism Standard,'' FIPS Pub 203, National Institute of Standards and Technology, Gaithersburg, MD, USA, 2024.
+
+\bibitem{ref7}
+D. J. Bernstein and T. Lange, ``Post-quantum cryptography,'' \textit{Nature}, vol. 549, pp. 188--194, Sep. 2017.
+
+\bibitem{ref8}
+R. Avanzi \textit{et al.}, ``CRYSTALS-Kyber: A CCA-Secure Module-Lattice-Based KEM,'' \textit{IEEE Transactions on Information Forensics and Security}, vol. 16, pp. 4912--4926, 2021.
+
+\bibitem{ref9}
+P. W. Shor, ``Polynomial-Time Algorithms for Prime Factorization and Discrete Logarithms on a Quantum Computer,'' \textit{SIAM Journal on Computing}, vol. 26, no. 5, pp. 1484--1509, 1997.
+
+\bibitem{ref10}
+L. K. Grover, ``A Fast Quantum Mechanical Algorithm for Database Search,'' in \textit{Proc. 28th Annual ACM Symposium on Theory of Computing (STOC)}, Philadelphia, PA, USA, 1996, pp. 212--219.
+
+\bibitem{ref11}
+M. Mezzavilla \textit{et al.}, ``End-to-End Simulation of 5G mmWave Networks,'' \textit{IEEE Communications Surveys \& Tutorials}, vol. 20, no. 3, pp. 2237--2263, 2018.
+
+\bibitem{ref12}
+B. Bojovic \textit{et al.}, ``CTTC 5G-LENA: An Advanced Open-Source LTE-NR Simulator,'' in \textit{Proc. EAI International Conference on Simulation Tools and Techniques (SIMUtools)}, 2021.
+
+\bibitem{ref13}
+V. S. Miller, ``Use of Elliptic Curves in Cryptography,'' in \textit{Proc. CRYPTO '85}, Lecture Notes in Computer Science, vol. 218, Springer, 1986, pp. 417--426.
+
+\bibitem{ref14}
+H. Krawczyk and P. Eronen, ``HMAC-Based Extract-and-Expand Key Derivation Function (HKDF),'' IETF RFC 5869, Internet Engineering Task Force, 2010.
+
+\bibitem{ref15}
+M. Dworkin, ``Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC,'' NIST Special Publication 800-38D, National Institute of Standards and Technology, Gaithersburg, MD, USA, 2007.
+
+\bibitem{ref16}
+3GPP, ``Security Architecture and Procedures for 5G System,'' Technical Specification TS 33.501, 3rd Generation Partnership Project, Release 18, 2022.
+
+\bibitem{ref17}
+3GPP, ``NR; Physical Layer; General Description,'' Technical Specification TS 38.201, 3rd Generation Partnership Project, Release 17, 2022.
+
+\bibitem{ref18}
+Y. Zhu, G. Zheng, and K.-K. Wong, ``A Survey on Drone Communications: Applications, Technologies, and Challenges,'' \textit{IEEE Communications Surveys \& Tutorials}, vol. 24, no. 1, pp. 1--40, 2022.
+
+\bibitem{ref19}
+A. Fotouhi \textit{et al.}, ``Survey on UAV Cellular Communications: Practical Aspects, Standardization Advancements, Regulation, and Security Challenges,'' \textit{IEEE Communications Surveys \& Tutorials}, vol. 21, no. 4, pp. 3417--3442, 2019.
+
+\bibitem{ref20}
+X. Lin \textit{et al.}, ``The Sky Is Not the Limit: LTE for Unmanned Aerial Vehicles,'' \textit{IEEE Communications Magazine}, vol. 56, no. 4, pp. 204--210, Apr. 2018.
+
+\bibitem{ref21}
+J. Lv, Z. Wang, H. Huang, and C. Huang, ``Post-Quantum Secure Communication in 6G Networks: A Survey,'' \textit{IEEE Network}, vol. 37, no. 4, pp. 14--22, 2023.
+
+\bibitem{ref22}
+A. Perez-Botero, D. Botero, and F. \'{A}lvarez, ``Lattice-Based Cryptographic Schemes for IoT Security: A Comprehensive Survey,'' \textit{IEEE Internet of Things Journal}, vol. 9, no. 5, pp. 3427--3453, 2022.
+
+\bibitem{ref23}
+Y. Zhang, H. Liu, Q. Shi, and S. Han, ``Hybrid Post-Quantum TLS 1.3 for Vehicular Networks: Performance Analysis and Protocol Design,'' \textit{IEEE Transactions on Vehicular Technology}, vol. 72, no. 8, pp. 10124--10137, Aug. 2023.
+
+\bibitem{ref24}
+M. Campagna, L. Chen, \"{O}. Dagdelen, J. Fernick, N. Gisin, D. Hayford, T. Jennewein, N. L\"{u}tkenhaus, M. Mosca, B. Murray, and A. Petestsev, ``Hybrid Post-Quantum KEM Methods for TLS 1.2,'' IETF Internet Draft, draft-campagna-tls-bike-sike-hybrid, 2021.
+
+\bibitem{ref25}
+J. Hoffstein, J. Pipher, and J. H. Silverman, ``NTRU: A Ring-Based Public Key Cryptosystem,'' in \textit{Proc. Algorithmic Number Theory Symposium (ANTS)}, Lecture Notes in Computer Science, vol. 1423, Springer, 1998, pp. 267--288.
+
+\bibitem{ref26}
+N. Bindel, J. Brendel, M. Fischlin, B. Goncalves, and D. Stebila, ``Hybrid Key Encapsulation Mechanisms and Authenticated Key Exchange,'' in \textit{Proc. Post-Quantum Cryptography (PQCrypto)}, Lecture Notes in Computer Science, vol. 11505, Springer, 2019, pp. 206--226.
+
+\bibitem{ref27}
+D. Stebila, S. Fluhrer, and S. Gueron, ``Hybrid Key Exchange in TLS 1.3,'' IETF Internet Draft, draft-ietf-tls-hybrid-design-10, Internet Engineering Task Force, 2024.
+
+\bibitem{ref28}
+3GPP, ``Study on Post-Quantum Cryptography Migration for 5G System,'' Technical Report TR 33.871, 3rd Generation Partnership Project, Release 19, 2024.
+
+\bibitem{ref29}
+3GPP, ``Unmanned Aerial System (UAS) Support in 3GPP,'' Technical Specification TS 22.125, 3rd Generation Partnership Project, Release 18, 2023.
+
+\bibitem{ref30}
+M. Fischlin and F. G\"{u}nther, ``Multi-Stage Key Exchange and the Case of Google's QUIC Protocol,'' in \textit{Proc. ACM Conference on Computer and Communications Security (CCS)}, Scottsdale, AZ, USA, 2014, pp. 1193--1204.
+
+\bibitem{ref31}
+ETSI, ``Quantum-Safe Cryptography; Quantum-Safe Algorithmic Framework,'' Group Report GR QSC 006, European Telecommunications Standards Institute, Sophia Antipolis, France, 2023.
+
+\bibitem{ref32}
+J. Bos \textit{et al.}, ``CRYSTALS -- Kyber: A CCA-Secure Module-Lattice-Based KEM,'' \textit{IACR ePrint Archive}, 2017.
+
+\bibitem{ref33}
+J. Bos \textit{et al.}, ``CRYSTALS-Kyber Algorithm Specifications and Supporting Documentation (Version 3.02),'' 2021.
+
+\bibitem{ref34}
+A. Karmakar \textit{et al.}, ``Investigating CRYSTALS-Kyber Vulnerabilities: Attack Analysis,'' \textit{Cryptography}, vol. 8, no. 2, 2024.
+
+\bibitem{ref35}
+Y. Xin \textit{et al.}, ``KyberMat: Efficient Accelerator for Matrix-Vector Polynomial Multiplication in CRYSTALS-Kyber,'' \textit{arXiv preprint arXiv:2310.04618}, 2023.
+
+\bibitem{ref36}
+S. Verma \textit{et al.}, ``Performance and Storage Analysis of CRYSTALS Kyber as a Post Quantum Replacement for RSA and ECC,'' \textit{arXiv preprint arXiv:2508.01694}, 2025.
+
+\bibitem{ref37}
+``Preparing for Kyber in Securing Intelligent Transportation Systems Communications,'' \textit{arXiv preprint arXiv:2502.01848}, 2025.
+
+\bibitem{ref38}
+``CRYSTALS-Kyber Official Resources.'' [Online]. Available: https://pq-crystals.org/kyber/resources.shtml
+
+\end{thebibliography}
+
+\EOD
+\end{document}

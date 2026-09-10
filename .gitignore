@@ -1,11 +1,6 @@
-# Website
-kyber6g-website/node_modules/
-kyber6g-website/dist/
-kyber6g-website/dist-ssr/
-kyber6g-website/*.local
-
-# NS-3
+# NS-3 Build & Cache Artifacts (Crucial to prevent huge repo size)
 ns-3-dev/build/
+ns-3-dev/cmake-cache/
 ns-3-dev/optimized/
 ns-3-dev/debug/
 ns-3-dev/test-temp-dir/
@@ -15,18 +10,38 @@ ns-3-dev/*.log
 ns-3-dev/scratch/*.pyc
 ns-3-dev/.lock-wscripts
 ns-3-dev/.waf-*
+ns-3-dev/.git
+ns-3-dev/contrib/nr/.git
 
-# General
-.vscode/
-!.vscode/extensions.json
-.idea/
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-logs
+# Binaries & Executables
+tectonic_bin/
+*.exe
+*.so
+*.so.*
+*.dylib
+*.dll
+*.o
+*.a
+*.gch
+
+# Python Environment & Bytecode
+pqc_server_env/
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+scripts/__pycache__/
+
+# Website Dependencies & Build Outputs
+kyber6g-website/node_modules/
+kyber6g-website/dist/
+kyber6g-website/dist-ssr/
+kyber6g-website/*.local
+
+# Logs & Temporary Files
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -34,3 +49,15 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 .env
+
+# Editor & OS Artifacts
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

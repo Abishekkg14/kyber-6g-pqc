@@ -17,7 +17,8 @@ namespace pqc
 /**
  * \brief Edge/drone hardware profiles for crypto timing and energy modeling.
  *
- * All power and scale values are ASSUMED — not measured on target hardware.
+ * Power values for RPI4_CORTEX_A72 are MEASURED on physical hardware (HITL).
+ * All other power and scale values are ASSUMED — not measured on target hardware.
  * See docs/simulation-methodology.md for provenance.
  */
 enum class HardwareProfileId
@@ -26,7 +27,8 @@ enum class HardwareProfileId
     PIXHAWK_CLASS = 1,
     JETSON_NANO = 2,
     JETSON_ORIN = 3,
-    EDGE_SERVER = 4
+    EDGE_SERVER = 4,
+    RPI4_CORTEX_A72 = 5  ///< Raspberry Pi 4 Model B — HITL calibrated
 };
 
 struct HardwareProfile

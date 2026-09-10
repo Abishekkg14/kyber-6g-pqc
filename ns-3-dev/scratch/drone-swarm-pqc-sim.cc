@@ -225,7 +225,16 @@ RunSingleSimulation(const std::string& cryptoModeStr,
                     const std::string& hardwareProfile,
                     double batteryWh,
                     uint32_t runIndex,
-                    uint32_t seed)
+                    uint32_t totalRuns,
+                    uint32_t seed,
+                    double lossRate,
+                    const std::string& band,
+                    bool disableCsidhBypass,
+                    bool useMm1Queue,
+                    const std::string& routingProtocol,
+                    bool disableMaskedSha3,
+                    bool disableCvqkd,
+                    bool disableEmulsion)
 {
     PqcScenarioId scenarioId = ParseScenarioId(scenarioStr);
     PqcScenarioConfig scfg;
@@ -234,12 +243,17 @@ RunSingleSimulation(const std::string& cryptoModeStr,
     scfg.urbanCanyon = urbanCanyon;
     scfg.edgeBackhaulDelay = MilliSeconds(edgeBackhaulMs);
     scfg.enableHandover = (scenarioId == PqcScenarioId::HIGH_SPEED_HANDOVER);
+    scfg.lossRate = lossRate;
 
     PqcScenarioHelper scenarioHelper;
     scenarioHelper.SetConfig(scfg);
 
     PqcScenarioHelper::ScenarioResult scenarioResult;
-    if (!scenarioStr.empty() && scenarioStr != "auto")
+    if (band == "6g-140ghz" || band == "6g")
+    {
+        scenarioResult = scenarioHelper.CreateSixGBandScenario(numDrones);
+    }
+    else if (!scenarioStr.empty() && scenarioStr != "auto")
     {
         scenarioResult = scenarioHelper.CreateFromScenarioId(scenarioId, numDrones);
     }
@@ -279,6 +293,12 @@ RunSingleSimulation(const std::string& cryptoModeStr,
     pqcHelper.SetCacheRevocationEnabled(cacheRevocation);
     pqcHelper.SetEdgeBackhaulDelay(MilliSeconds(edgeBackhaulMs));
     pqcHelper.SetBatteryWh(batteryWh);
+    pqcHelper.SetDisableCsidhBypass(disableCsidhBypass);
+    pqcHelper.SetUseMm1Queue(useMm1Queue);
+    pqcHelper.SetRoutingProtocol(routingProtocol);
+    pqcHelper.SetDisableMaskedSha3(disableMaskedSha3);
+    pqcHelper.SetDisableCvqkd(disableCvqkd);
+    pqcHelper.SetDisableEmulsion(disableEmulsion);
 
     if (scenarioId == PqcScenarioId::QUANTUM_ATTACK)
     {
@@ -309,7 +329,36 @@ RunSingleSimulation(const std::string& cryptoModeStr,
     }
 
     Simulator::Stop(Seconds(simTime + 1.0));
+
+    // ── Mobility verification probe ──────────────────────────────────────────
+    // Log UE positions at t=0 and at mid-sim so the caller can confirm
+    // drones are physically moving (Bug-A regression guard).
+    auto logPositions = [&](const std::string& tag) {
+        for (uint32_t i = 0; i < std::min(scenarioResult.ueNodes.GetN(), 3u); ++i)
+        {
+            Vector pos = scenarioResult.ueNodes.Get(i)
+                             ->GetObject<MobilityModel>()->GetPosition();
+            NS_LOG_UNCOND("[MobilityProbe] " << tag
+                          << " UE" << i
+                          << " pos=(" << pos.x << "," << pos.y << "," << pos.z << ")");
+        }
+    };
+    logPositions("t=0s");
+    Simulator::Schedule(Seconds(0.01),
+                        +[](NodeContainer ues, double t) {
+                            for (uint32_t i = 0; i < std::min(ues.GetN(), 3u); ++i)
+                            {
+                                Vector pos = ues.Get(i)->GetObject<MobilityModel>()->GetPosition();
+                                NS_LOG_UNCOND("[MobilityProbe] t=" << t << "s UE" << i
+                                              << " pos=(" << pos.x << "," << pos.y << "," << pos.z << ")");
+                            }
+                        },
+                        scenarioResult.ueNodes,
+                        0.01);
+    // ─────────────────────────────────────────────────────────────────────────
+
     Simulator::Run();
+
 
     if (scenarioId == PqcScenarioId::QUANTUM_ATTACK)
     {
@@ -323,11 +372,16 @@ RunSingleSimulation(const std::string& cryptoModeStr,
 
     pqcHelper.GetMetricsCollector()->ExportIntermediateLogs("results_data");
 
+    // Export per-packet trace CSV
+    pqcHelper.GetMetricsCollector()->ExportPerPacketTrace(
+        "results_data/packet_trace_" + cryptoModeStr + "_" +
+        std::to_string(actualDrones) + "nodes_run" + std::to_string(runIndex) + ".csv");
+
     if (system("mkdir -p results results/metadata")) {
     }
 
     std::string csvName = "results/" + cryptoModeStr + "_" + std::to_string(actualDrones) + "nodes";
-    if (runIndex > 0)
+    if (totalRuns > 1 || runIndex > 0)
     {
         csvName += "_run" + std::to_string(runIndex);
     }
@@ -365,8 +419,8 @@ main(int argc, char* argv[])
     uint32_t numDrones = 20;
     uint32_t numRuns = 1;
     uint32_t seed = 42;
-    uint32_t kyberLevelArg = 768;
-    std::string hybridModeStr = "kyber768-x25519";
+    uint32_t kyberLevelArg = 1024;
+    std::string hybridModeStr = "kyber1024-x25519";
     bool parallelHandshake = false;
     bool cacheEnabled = false;
     double cacheTtlSec = 300.0;
@@ -379,6 +433,17 @@ main(int argc, char* argv[])
     uint32_t packetSize = 1024;
     uint32_t dataRateKbps = 200;
     double simTime = 10.0;
+    double lossRate = 0.0;
+    std::string band = "5g-3.5ghz";
+    
+    // Ablation toggles
+    bool disableCsidhBypass = false;
+    bool pureKyber = false;
+    bool useMm1Queue = false;
+    std::string routingProtocol = "dora";
+    bool disableMaskedSha3 = false;
+    bool disableCvqkd = false;
+    bool disableEmulsion = false;
 
     CommandLine cmd;
     cmd.AddValue("cryptoMode", "Cryptography mode: ecc, kyber, kyber_cached, hybrid", cryptoModeStr);
@@ -406,7 +471,22 @@ main(int argc, char* argv[])
     cmd.AddValue("packetSize", "Telemetry payload bytes", packetSize);
     cmd.AddValue("rate", "Data rate kbps per drone", dataRateKbps);
     cmd.AddValue("simTime", "Simulation duration seconds", simTime);
+    cmd.AddValue("lossRate", "Packet loss rate [0.0-1.0] for lossy channel", lossRate);
+    cmd.AddValue("band", "Frequency band: 5g-3.5ghz or 6g-140ghz", band);
+    
+    cmd.AddValue("disableCsidhBypass", "Ablation A1: Disable CSIDH MAC CE bypass", disableCsidhBypass);
+    cmd.AddValue("pureKyber", "Ablation A2: Remove X-Wing hybrid, pure Kyber only", pureKyber);
+    cmd.AddValue("useMm1Queue", "Ablation A3: Use M/M/1 queue instead of M/G/1", useMm1Queue);
+    cmd.AddValue("routingProtocol", "Ablation A4/A5: Routing protocol (dora, zrp, dsrp)", routingProtocol);
+    cmd.AddValue("disableMaskedSha3", "Ablation A6: Use unmasked SHA-3", disableMaskedSha3);
+    cmd.AddValue("disableCvqkd", "Ablation A7: Disable CV-QKD FSO link", disableCvqkd);
+    cmd.AddValue("disableEmulsion", "Ablation A8: Disable EMULSION MAYO anchoring", disableEmulsion);
+    
     cmd.Parse(argc, argv);
+
+    if (pureKyber) {
+        cryptoModeStr = "kyber";
+    }
 
     if (!cryptoAlias.empty())
     {
@@ -441,7 +521,16 @@ main(int argc, char* argv[])
                             hardwareProfile,
                             batteryWh,
                             run,
-                            seed + run);
+                            numRuns,
+                            seed + run,
+                            lossRate,
+                            band,
+                            disableCsidhBypass,
+                            useMm1Queue,
+                            routingProtocol,
+                            disableMaskedSha3,
+                            disableCvqkd,
+                            disableEmulsion);
     }
 
     return 0;

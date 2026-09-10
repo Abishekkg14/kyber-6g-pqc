@@ -15,6 +15,10 @@ set(source_files
     model/pqc-metrics-collector.cc
     model/pqc-drone-app.cc
     model/pqc-adaptive-key-manager.cc
+    model/thz-gilbert-elliott-channel.cc
+    model/mg1-queue-tracker.cc
+    model/raptor-fountain-coder.cc
+    model/snc-queue-tracker.cc
     helper/pqc-security-helper.cc
     helper/pqc-scenario-helper.cc
 )
@@ -36,6 +40,10 @@ set(header_files
     model/pqc-metrics-collector.h
     model/pqc-drone-app.h
     model/pqc-adaptive-key-manager.h
+    model/thz-gilbert-elliott-channel.h
+    model/mg1-queue-tracker.h
+    model/raptor-fountain-coder.h
+    model/snc-queue-tracker.h
     helper/pqc-security-helper.h
     helper/pqc-scenario-helper.h
 )

@@ -1,4 +1,4 @@
-export default function Conclusions({ data }) {
+export default function Conclusions() {
     const findings = [
         {
             indicator: 'positive',
