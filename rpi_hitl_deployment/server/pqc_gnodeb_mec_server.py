@@ -6,6 +6,8 @@
 # - Sub-5ms 0-RTT Rapid Rekeying (Key Caching)
 # - Real-time AES-256-GCM Avionics Flight Telemetry Decryption
 # - Replay Protection (Monotonic 64-bit sliding window)
+# - Interactive Drone C2 Command Execution & Status Acks
+# - Encrypted High-Resolution Aerial Reconnaissance Image & Video Payload Receiver
 # - Live Mission Telemetry CSV Logging
 # ==============================================================================
 import socket
@@ -60,6 +62,7 @@ class SessionCache:
     def __init__(self, max_entries=1000):
         self.store = {}
         self.nonces = {}
+        self.image_transfers = {}
         self.max_entries = max_entries
 
     def put(self, ue_id, combined_secret, mobility_hash):
@@ -101,14 +104,14 @@ def main():
     parser.add_argument("--log-csv", type=str, default=None, help="Path to save flight mission telemetry CSV")
     args = parser.parse_args()
 
-    # Determine default CSV location in results/
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    results_dir = os.path.join(base_dir, "results")
+    rx_images_dir = os.path.join(base_dir, "received_images")
+    os.makedirs(results_dir, exist_ok=True)
+    os.makedirs(rx_images_dir, exist_ok=True)
+
     if args.log_csv is None:
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        results_dir = os.path.join(base_dir, "results")
-        os.makedirs(results_dir, exist_ok=True)
         args.log_csv = os.path.join(results_dir, "flight_mission_telemetry.csv")
-    else:
-        os.makedirs(os.path.dirname(os.path.abspath(args.log_csv)), exist_ok=True)
 
     csv_file = open(args.log_csv, mode="w", newline="")
     csv_writer = csv.writer(csv_file)
@@ -123,6 +126,7 @@ def main():
     print(f"KYBER-6G 3GPP gNodeB BASE TOWER & MEC EDGE SERVER (UDP {args.host}:{args.port})")
     print(f"Signature Verification Engine: {SIG_ALG} (Level 5)")
     print(f"Avionics Telemetry Log:        {args.log_csv}")
+    print(f"Received Imagery Storage:      {rx_images_dir}")
     print("=" * 75)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -210,7 +214,6 @@ def main():
                 ue_id = payload[:8]
                 seq = struct.unpack("!Q", payload[8:16])[0]
                 if not cache.validate_nonce(ue_id, seq):
-                    print(f"[-] Replay attack detected on UAV {ue_id}! Dropped seq {seq}")
                     continue
                 
                 gcm_nonce = payload[16:28]
@@ -233,13 +236,104 @@ def main():
                     csv_file.flush()
                     telemetry_count += 1
                     if telemetry_count % 10 == 0 or telemetry_count == 1:
-                        print(f"    [Avionics #{p_seq:04d}] Alt: {alt_cm/100:5.1f}m | Lat: {lat_e7/1e7:9.5f}, Lon: {lon_e7/1e7:9.5f} | Speed: {vx_cms/100:4.1f} m/s | Bat: {bat}% | Logged to CSV")
+                        print(f"    [Avionics #{p_seq:04d}] Alt: {alt_cm/100:5.1f}m | Lat: {lat_e7/1e7:9.5f}, Lon: {lon_e7/1e7:9.5f} | Speed: {vx_cms/100:4.1f} m/s | Bat: {bat}%")
                 else:
                     print(f"    [Telemetry #{seq:04d}] {plaintext.decode('utf-8', errors='ignore')}")
 
                 reply_nonce = os.urandom(12)
                 reply_ct = aesgcm.encrypt(reply_nonce, b"CMD_ACK:WAYPOINT_HOLD", None)
                 send_framed_udp(sock, client_addr, 0x07, reply_nonce + reply_ct)
+
+            # Message 0x08: Interactive C2 Flight Command
+            elif msg_type == 0x08:
+                ue_id = payload[:8]
+                cmd_seq = struct.unpack("!Q", payload[8:16])[0]
+                gcm_nonce = payload[16:28]
+                ciphertext = payload[28:]
+                cached_key = cache.store[ue_id]["combined_secret"]
+
+                aesgcm = AESGCM(cached_key)
+                command_str = aesgcm.decrypt(gcm_nonce, ciphertext, None).decode('utf-8')
+                print(f"\n[>>> C2 FLIGHT COMMAND RECEIVED FROM UAV {ue_id.decode('ascii').strip()}]: \"{command_str}\"")
+
+                # Process command semantics
+                ack_msg = f"EXECUTED: {command_str} [gNodeB Base Tower ACK]"
+                reply_nonce = os.urandom(12)
+                reply_ct = aesgcm.encrypt(reply_nonce, ack_msg.encode('utf-8'), None)
+                send_framed_udp(sock, client_addr, 0x09, struct.pack("!Q", cmd_seq) + reply_nonce + reply_ct)
+                print(f"[<<< Sent Encrypted C2 Execution Response to UAV]")
+
+            # Message 0x10: Encrypted Aerial Reconnaissance Image Metadata Header
+            elif msg_type == 0x10:
+                ue_id = payload[:8]
+                gcm_nonce = payload[8:20]
+                ciphertext = payload[20:]
+                cached_key = cache.store[ue_id]["combined_secret"]
+
+                aesgcm = AESGCM(cached_key)
+                plain_meta = aesgcm.decrypt(gcm_nonce, ciphertext, None)
+                name_len, total_size, total_chunks = struct.unpack("!HII", plain_meta[:10])
+                filename = plain_meta[10 : 10 + name_len].decode('utf-8')
+
+                cache.image_transfers[ue_id] = {
+                    "filename": filename,
+                    "total_size": total_size,
+                    "total_chunks": total_chunks,
+                    "chunks": [None] * total_chunks,
+                    "t_start": time.time()
+                }
+                print(f"\n[+] [IMAGE TRANSFER INITIATED] File: {filename} ({total_size} Bytes in {total_chunks} Encrypted Chunks)")
+
+            # Message 0x11: Encrypted Image Data Chunk
+            elif msg_type == 0x11:
+                ue_id = payload[:8]
+                chunk_idx = struct.unpack("!I", payload[8:12])[0]
+                gcm_nonce = payload[12:24]
+                ciphertext = payload[24:]
+                cached_key = cache.store[ue_id]["combined_secret"]
+
+                aesgcm = AESGCM(cached_key)
+                chunk_data = aesgcm.decrypt(gcm_nonce, ciphertext, None)
+
+                transfer = cache.image_transfers.get(ue_id)
+                if transfer:
+                    transfer["chunks"][chunk_idx] = chunk_data
+                    rcvd = sum(1 for c in transfer["chunks"] if c is not None)
+                    if rcvd % 20 == 0 or rcvd == transfer["total_chunks"]:
+                        pct = (rcvd / transfer["total_chunks"]) * 100
+                        print(f"    [Image Decryption Progress]: Chunk {chunk_idx+1:03d}/{transfer['total_chunks']} ({pct:5.1f}%) Verified")
+
+                    # Check if entire image received
+                    if all(c is not None for c in transfer["chunks"]):
+                        full_img = b"".join(transfer["chunks"])
+                        t_dur = time.time() - transfer["t_start"]
+                        out_path = os.path.join(rx_images_dir, f"received_{transfer['filename']}")
+                        with open(out_path, "wb") as img_f:
+                            img_f.write(full_img)
+                        print(f"\n[+] [IMAGE RECONSTRUCTION SUCCESSFUL!]")
+                        print(f"    Saved To:        {out_path}")
+                        print(f"    Total Size:      {len(full_img)} Bytes")
+                        print(f"    Transfer Time:   {t_dur:.2f} s ({len(full_img)/1024/t_dur:.1f} KB/s)")
+                        print(f"    PQC Auth Status: 100% GCM Integrity Verified\n")
+
+                        # Send 0x12 Verified Ack
+                        reply_nonce = os.urandom(12)
+                        reply_ct = aesgcm.encrypt(reply_nonce, b"IMAGE_VERIFIED_AND_SAVED", None)
+                        send_framed_udp(sock, client_addr, 0x12, reply_nonce + reply_ct)
+                        del cache.image_transfers[ue_id]
+
+            # Message 0x20: Encrypted Video Stream Frame Chunk
+            elif msg_type == 0x20:
+                ue_id = payload[:8]
+                frame_id, fps = struct.unpack("!IH", payload[8:14])
+                gcm_nonce = payload[14:26]
+                ciphertext = payload[26:]
+                cached_key = cache.store[ue_id]["combined_secret"]
+
+                aesgcm = AESGCM(cached_key)
+                video_frame_data = aesgcm.decrypt(gcm_nonce, ciphertext, None)
+                if frame_id % 30 == 0 or frame_id == 1:
+                    print(f"    [Video Stream #{frame_id:04d}] Decrypted Frame ({len(video_frame_data)} Bytes) @ {fps} FPS | PQC Key Valid")
 
     except KeyboardInterrupt:
         print(f"\n[*] Server shut down. Total telemetry records logged: {telemetry_count}")
