@@ -1,6 +1,6 @@
 # Technical Changes and Implementation Report
 
-This report documents all technical changes, architectural upgrades, and simulation-layer implementations executed in the **Kyber-6G PQC Drone Swarm Security Project**. It details *how* these changes have been engineered within the NS-3 simulator and mapped directly into the finalized IEEE Access manuscript ([access_revised.tex](file:///c:/wsl.localhost/Ubuntu-22.04/home/abishek14/Kyber-6G%20project/IEEE_Access_LaTeX_template__1_dup/access_revised.tex)).
+This report documents all technical changes, architectural upgrades, and simulation-layer implementations executed in the **Kyber-6G PQC Drone Swarm Security Project**. It details *how* these changes have been engineered within the NS-3 simulator and mapped directly into the journal publication manuscript.
 
 ---
 
@@ -106,7 +106,7 @@ Following the review comments in `Comments - abhishek.docx`, we restructured the
 - **Eliminated Table Overflows:** Fitted both Table 1 (Comparison with 2024-2026 literature) and Table 2 (Cryptographic overhead) inside the column margins by wrapping the tables in `\resizebox{\columnwidth}{!}{...}` to prevent text clashing.
 
 ### 6.2. Document Figures Validation
-The compiled paper ([access_revised.pdf](file:///c:/wsl.localhost/Ubuntu-22.04/home/abishek14/Kyber-6G%20project/IEEE_Access_LaTeX_template__1_dup/access_revised.pdf)) features 9 publication-grade figures that map directly to the text:
+The compiled paper features publication-grade figures that map directly to the text:
 1. **Figure 1 (System Architecture):** Demonstrates the UAV swarm, 5G gNBs, MEC nodes, and the core network routing model.
 2. **Figure 2 (Hybrid Handshake Flow):** Illustrates the concurrent dual-core ECDH/Kyber-768 execution sequence.
 3. **Figure 3 (Fragmentation Impact):** Validates the physical-layer fragment count across different MTU options (MTU 1500B, GTP-U 1400B, IPv6 1280B) for Kyber levels.

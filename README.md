@@ -102,7 +102,6 @@ kyber-6g-pqc/
 ├── docs/                                   # Architectural and mathematical specifications
 │   ├── kyber6g_master_spec.md              # Complete protocol specification
 │   └── mathematical_proofs.md              # Security bounds & queuing proofs
-├── IEEE_Access_LaTeX_template__1_dup/      # IEEE Access manuscript template
 ├── elsarticle/                             # Elsevier journal paper template
 └── README.md                               # Project documentation
 ```

@@ -1,6 +1,6 @@
 # Kyber-6G Project — Master Specification Sheet
 > **Extracted from:** `/home/abishek14/Kyber-6G project latest/` · **Date:** 2026-09-10
-> **Sources:** `pqc_mec_server.py`, `pqc_benchmark_server.py`, `ns-3-dev/contrib/pqc-security/model/`, `docs/`, `scripts/`, `IEEE_Access_LaTeX_template/access_revised.tex`, `experiments/config.yaml`
+> **Sources:** `pqc_mec_server.py`, `pqc_benchmark_server.py`, `ns-3-dev/contrib/pqc-security/model/`, `docs/`, `scripts/`, `experiments/config.yaml`
 
 ---
 
