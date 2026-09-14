@@ -388,6 +388,83 @@
 
 
   <!-- Interactive Source Code Browser -->
+  
+  <!-- Dedicated Ablation Study Suite -->
+  <div class="val-card" id="ablation-study-suite" style="margin-top: 35px;">
+    <div class="card-title">
+      <span>🔬 Dedicated Ablation Study Suite (8 Separate 300 DPI Publication Figures)</span>
+    </div>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">
+      Each architectural component was systematically ablated across 10 swarm fleet scales (N=10 to 100 UAVs) with 500 Monte Carlo trials per cell (45,000 total simulated flights) on the Raspberry Pi 4 Model B profile:
+    </p>
+
+    <div class="grid-2">
+      <div class="plot-box">
+        <img src="ablation_study/plots/01_ablation_latency_delta_bars.png" alt="Ablation Latency Delta Bars">
+        <div class="plot-desc">
+          <h3>Ablation 1. Component Latency Delta vs. Baseline</h3>
+          <p>Impact of each removed component at 20, 50, and 80 UAV swarm densities. Negative delta denotes latency savings; positive denotes added overhead.</p>
+        </div>
+      </div>
+
+      <div class="plot-box">
+        <img src="ablation_study/plots/02_ablation_scaling_curves.png" alt="Ablation Scaling Curves">
+        <div class="plot-desc">
+          <h3>Ablation 2. Full Trajectory Scaling (10–100 UAVs)</h3>
+          <p>Complete scalability curves for all 9 scenarios plotted against the 10 ms URLLC compliance boundary across dense swarm configurations.</p>
+        </div>
+      </div>
+
+      <div class="plot-box">
+        <img src="ablation_study/plots/03_ablation_crypto_breakdown_dual_vs_single.png" alt="Dual vs Single Core">
+        <div class="plot-desc">
+          <h3>Ablation 3. Dual-Core Speedup vs. Single-Core</h3>
+          <p>Dedicated isolation of Scenario a8 (Sequential Crypto) proving the empirical 145 µs hardware concurrency gain from parallel ML-KEM + X25519 execution on Cortex-A72 cores.</p>
+        </div>
+      </div>
+
+      <div class="plot-box">
+        <img src="ablation_study/plots/04_ablation_fragmentation_penalty.png" alt="Fragmentation Penalty">
+        <div class="plot-desc">
+          <h3>Ablation 4. Multi-Slot RLC/MAC Fragmentation Penalty</h3>
+          <p>Isolates Scenario a6 (Jumbo frames) showing the exact 1.00 ms (two 0.5 ms TTI slots) transmission penalty incurred by NIST Level-5 ML-KEM-1024 frame segmentation.</p>
+        </div>
+      </div>
+
+      <div class="plot-box">
+        <img src="ablation_study/plots/05_ablation_pqc_vs_classical.png" alt="PQC vs Classical">
+        <div class="plot-desc">
+          <h3>Ablation 5. Post-Quantum Security Tax vs. Classical ECC</h3>
+          <p>Direct comparison of Hybrid vs Pure ML-KEM vs Classical X25519, quantifying the exact 1.82 ms latency trade-off for post-quantum resistance.</p>
+        </div>
+      </div>
+
+      <div class="plot-box">
+        <img src="ablation_study/plots/06_ablation_cdf_distributions.png" alt="CDF Distributions">
+        <div class="plot-desc">
+          <h3>Ablation 6. Latency CDF Distributions at High Density (80 UAVs)</h3>
+          <p>Cumulative probability distributions showing the tail latency behavior and jitter spread across all 9 architectural variants under heavy network load.</p>
+        </div>
+      </div>
+
+      <div class="plot-box">
+        <img src="ablation_study/plots/07_ablation_heatmap.png" alt="Ablation Heatmap">
+        <div class="plot-desc">
+          <h3>Ablation 7. Parameter Sensitivity Matrix Heatmap</h3>
+          <p>Comprehensive 2D matrix visualizing latency shifts across all 9 scenarios and 10 swarm scales.</p>
+        </div>
+      </div>
+
+      <div class="plot-box">
+        <img src="ablation_study/plots/08_ablation_p99_urllc_compliance.png" alt="P99 URLLC Compliance">
+        <div class="plot-desc">
+          <h3>Ablation 8. P99 Tail Latency URLLC Horizon</h3>
+          <p>Evaluation of 99th-percentile tail latency against the 10 ms 3GPP URLLC boundary, revealing the exact network capacity limits for each variant.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="val-card" id="source-code-inspector" style="margin-top: 30px;">
     <div class="card-title">
       <span>🔍 Interactive Simulation Source Code Inspector (NS-3 & C++)</span>
