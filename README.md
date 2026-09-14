@@ -55,10 +55,15 @@ kyber-6g-pqc/
 │   ├── data/
 │   │   ├── hitl_benchmarks.csv             # Baseline 100-run RPi4 physical measurements
 │   │   └── hitl_benchmarks_extended.csv    # Extended telemetry (latency, energy, thermal)
-│   ├── scripts/
-│   │   ├── pqc_benchmark_server.py         # UDP benchmark server executed on RPi4
-│   │   └── pqc_mec_server.py              # MEC edge server benchmark harness
+│   ├── scripts/                            # Hardware socket harnesses & stream pipelines
+│   │   ├── pqc_benchmark_server.py         # Dual UDP (ARQ) / TCP server on RPi4 / MEC
+│   │   ├── pqc_benchmark_client.py         # Dual UDP (ARQ) / TCP client for UAV / laptop
+│   │   ├── pqc_video_streamer.py           # Video streaming with deterministic AES-GCM nonces + AAD
+│   │   ├── pqc_image_secure_transfer.py    # Encrypted image chunking with monotonic nonces + AAD
+│   │   ├── pqc_media_multicore_engine.py   # Multi-core parallel cryptographic encryption engine
+│   │   └── pqc_gnodeb_mec_server.py        # gNodeB / MEC edge receiver for video/image streams
 │   └── plots/                              # Empirical hardware analysis figures
+├── src/hitl/                               # Master source suite of all HITL hardware benchmarks
 ├── simulation_results/
 │   ├── data/
 │   │   ├── sim_results_1to1_baseline.csv   # 100-run calibrated NS-3 simulation output

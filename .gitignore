@@ -61,3 +61,8 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Hardware test outputs
+hitl/received_images/
+hitl/received_video/
+hitl/results/
