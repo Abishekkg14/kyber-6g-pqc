@@ -85,10 +85,10 @@ class PqcHandoverManager : public Object
 
   private:
     Ptr<PqcPdcpLayer> m_pdcpLayer;
-    Ptr<HybridKemCombiner> m_hybridKem;
+    Ptr<SimulatedHybridKemCombiner> m_hybridKem;
 
     // Pre-computed key material pool
-    std::queue<HybridKemCombiner::HybridKeyPair> m_precomputedKeys;
+    std::queue<SimulatedHybridKemCombiner::HybridKeyPair> m_precomputedKeys;
     uint32_t m_poolTargetSize;
 
     // Counters

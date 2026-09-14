@@ -125,7 +125,7 @@ This exceeds the NIST Level 1 security requirement of $2^{-128}$ attack cost.
 
 ---
 
-## 2. X-Wing Hybrid KEM: Perfect Forward Secrecy via Extended SVO Logic
+## 2. ML-KEM-1024/X25519 Hybrid KEM Hybrid KEM: Perfect Forward Secrecy via Extended SVO Logic
 
 ### 2.1 SVO Logic Foundations
 
@@ -168,21 +168,21 @@ We introduce three new axioms specific to hybrid post-quantum key exchange:
 >
 > *Justification*: Since the session key depends on the ephemeral key $\text{ek}_A^{(t)}$ which was generated and destroyed within epoch $t$, long-term key compromise at $t' > t$ does not retroactively reveal $K_{\text{session}}^{(t)}$, provided the ephemeral key material was properly erased.
 
-### 2.3 X-Wing Protocol Idealization
+### 2.3 ML-KEM-1024/X25519 Hybrid KEM Protocol Idealization
 
-The X-Wing key exchange between UE $U$ and gNB $G$ proceeds as:
+The ML-KEM-1024/X25519 Hybrid KEM key exchange between UE $U$ and gNB $G$ proceeds as:
 
 **Message 1** ($U \to G$): $\{N_U, \text{ek}^{\text{X25519}}_U, \text{ek}^{\text{ML-KEM}}_U\}$
 
 **Message 2** ($G \to U$): $\{N_G, \text{ek}^{\text{X25519}}_G, \text{ct}^{\text{ML-KEM}}_G, \text{MAYO.Sign}(\text{sk}_G^{(\text{lt})}, \text{transcript})\}$
 
 **Key derivation:**
-$$K_{\text{session}} = \text{HKDF-SHA256}\Big(\text{X25519}(\text{ek}_U, \text{ek}_G) \;\|\; \text{ML-KEM.Decaps}(\text{sk}_U^{\text{ML-KEM}}, \text{ct}_G),\; \text{``X-Wing-v1''} \| N_U \| N_G\Big)$$
+$$K_{\text{session}} = \text{HKDF-SHA256}\Big(\text{X25519}(\text{ek}_U, \text{ek}_G) \;\|\; \text{ML-KEM.Decaps}(\text{sk}_U^{\text{ML-KEM}}, \text{ct}_G),\; \text{``ML-KEM-1024/X25519 Hybrid KEM-v1''} \| N_U \| N_G\Big)$$
 
 ### 2.4 PFS Proof
 
-> **Theorem 2 (X-Wing Perfect Forward Secrecy).**  
-> Under the assumptions that (i) the CDH problem is hard for X25519, (ii) the MLWE problem is hard for ML-KEM-1024, (iii) HKDF-SHA256 is a secure PRF, and (iv) MAYO is EUF-CMA secure, the X-Wing protocol provides perfect forward secrecy.
+> **Theorem 2 (ML-KEM-1024/X25519 Hybrid KEM Perfect Forward Secrecy).**  
+> Under the assumptions that (i) the CDH problem is hard for X25519, (ii) the MLWE problem is hard for ML-KEM-1024, (iii) HKDF-SHA256 is a secure PRF, and (iv) MAYO is EUF-CMA secure, the ML-KEM-1024/X25519 Hybrid KEM protocol provides perfect forward secrecy.
 
 **Proof:**
 
@@ -227,11 +227,11 @@ Therefore: $U \mid\equiv K_{\text{session}}^{(t)} \text{ remains fresh at } t'$ 
 
 ### 2.5 Remark on Quantum Resilience of PFS
 
-Classical PFS (via X25519 alone) is vulnerable to a quantum adversary who records the ephemeral public keys and later applies Shor's algorithm. The X-Wing construction provides **quantum-resilient PFS** because even if X25519 is broken:
+Classical PFS (via X25519 alone) is vulnerable to a quantum adversary who records the ephemeral public keys and later applies Shor's algorithm. The ML-KEM-1024/X25519 Hybrid KEM construction provides **quantum-resilient PFS** because even if X25519 is broken:
 - $K_2$ from ML-KEM-1024 remains fresh (by SVO-PQ1, under MLWE hardness)
 - SVO-PQ2 ensures the combined key inherits this freshness
 
-Conversely, if MLWE is broken but CDH remains hard, $K_1$ provides classical PFS. The X-Wing construction thus provides PFS under the **disjunction** of classical and post-quantum hardness assumptions.
+Conversely, if MLWE is broken but CDH remains hard, $K_1$ provides classical PFS. The ML-KEM-1024/X25519 Hybrid KEM construction thus provides PFS under the **disjunction** of classical and post-quantum hardness assumptions.
 
 ---
 

@@ -1,0 +1,21 @@
+CompileFlags:
+  Add:
+    - --target=x86_64-w64-windows-gnu
+    - -isystem
+    - C:/msys64/mingw64/include/c++/15.2.0
+    - -isystem
+    - C:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32
+    - -isystem
+    - C:/msys64/mingw64/include/c++/15.2.0/backward
+    - -isystem
+    - C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include
+    - -isystem
+    - C:/msys64/mingw64/include
+    - -I//wsl.localhost/Ubuntu-22.04/home/abishek14/Kyber-6G project latest/simulation_source_code
+    - -I//wsl.localhost/Ubuntu-22.04/home/abishek14/Kyber-6G project latest/Kyber-6G project/Kyber-6G project/ns-3-dev/build/include
+    - -std=c++20
+    - -DNS3_LOG_ENABLE
+    - -DNS3_ASSERT_ENABLE
+    - -w
+Diagnostics:
+  Suppress: ["*"]

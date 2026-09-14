@@ -51,7 +51,7 @@ PqcPdcpLayer::GetTypeId()
 PqcPdcpLayer::PqcPdcpLayer()
     : m_mode(TRANSPARENT)
 {
-    m_cipher = CreateObject<AesGcmCipher>();
+    m_cipher = CreateObject<SimulatedAesGcm>();
 }
 
 PqcPdcpLayer::~PqcPdcpLayer()
@@ -173,7 +173,7 @@ PqcPdcpLayer::GetMode() const
 uint32_t
 PqcPdcpLayer::GetPerPacketOverhead() const
 {
-    return (m_mode == ENCRYPTED) ? AesGcmCipher::OVERHEAD : 0;
+    return (m_mode == ENCRYPTED) ? SimulatedAesGcm::OVERHEAD : 0;
 }
 
 uint64_t

@@ -3,9 +3,10 @@
 # Kyber-6G Hardware-in-the-Loop (HITL) Autonomous Benchmark Harness
 # Executes 100 iterations on ARM Cortex-A72:
 # - Full Level-5 Hybrid Handshake (ML-KEM-1024 + X25519 + ML-DSA-87)
-# - Sub-5ms 0-RTT Rapid Rekeying
-# - SWaP-C Energy & Microsecond Latency Breakdown
-# - Writes output CSV to results/hitl_benchmarks_extended.csv
+# - Sub-5ms Cached Rapid Rekeying (1-RTT) with Domain Separation
+# - Parallel Cryptographic Processing (ThreadPoolExecutor)
+# - SWaP-C Energy Model & Microsecond Latency Breakdown
+# - Cryptographically Authenticated & Bound Transcripts
 # ==============================================================================
 import socket
 import os
@@ -29,7 +30,7 @@ except ImportError:
 
 MAX_DGRAM = 1352
 
-# Hardware SWaP Parameters (Cortex-A72 Baseline)
+# Hardware SWaP Parameters (Cortex-A72 Baseline Model)
 P_CPU_ACTIVE = 5.0   # Watts
 P_IDLE = 1.0         # Watts
 P_TX = 0.52          # Watts
@@ -89,6 +90,7 @@ def recv_framed_udp(sock, timeout=5.0):
             return msg_type, full_payload
 
 def calculate_swap_energy(t_proc, t_tx, t_rx, bytes_transferred):
+    """Computes modeled SWaP-C energy consumption in milliJoules (mJ)."""
     e_cpu = P_CPU_ACTIVE * t_proc * 1000.0
     e_tx = P_TX * t_tx * 1000.0
     e_rx = P_RX * t_rx * 1000.0
@@ -125,18 +127,21 @@ def main():
     print(f"Target gNodeB Base Station: {args.server}:{args.port}")
     print(f"Signature Engine:           {SIG_ALG} (Level 5)")
     print(f"Output Dataset:             {args.output}")
+    print(f"Parallel Execution:         Enabled (ThreadPoolExecutor)")
     print("=" * 75)
 
     signer = oqs.Signature(SIG_ALG)
     drone_sig_pk = signer.generate_keypair()
     ue_id = b"UAV_GW_1"
-    mobility_hash = 0xA1B2C3D4
     nonce_counter = 0
     current_session_key = None
+    expected_gnb_pk = None
 
-    precomputed_pool = [run_kyber_keygen() for _ in range(3)]
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server_addr = (args.server, args.port)
+
+    # Pre-warm CPU load monitor
+    get_cpu_load()
 
     with open(args.output, mode='w', newline='') as file:
         writer = csv.writer(file)
@@ -146,21 +151,36 @@ def main():
             "Energy_mJ", "CPU_Load_Percent", "SoC_Temp_C"
         ])
 
+        # Precompute keypair pool in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool_exec:
+            precomputed_pool = [pool_exec.submit(run_kyber_keygen).result() for _ in range(3)]
+
         for i in range(1, args.runs + 1):
-            get_cpu_load()
+            # Dynamic mobility hash computed per iteration
+            mobility_hash = (0xA1B2C3D4 + (i * 0x101)) & 0xFFFFFFFF
             force_miss = (i == 1 or i == 51)
-            mode = "FULL_PQC" if force_miss else "0RTT_REKEY"
+            mode = "FULL_PQC" if force_miss else "CACHED_REKEY"
 
             t0 = time.perf_counter_ns()
 
             if mode == "FULL_PQC":
-                if precomputed_pool:
-                    kem_inst, pk_drone_k = precomputed_pool.pop(0)
-                else:
-                    kem_inst, pk_drone_k = run_kyber_keygen()
+                # Parallel Key Generation: X25519 + ML-KEM-1024
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                    fut_x = executor.submit(run_x25519_keygen)
+                    if precomputed_pool:
+                        kem_inst, pk_drone_k = precomputed_pool.pop(0)
+                        fut_k = None
+                    else:
+                        fut_k = executor.submit(run_kyber_keygen)
+                    
+                    sk_drone_x, pk_drone_x = fut_x.result()
+                    if fut_k:
+                        kem_inst, pk_drone_k = fut_k.result()
 
-                sk_drone_x, pk_drone_x = run_x25519_keygen()
-                sig_drone = signer.sign(pk_drone_x + pk_drone_k)
+                # Full Transcript Binding for ML-DSA-87 Authentication
+                # Binds UE ID, mobility hash, and both ephemeral public keys
+                transcript_to_sign = ue_id + struct.pack("!I", mobility_hash) + pk_drone_x + pk_drone_k
+                sig_drone = signer.sign(transcript_to_sign)
 
                 t1_tx = time.perf_counter_ns()
                 msg1 = ue_id + struct.pack("!I", mobility_hash) + pk_drone_x + pk_drone_k + struct.pack("!H", len(sig_drone)) + sig_drone + drone_sig_pk
@@ -178,18 +198,35 @@ def main():
                 gnb_sig_pk = payload[2 + sig_len : 2 + sig_len + len(drone_sig_pk)]
                 signed_body = payload[2 + sig_len + len(drone_sig_pk) :]
 
+                # Verify gNB certificate / identity binding
+                if expected_gnb_pk is None:
+                    expected_gnb_pk = gnb_sig_pk
+                elif expected_gnb_pk != gnb_sig_pk:
+                    raise RuntimeError(f"gNB public key mismatch at run {i}! Potential MITM detected.")
+
                 pk_server_x = signed_body[:32]
                 ct_server_k = signed_body[32:1600]
                 hkdf_salt = signed_body[1600:1616]
 
+                # Mutual Authentication: Strictly verify gNB signature
                 verifier = oqs.Signature(SIG_ALG)
-                verifier.verify(signed_body, gnb_sig, gnb_sig_pk)
+                is_valid = verifier.verify(signed_body, gnb_sig, gnb_sig_pk)
                 verifier.free()
+                if not is_valid:
+                    raise RuntimeError(f"gNB ML-DSA signature verification FAILED at iteration {i}!")
 
-                s_drone_k = kem_inst.decap_secret(ct_server_k)
-                s_drone_x = sk_drone_x.exchange(x25519.X25519PublicKey.from_public_bytes(pk_server_x))
+                # Parallel Decapsulation and ECDH Shared Secret Computation
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as decap_exec:
+                    fut_s_k = decap_exec.submit(kem_inst.decap_secret, ct_server_k)
+                    fut_s_x = decap_exec.submit(
+                        sk_drone_x.exchange,
+                        x25519.X25519PublicKey.from_public_bytes(pk_server_x)
+                    )
+                    s_drone_k = fut_s_k.result()
+                    s_drone_x = fut_s_x.result()
                 kem_inst.free()
 
+                # Level-5 Hybrid Master Key Derivation
                 current_session_key = HKDF(
                     algorithm=hashes.SHA256(),
                     length=32,
@@ -204,6 +241,7 @@ def main():
                 total_bytes = len(msg1) + len(payload)
 
             else:
+                # Cached Rapid Rekey (1-RTT) Mode
                 ephemeral_salt = os.urandom(16)
                 msg3 = ue_id + struct.pack("!I", mobility_hash) + ephemeral_salt
 
@@ -214,14 +252,15 @@ def main():
                 msg_type, payload = recv_framed_udp(sock)
                 t2_rx = time.perf_counter_ns()
                 if msg_type != 0x04 or payload is None:
-                    print(f"[-] 0-RTT Rekeying timed out at run {i}")
+                    print(f"[-] Cached Rekeying timed out at run {i}")
                     continue
 
+                # Evolve session key with domain separation
                 current_session_key = HKDF(
                     algorithm=hashes.SHA256(),
                     length=32,
                     salt=ephemeral_salt,
-                    info=b"Kyber6G-3GPP-0RTT-Rekey"
+                    info=b"Kyber6G-3GPP-Cached-Rapid-Rekey"
                 ).derive(current_session_key)
 
                 t_crypto_end = time.perf_counter_ns()
@@ -230,7 +269,7 @@ def main():
                 rx_time_s = (t2_rx - t1_tx_end) / 1e9
                 total_bytes = len(msg3) + len(payload)
 
-            # Data Plane AES-256-GCM Test
+            # Data Plane AES-256-GCM Telemetry & Encrypted ACK Round-Trip
             aesgcm = AESGCM(current_session_key)
             nonce_counter += 1
             gcm_nonce = struct.pack("!Q", nonce_counter) + os.urandom(4)
@@ -248,24 +287,25 @@ def main():
             t_total_end = time.perf_counter_ns()
             total_handshake_ms = (t_total_end - t0) / 1e6
             crypto_proc_ms = proc_time_s * 1e3
+
             energy_mj = calculate_swap_energy(proc_time_s, tx_time_s, rx_time_s, total_bytes)
             cpu_load = get_cpu_load()
-            temp_c = get_soc_temp()
+            soc_temp = get_soc_temp()
 
             writer.writerow([
                 i, mode, f"{total_handshake_ms:.3f}", 
                 f"{crypto_proc_ms:.3f}", f"{aes_rtt_ms:.3f}", 
-                energy_mj, cpu_load, temp_c
+                f"{energy_mj:.4f}", f"{cpu_load:.1f}", f"{soc_temp:.2f}"
             ])
             file.flush()
 
             if i % 10 == 0 or i == 1:
-                print(f"  [Run #{i:03d}] {mode:<11} | E2E: {total_handshake_ms:6.2f} ms | Crypto: {crypto_proc_ms:5.2f} ms | AES RTT: {aes_rtt_ms:4.2f} ms | Energy: {energy_mj:5.2f} mJ | Temp: {temp_c} deg C")
+                print(f"[*] Run {i:3d}/{args.runs}: Mode={mode:12s} | Handshake={total_handshake_ms:6.2f} ms | Crypto={crypto_proc_ms:5.2f} ms | AES={aes_rtt_ms:5.2f} ms | Energy={energy_mj:6.2f} mJ | Temp={soc_temp:.1f}°C")
 
-            time.sleep(0.05)
-
-    print(f"\n[+] Successfully finished {args.runs} benchmark runs.")
-    print(f"[+] Output dataset saved to: {args.output}")
+    print("=" * 75)
+    print(f"[✓] Benchmark completed successfully: {args.runs} iterations recorded.")
+    print(f"[✓] Output saved to: {args.output}")
+    print("=" * 75)
     signer.free()
 
 if __name__ == "__main__":

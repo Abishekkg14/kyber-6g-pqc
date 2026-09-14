@@ -3,8 +3,16 @@
 // Copyright (c) 2026 Kyber-6G Project
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef AES_GCM_CIPHER_H
-#define AES_GCM_CIPHER_H
+#ifndef SIMULATED_AES_GCM_H
+#define SIMULATED_AES_GCM_H
+
+#include <cstdint>
+#include <vector>
+#include <string>
+#include <memory>
+#include <algorithm>
+#include <iostream>
+
 
 #include "pqc-session-keys.h"
 
@@ -34,7 +42,7 @@ namespace pqc
  * in simulation traces for debugging/analysis. The overhead
  * is accurately represented in packet sizes.
  */
-class AesGcmCipher : public Object
+class SimulatedAesGcm : public Object
 {
   public:
     static constexpr uint32_t NONCE_SIZE = 12;   ///< AES-GCM nonce/IV
@@ -58,8 +66,8 @@ class AesGcmCipher : public Object
 
     static TypeId GetTypeId();
 
-    AesGcmCipher();
-    ~AesGcmCipher() override;
+    SimulatedAesGcm();
+    ~SimulatedAesGcm() override;
 
     /**
      * \brief Install session keys for encryption/decryption.
@@ -105,4 +113,4 @@ class AesGcmCipher : public Object
 } // namespace pqc
 } // namespace ns3
 
-#endif // AES_GCM_CIPHER_H
+#endif // SIMULATED_AES_GCM_H

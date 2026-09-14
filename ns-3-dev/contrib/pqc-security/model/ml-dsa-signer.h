@@ -3,8 +3,8 @@
 // Copyright (c) 2026 Kyber-6G Project
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef ML_DSA_SIGNER_H
-#define ML_DSA_SIGNER_H
+#ifndef SIMULATED_ML_DSA_H
+#define SIMULATED_ML_DSA_H
 
 #include "ns3/nstime.h"
 #include "ns3/object.h"
@@ -30,7 +30,7 @@ namespace pqc
  *
  * Sizes and timing match NIST FIPS 204 specifications.
  */
-class MlDsaSigner : public Object
+class SimulatedMlDsa : public Object
 {
   public:
     /// ML-DSA security levels
@@ -70,8 +70,8 @@ class MlDsaSigner : public Object
 
     static TypeId GetTypeId();
 
-    MlDsaSigner();
-    ~MlDsaSigner() override;
+    SimulatedMlDsa();
+    ~SimulatedMlDsa() override;
 
     /**
      * \brief Generate an ML-DSA key pair (identity key, typically long-lived).
@@ -134,4 +134,4 @@ class MlDsaSigner : public Object
 } // namespace pqc
 } // namespace ns3
 
-#endif // ML_DSA_SIGNER_H
+#endif // SIMULATED_ML_DSA_H

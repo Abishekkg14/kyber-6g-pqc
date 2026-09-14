@@ -15,70 +15,70 @@ namespace ns3
 namespace pqc
 {
 
-NS_LOG_COMPONENT_DEFINE("HybridKemCombiner");
-NS_OBJECT_ENSURE_REGISTERED(HybridKemCombiner);
+NS_LOG_COMPONENT_DEFINE("SimulatedHybridKemCombiner");
+NS_OBJECT_ENSURE_REGISTERED(SimulatedHybridKemCombiner);
 
-std::map<std::string, std::vector<uint8_t>> HybridKemCombiner::s_encapsSecretCache;
+std::map<std::string, std::vector<uint8_t>> SimulatedHybridKemCombiner::s_encapsSecretCache;
 
 TypeId
-HybridKemCombiner::GetTypeId()
+SimulatedHybridKemCombiner::GetTypeId()
 {
     static TypeId tid =
-        TypeId("ns3::pqc::HybridKemCombiner")
+        TypeId("ns3::pqc::SimulatedHybridKemCombiner")
             .SetParent<Object>()
             .SetGroupName("PqcSecurity")
-            .AddConstructor<HybridKemCombiner>()
+            .AddConstructor<SimulatedHybridKemCombiner>()
             .AddTraceSource("HybridKeyGenLatency",
                             "Total time for hybrid (ECDH+Kyber) key generation",
-                            MakeTraceSourceAccessor(&HybridKemCombiner::m_hybridKeyGenTrace),
+                            MakeTraceSourceAccessor(&SimulatedHybridKemCombiner::m_hybridKeyGenTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("HybridEncapsLatency",
                             "Total time for hybrid encapsulation",
-                            MakeTraceSourceAccessor(&HybridKemCombiner::m_hybridEncapsTrace),
+                            MakeTraceSourceAccessor(&SimulatedHybridKemCombiner::m_hybridEncapsTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("HybridDecapsLatency",
                             "Total time for hybrid decapsulation",
-                            MakeTraceSourceAccessor(&HybridKemCombiner::m_hybridDecapsTrace),
+                            MakeTraceSourceAccessor(&SimulatedHybridKemCombiner::m_hybridDecapsTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("TotalPublicKeySize",
                             "Combined ECDH+Kyber public key size in bytes",
-                            MakeTraceSourceAccessor(&HybridKemCombiner::m_totalPublicKeySizeTrace),
+                            MakeTraceSourceAccessor(&SimulatedHybridKemCombiner::m_totalPublicKeySizeTrace),
                             "ns3::TracedValueCallback::Uint32")
             .AddTraceSource(
                 "TotalEncapsSize",
                 "Combined ECDH pub + Kyber ciphertext size in bytes",
-                MakeTraceSourceAccessor(&HybridKemCombiner::m_totalEncapsSizeTrace),
+                MakeTraceSourceAccessor(&SimulatedHybridKemCombiner::m_totalEncapsSizeTrace),
                 "ns3::TracedValueCallback::Uint32");
 
     return tid;
 }
 
-HybridKemCombiner::HybridKemCombiner()
+SimulatedHybridKemCombiner::SimulatedHybridKemCombiner()
     : m_cryptoMode(CryptoMode::HYBRID_KYBER_ECDH),
       m_hwProfile(GetHardwareProfile(HardwareProfileId::JETSON_NANO))
 {
-    m_ecdh = CreateObject<X25519Ecdh>();
-    m_kyber = CreateObject<CrystalsKyberKem>();
+    m_ecdh = CreateObject<SimulatedX25519>();
+    m_kyber = CreateObject<SimulatedMlKem>();
 }
 
-HybridKemCombiner::~HybridKemCombiner()
+SimulatedHybridKemCombiner::~SimulatedHybridKemCombiner()
 {
 }
 
 void
-HybridKemCombiner::SetCryptoMode(CryptoMode mode)
+SimulatedHybridKemCombiner::SetCryptoMode(CryptoMode mode)
 {
     m_cryptoMode = mode;
 }
 
 void
-HybridKemCombiner::SetKyberLevel(CrystalsKyberKem::SecurityLevel level)
+SimulatedHybridKemCombiner::SetKyberLevel(SimulatedMlKem::SecurityLevel level)
 {
     m_kyber->SetSecurityLevel(level);
 }
 
 void
-HybridKemCombiner::SetHardwareProfile(const HardwareProfile& profile)
+SimulatedHybridKemCombiner::SetHardwareProfile(const HardwareProfile& profile)
 {
     m_hwProfile = profile;
     double scale = profile.cryptoTimingScale;
@@ -90,19 +90,19 @@ HybridKemCombiner::SetHardwareProfile(const HardwareProfile& profile)
 }
 
 void
-HybridKemCombiner::SetParallelHandshake(bool parallel)
+SimulatedHybridKemCombiner::SetParallelHandshake(bool parallel)
 {
     m_parallelHandshake = parallel;
 }
 
 Time
-HybridKemCombiner::ScaleTime(Time t) const
+SimulatedHybridKemCombiner::ScaleTime(Time t) const
 {
     return MicroSeconds(t.GetMicroSeconds() * m_hwProfile.cryptoTimingScale);
 }
 
 Time
-HybridKemCombiner::CombineParallelTime(Time a, Time b) const
+SimulatedHybridKemCombiner::CombineParallelTime(Time a, Time b) const
 {
     if (m_parallelHandshake && m_hwProfile.maxParallelOps >= 2)
     {
@@ -114,7 +114,7 @@ HybridKemCombiner::CombineParallelTime(Time a, Time b) const
 }
 
 std::string
-HybridKemCombiner::SecretCacheKey(const std::vector<uint8_t>& kyberCt)
+SimulatedHybridKemCombiner::SecretCacheKey(const std::vector<uint8_t>& kyberCt)
 {
     std::ostringstream oss;
     for (uint8_t b : kyberCt)
@@ -125,7 +125,7 @@ HybridKemCombiner::SecretCacheKey(const std::vector<uint8_t>& kyberCt)
 }
 
 std::vector<uint8_t>
-HybridKemCombiner::SimulatedHkdf(const std::vector<uint8_t>& ecdhSs,
+SimulatedHybridKemCombiner::SimulatedKeyCombiner(const std::vector<uint8_t>& ecdhSs,
                                   const std::vector<uint8_t>& kyberSs)
 {
     // Deterministic simulated HKDF-SHA256(ecdhSs || kyberSs, "Kyber6G-HybridKEM-v1")
@@ -152,8 +152,8 @@ HybridKemCombiner::SimulatedHkdf(const std::vector<uint8_t>& ecdhSs,
     return combined;
 }
 
-HybridKemCombiner::HybridKeyPair
-HybridKemCombiner::GenerateKeyPair()
+SimulatedHybridKemCombiner::HybridKeyPair
+SimulatedHybridKemCombiner::GenerateKeyPair()
 {
     HybridKeyPair hkp;
     hkp.totalGenerationTime = Seconds(0);
@@ -187,8 +187,8 @@ HybridKemCombiner::GenerateKeyPair()
     return hkp;
 }
 
-HybridKemCombiner::HybridEncapsResult
-HybridKemCombiner::Encapsulate(const std::vector<uint8_t>& initiatorEcdhPk,
+SimulatedHybridKemCombiner::HybridEncapsResult
+SimulatedHybridKemCombiner::Encapsulate(const std::vector<uint8_t>& initiatorEcdhPk,
                                 const std::vector<uint8_t>& initiatorKyberPk)
 {
     HybridEncapsResult result;
@@ -225,7 +225,7 @@ HybridKemCombiner::Encapsulate(const std::vector<uint8_t>& initiatorEcdhPk,
         result.totalTime = MicroSeconds(ecdhTime.GetMicroSeconds() + kyberTime.GetMicroSeconds());
     }
 
-    result.combinedSecret = SimulatedHkdf(ecdhSecret, kyberSecret);
+    result.combinedSecret = SimulatedKeyCombiner(ecdhSecret, kyberSecret);
     result.totalTime += MicroSeconds(5 * m_hwProfile.cryptoTimingScale);
 
     // Simulation coordination: UE decaps must derive identical combined secret
@@ -240,7 +240,7 @@ HybridKemCombiner::Encapsulate(const std::vector<uint8_t>& initiatorEcdhPk,
 }
 
 std::vector<uint8_t>
-HybridKemCombiner::Decapsulate(const HybridKeyPair& myKeys,
+SimulatedHybridKemCombiner::Decapsulate(const HybridKeyPair& myKeys,
                                 const std::vector<uint8_t>& responderEcdhPk,
                                 const std::vector<uint8_t>& kyberCiphertext)
 {
@@ -282,7 +282,7 @@ HybridKemCombiner::Decapsulate(const HybridKeyPair& myKeys,
         totalTime = MicroSeconds(ecdhTime.GetMicroSeconds() + kyberTime.GetMicroSeconds());
     }
 
-    auto combined = SimulatedHkdf(ecdhSecret, kyberSecret);
+    auto combined = SimulatedKeyCombiner(ecdhSecret, kyberSecret);
     auto cacheIt = s_encapsSecretCache.find(SecretCacheKey(kyberCiphertext));
     if (cacheIt != s_encapsSecretCache.end())
     {
@@ -295,25 +295,27 @@ HybridKemCombiner::Decapsulate(const HybridKeyPair& myKeys,
 }
 
 PqcSessionKeys
-HybridKemCombiner::DeriveSessionKeys(const std::vector<uint8_t>& combinedSecret)
+SimulatedHybridKemCombiner::DeriveSessionKeys(const std::vector<uint8_t>& combinedSecret)
 {
     PqcSessionKeys keys;
     keys.combinedSecret = combinedSecret;
 
     // RRC KDF -> PDCP keys (simulated expand; mirrors 5G KDF chain extension point)
-    keys.encryptionKey.resize(32);
-    keys.integrityKey.resize(32);
-    keys.nonceBase.resize(12);
+    // Domain-separated simulated key derivation (mirrors real HKDF-Expand with
+    // distinct info labels). The HITL benchmark uses actual HKDF-SHA256.
+    // NS-3 uses a deterministic non-cryptographic combiner for reproducibility.
+    std::vector<uint8_t> labelEnc(combinedSecret);
+    labelEnc.push_back(0x01); // "Kyber6G enc" domain separator
+    keys.encryptionKey = SimulatedKeyCombiner(combinedSecret, labelEnc);
 
-    for (uint32_t i = 0; i < 32; ++i)
-    {
-        keys.encryptionKey[i] = combinedSecret[i] ^ 0x01;
-        keys.integrityKey[i] = combinedSecret[i] ^ 0x02;
-    }
-    for (uint32_t i = 0; i < 12; ++i)
-    {
-        keys.nonceBase[i] = combinedSecret[i] ^ 0x03;
-    }
+    std::vector<uint8_t> labelInt(combinedSecret);
+    labelInt.push_back(0x02); // "Kyber6G int" domain separator
+    keys.integrityKey = SimulatedKeyCombiner(combinedSecret, labelInt);
+
+    std::vector<uint8_t> labelNonce(combinedSecret);
+    labelNonce.push_back(0x03); // "Kyber6G nonce" domain separator
+    auto fullNonce = SimulatedKeyCombiner(combinedSecret, labelNonce);
+    keys.nonceBase.assign(fullNonce.begin(), fullNonce.begin() + 12);
 
     keys.nonceCounter = 0;
     keys.establishedAt = Simulator::Now();

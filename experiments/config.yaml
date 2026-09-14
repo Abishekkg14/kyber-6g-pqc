@@ -1,6 +1,22 @@
 # Kyber-6G experiment matrix — HITL-calibrated for Raspberry Pi 4 Model B
-# Updated: Sept 2026 — aligned with hitl_benchmarks_extended.csv ground truth
-# Hardware: BCM2711 Cortex-A72 @ 1.5 GHz, 2 GB LPDDR4-3200, ARMv8 Crypto Extensions
+# Updated: Sept 2026 — aligned with live 100-iteration hitl_benchmarks_extended.csv ground truth
+# Hardware Specifications:
+#   SoC: Broadcom BCM2711 Quad-core ARM Cortex-A72 (ARMv8 64-bit) @ 1.5 GHz
+#   RAM: 2 GB LPDDR4-3200 SDRAM
+#   Core Allocation:
+#     - 2 Dedicated Cores for Cryptographic Handshakes (ThreadPoolExecutor max_workers=2)
+#     - 2 Cores reserved for OS Kernel, UDP network stack, and MAVLink avionics telemetry
+hardware:
+  board: "Raspberry Pi 4 Model B"
+  soc: "Broadcom BCM2711"
+  cpu_architecture: "Quad-core ARM Cortex-A72 (ARMv8 64-bit)"
+  cpu_clock_ghz: 1.5
+  ram_gb: 2.0
+  total_cores: 4
+  crypto_worker_cores: 2
+  avionics_os_cores: 2
+  crypto_extensions: "ARMv8-A Cryptography Extensions (NEON/AES)"
+
 defaults:
   numRuns: 100
   seed: 42
@@ -14,21 +30,24 @@ defaults:
   band: 5g-3.5ghz           # n78 band for HITL baseline validation
   transportMtu: 1352         # Bytes — forces multi-fragment RLC/MAC segmentation
 
-# ── HITL Calibration Constants (from hitl_benchmarks_extended.csv) ──
+# ── Empirical HITL Ground Truth Constants (from latest 100-run live Raspberry Pi 4 benchmark) ──
 hitl_calibration:
-  full_handshake_ms: 99.45
-  zero_rtt_rekey_ms: 4.20
-  aes_gcm_turnaround_ms: 3.80
-  full_handshake_energy_mj: 240.50
-  zero_rtt_rekey_energy_mj: 1.55
-  cpu_power_w: 5.00
-  idle_power_w: 1.00
-  rf_tx_power_w: 0.52
-  rf_rx_power_w: 0.16
-  soc_temp_c: 48.20
+  full_handshake_ms: 45.506           # Cold-start full mutual auth handshake
+  warm_handshake_ms: 20.820           # Warm-start full mutual auth handshake
+  zero_rtt_rekey_ms: 8.234            # 1-RTT cached rapid rekey (symmetric-bound)
+  aes_gcm_turnaround_ms: 3.904        # AES-256-GCM 512B telemetry roundtrip
+  full_handshake_energy_mj: 66.329    # Cold-start full handshake energy
+  warm_handshake_energy_mj: 22.046    # Warm-start full handshake energy
+  zero_rtt_rekey_energy_mj: 1.277     # 1-RTT cached rekey energy
+  aes_gcm_energy_mj: 0.812            # AES-GCM telemetry energy
+  cpu_power_w: 4.85                   # Active Cortex-A72 power under dual-core PQC load
+  idle_power_w: 1.20                  # Idle SoC power draw
+  rf_tx_power_w: 0.52                 # Wi-Fi / 5G RF TX power
+  rf_rx_power_w: 0.16                 # Wi-Fi / 5G RF RX power
+  soc_temp_c: 49.80                   # Steady-state SoC thermal plateau
   parallel_formula: "T_parallel = max(T_X25519, T_MLKEM) * 1.10"
 
-# ── NIST Level-5 Sizes & MTU Fragmentation ──
+# ── NIST Level-5 Primitive Sizes & Wire Framing ──
 crypto_sizes:
   ml_kem_1024:
     public_key_bytes: 1568
@@ -39,6 +58,10 @@ crypto_sizes:
     signature_bytes: 4627
   x25519:
     public_key_bytes: 32
+  aes_gcm_overhead:
+    nonce_bytes: 12
+    tag_bytes: 16
+    total_overhead_bytes: 28
 
 crypto_modes:
   - ecc

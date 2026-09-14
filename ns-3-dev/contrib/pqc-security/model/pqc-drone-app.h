@@ -26,7 +26,7 @@ namespace pqc
 /**
  * \brief Drone Application for telemetry and coordination in the swarm.
  *
- * Simulates a UDP-based mission-critical application. It uses AesGcmCipher
+ * Simulates a UDP-based mission-critical application. It uses SimulatedAesGcm
  * to encrypt outward telemetry and command packets before sending them over
  * the socket. On the receiving end, it decrypts and calculates End-to-End
  * Application Latency, passing metrics to the PqcMetricsCollector.
@@ -55,7 +55,7 @@ class PqcDroneApp : public Application
      * \param metrics The global metrics collector
      */
     void Setup(bool isCommander, Ipv4Address peerAddress, uint16_t peerPort, 
-               Ptr<AesGcmCipher> cipher, Ptr<PqcMetricsCollector> metrics);
+               Ptr<SimulatedAesGcm> cipher, Ptr<PqcMetricsCollector> metrics);
 
   protected:
     void DoDispose() override;
@@ -91,7 +91,7 @@ class PqcDroneApp : public Application
     EventId m_sendCmdEvent;       //!< Event for random command transmission
     uint32_t m_packetsSent;     //!< Counter for sent packets
 
-    Ptr<AesGcmCipher> m_cipher;              //!< Encryption engine
+    Ptr<SimulatedAesGcm> m_cipher;              //!< Encryption engine
     Ptr<PqcMetricsCollector> m_metrics;      //!< Metrics collector
 };
 

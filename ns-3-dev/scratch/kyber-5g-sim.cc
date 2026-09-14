@@ -26,6 +26,13 @@
  *   ./ns3 run "kyber-5g-sim --packetSize=512 --simTime=2000"
  */
 
+#include <cstdint>
+#include <vector>
+#include <string>
+#include <memory>
+#include <algorithm>
+#include <iostream>
+
 #include "ns3/antenna-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/config-store-module.h"

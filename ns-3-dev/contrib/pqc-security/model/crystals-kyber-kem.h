@@ -3,8 +3,8 @@
 // Copyright (c) 2026 Kyber-6G Project
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef CRYSTALS_KYBER_KEM_H
-#define CRYSTALS_KYBER_KEM_H
+#ifndef SIMULATED_ML_KEM_H
+#define SIMULATED_ML_KEM_H
 
 #include "ns3/nstime.h"
 #include "ns3/object.h"
@@ -33,7 +33,7 @@ namespace pqc
  * allowing accurate measurement of network overhead and latency
  * without requiring a cryptographic library dependency.
  */
-class CrystalsKyberKem : public Object
+class SimulatedMlKem : public Object
 {
   public:
     /// NIST security levels for Kyber (FIPS 203)
@@ -86,8 +86,8 @@ class CrystalsKyberKem : public Object
 
     static TypeId GetTypeId();
 
-    CrystalsKyberKem();
-    ~CrystalsKyberKem() override;
+    SimulatedMlKem();
+    ~SimulatedMlKem() override;
 
     /**
      * \brief Generate a Kyber key pair.
@@ -158,4 +158,4 @@ class CrystalsKyberKem : public Object
 } // namespace pqc
 } // namespace ns3
 
-#endif // CRYSTALS_KYBER_KEM_H
+#endif // SIMULATED_ML_KEM_H

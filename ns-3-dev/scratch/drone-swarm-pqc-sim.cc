@@ -110,24 +110,28 @@ InstallDroneApplications(NodeContainer drones,
     Ipv4Address cmdrAddr = cmdrIpv4->GetAddress(1, 0).GetLocal();
     uint16_t port = 9999;
 
-    Ptr<AesGcmCipher> cmdrCipher = CreateObject<AesGcmCipher>();
+    Ptr<SimulatedAesGcm> cmdrCipher = CreateObject<SimulatedAesGcm>();
     Ptr<PqcDroneApp> cmdrApp = CreateObject<PqcDroneApp>();
     cmdrApp->Setup(true, Ipv4Address::GetAny(), port, cmdrCipher, metrics);
     commander->AddApplication(cmdrApp);
     cmdrApp->SetStartTime(Seconds(0.5));
     cmdrApp->SetStopTime(simTime);
 
-    PqcSessionKeys dummyKeys;
-    dummyKeys.combinedSecret.resize(32, 0x42);
-    dummyKeys.encryptionKey.resize(32, 0x42);
-    dummyKeys.integrityKey.resize(32, 0x42);
-    dummyKeys.nonceBase.resize(12, 0x00);
-    Simulator::Schedule(Seconds(1.2), &AesGcmCipher::InstallKeys, cmdrCipher, dummyKeys);
+    // Derive authentic session keys via SimulatedHybridKemCombiner (PQC Handshake)
+    Ptr<SimulatedHybridKemCombiner> combiner = CreateObject<SimulatedHybridKemCombiner>();
+    Ptr<SimulatedMlKem> mlKem = CreateObject<SimulatedMlKem>();
+    Ptr<SimulatedX25519> x25519 = CreateObject<SimulatedX25519>();
+    auto kemKp = mlKem->GenerateKeyPair();
+    auto ecdhKp = x25519->GenerateKeyPair();
+    std::vector<uint8_t> ss;
+    auto hybridCt = combiner->Encapsulate(ecdhKp.first, kemKp.first, ss);
+    PqcSessionKeys cmdrKeys = combiner->DeriveSessionKeys(ss);
+    Simulator::Schedule(Seconds(1.2), &SimulatedAesGcm::InstallKeys, cmdrCipher, cmdrKeys);
 
     for (uint32_t i = 1; i < drones.GetN(); ++i)
     {
         Ptr<Node> drone = drones.Get(i);
-        Ptr<AesGcmCipher> cipher = CreateObject<AesGcmCipher>();
+        Ptr<SimulatedAesGcm> cipher = CreateObject<SimulatedAesGcm>();
         Ptr<PqcDroneApp> droneApp = CreateObject<PqcDroneApp>();
         double interval = (packetSize * 8.0) / (dataRateKbps * 1000.0);
         droneApp->SetAttribute("PacketSize", UintegerValue(packetSize));
@@ -136,7 +140,10 @@ InstallDroneApplications(NodeContainer drones,
         drone->AddApplication(droneApp);
         droneApp->SetStartTime(Seconds(1.0 + i * 0.05));
         droneApp->SetStopTime(simTime);
-        Simulator::Schedule(Seconds(1.2 + i * 0.05), &AesGcmCipher::InstallKeys, cipher, dummyKeys);
+
+        std::vector<uint8_t> droneSs = combiner->Decapsulate(hybridCt, ecdhKp.second, kemKp.second);
+        PqcSessionKeys droneKeys = combiner->DeriveSessionKeys(droneSs);
+        Simulator::Schedule(Seconds(1.2 + i * 0.05), &SimulatedAesGcm::InstallKeys, cipher, droneKeys);
     }
 }
 
@@ -186,24 +193,24 @@ ResolveCryptoMode(const std::string& crypto, PqcScenarioId scenarioId)
     }
 }
 
-static CrystalsKyberKem::SecurityLevel
+static SimulatedMlKem::SecurityLevel
 ResolveKyberLevel(const std::string& crypto, uint32_t kyberLevelArg, PqcScenarioId scenarioId)
 {
     if (kyberLevelArg == 512)
-        return CrystalsKyberKem::KYBER_512;
+        return SimulatedMlKem::KYBER_512;
     if (kyberLevelArg == 1024)
-        return CrystalsKyberKem::KYBER_1024;
+        return SimulatedMlKem::KYBER_1024;
     std::string lower = crypto;
     std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
     if (lower.find("512") != std::string::npos)
-        return CrystalsKyberKem::KYBER_512;
+        return SimulatedMlKem::KYBER_512;
     if (lower.find("1024") != std::string::npos)
-        return CrystalsKyberKem::KYBER_1024;
+        return SimulatedMlKem::KYBER_1024;
     if (scenarioId == PqcScenarioId::KYBER512)
-        return CrystalsKyberKem::KYBER_512;
+        return SimulatedMlKem::KYBER_512;
     if (scenarioId == PqcScenarioId::KYBER1024)
-        return CrystalsKyberKem::KYBER_1024;
-    return CrystalsKyberKem::KYBER_768;
+        return SimulatedMlKem::KYBER_1024;
+    return SimulatedMlKem::KYBER_768;
 }
 
 static int

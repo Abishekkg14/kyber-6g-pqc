@@ -26,7 +26,7 @@ namespace pqc
  */
 struct PqcSessionKeys
 {
-    /// Combined shared secret: HKDF(ECDH_ss || Kyber_ss)
+    /// Combined shared secret (simulation: deterministic combiner; HITL: real HKDF-SHA256)
     std::vector<uint8_t> combinedSecret; // 32 bytes
 
     /// Derived encryption key for AES-256-GCM (first 32 bytes of KDF output)
@@ -87,7 +87,7 @@ struct PqcRrcIePayload
     std::vector<uint8_t> ecdhPublicKey;   // 32 bytes (X25519)
 
     // ── Authentication ──
-    std::vector<uint8_t> mlDsaSignature;   // 2420/3293/4595 bytes
+    std::vector<uint8_t> mlDsaSignature;   // 2420/3309/4627 bytes
     std::vector<uint8_t> mlDsaCertificate; // 1312/1952/2592 bytes (public key)
 
     // ── Metadata ──

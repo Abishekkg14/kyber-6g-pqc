@@ -15,28 +15,28 @@ namespace ns3
 namespace pqc
 {
 
-NS_LOG_COMPONENT_DEFINE("MlDsaSigner");
-NS_OBJECT_ENSURE_REGISTERED(MlDsaSigner);
+NS_LOG_COMPONENT_DEFINE("SimulatedMlDsa");
+NS_OBJECT_ENSURE_REGISTERED(SimulatedMlDsa);
 
 // FIPS 204 Table 1: ML-DSA parameter sets
-const std::map<MlDsaSigner::Level, MlDsaSigner::Sizes> MlDsaSigner::SIZE_TABLE = {
+const std::map<SimulatedMlDsa::Level, SimulatedMlDsa::Sizes> SimulatedMlDsa::SIZE_TABLE = {
     {ML_DSA_44, {1312, 2560, 2420}},
-    {ML_DSA_65, {1952, 4032, 3293}},
-    {ML_DSA_87, {2592, 4896, 4595}},
+    {ML_DSA_65, {1952, 4032, 3309}},
+    {ML_DSA_87, {2592, 4896, 4627}},
 };
 
 TypeId
-MlDsaSigner::GetTypeId()
+SimulatedMlDsa::GetTypeId()
 {
     static TypeId tid =
-        TypeId("ns3::pqc::MlDsaSigner")
+        TypeId("ns3::pqc::SimulatedMlDsa")
             .SetParent<Object>()
             .SetGroupName("PqcSecurity")
-            .AddConstructor<MlDsaSigner>()
+            .AddConstructor<SimulatedMlDsa>()
             .AddAttribute("Level",
                           "ML-DSA security level (0=ML-DSA-44, 1=ML-DSA-65, 2=ML-DSA-87)",
                           EnumValue(ML_DSA_65),
-                          MakeEnumAccessor<Level>(&MlDsaSigner::m_level),
+                          MakeEnumAccessor<Level>(&SimulatedMlDsa::m_level),
                           MakeEnumChecker(ML_DSA_44,
                                           "ML_DSA_44",
                                           ML_DSA_65,
@@ -46,39 +46,39 @@ MlDsaSigner::GetTypeId()
             .AddAttribute("KeyGenTime",
                           "Simulated ML-DSA key generation time",
                           TimeValue(MicroSeconds(300)),
-                          MakeTimeAccessor(&MlDsaSigner::m_keyGenTime),
+                          MakeTimeAccessor(&SimulatedMlDsa::m_keyGenTime),
                           MakeTimeChecker())
             .AddAttribute("SignTime",
                           "Simulated ML-DSA signing time (ARM Cortex-A72)",
                           TimeValue(MicroSeconds(500)),
-                          MakeTimeAccessor(&MlDsaSigner::m_signTime),
+                          MakeTimeAccessor(&SimulatedMlDsa::m_signTime),
                           MakeTimeChecker())
             .AddAttribute("VerifyTime",
                           "Simulated ML-DSA verification time",
                           TimeValue(MicroSeconds(200)),
-                          MakeTimeAccessor(&MlDsaSigner::m_verifyTime),
+                          MakeTimeAccessor(&SimulatedMlDsa::m_verifyTime),
                           MakeTimeChecker())
             .AddTraceSource("SignLatency",
                             "Time taken for ML-DSA signing",
-                            MakeTraceSourceAccessor(&MlDsaSigner::m_signTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlDsa::m_signTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("VerifyLatency",
                             "Time taken for ML-DSA verification",
-                            MakeTraceSourceAccessor(&MlDsaSigner::m_verifyTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlDsa::m_verifyTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("SignatureSize",
                             "ML-DSA signature size in bytes",
-                            MakeTraceSourceAccessor(&MlDsaSigner::m_signatureSizeTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlDsa::m_signatureSizeTrace),
                             "ns3::TracedValueCallback::Uint32")
             .AddTraceSource("PublicKeySize",
                             "ML-DSA public key (certificate) size in bytes",
-                            MakeTraceSourceAccessor(&MlDsaSigner::m_publicKeySizeTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlDsa::m_publicKeySizeTrace),
                             "ns3::TracedValueCallback::Uint32");
 
     return tid;
 }
 
-MlDsaSigner::MlDsaSigner()
+SimulatedMlDsa::SimulatedMlDsa()
     : m_level(ML_DSA_65)
 {
     m_rng = CreateObject<UniformRandomVariable>();
@@ -86,12 +86,12 @@ MlDsaSigner::MlDsaSigner()
     m_rng->SetAttribute("Max", DoubleValue(255.0));
 }
 
-MlDsaSigner::~MlDsaSigner()
+SimulatedMlDsa::~SimulatedMlDsa()
 {
 }
 
 std::vector<uint8_t>
-MlDsaSigner::GenerateRandomBytes(uint32_t size)
+SimulatedMlDsa::GenerateRandomBytes(uint32_t size)
 {
     std::vector<uint8_t> bytes(size);
     for (uint32_t i = 0; i < size; ++i)
@@ -101,21 +101,21 @@ MlDsaSigner::GenerateRandomBytes(uint32_t size)
     return bytes;
 }
 
-MlDsaSigner::Sizes
-MlDsaSigner::GetSizes() const
+SimulatedMlDsa::Sizes
+SimulatedMlDsa::GetSizes() const
 {
     return SIZE_TABLE.at(m_level);
 }
 
 void
-MlDsaSigner::SetLevel(Level level)
+SimulatedMlDsa::SetLevel(Level level)
 {
     m_level = level;
     m_keysGenerated = false;
 }
 
-MlDsaSigner::KeyPair
-MlDsaSigner::KeyGen()
+SimulatedMlDsa::KeyPair
+SimulatedMlDsa::KeyGen()
 {
     auto sizes = GetSizes();
     KeyPair kp;
@@ -131,8 +131,8 @@ MlDsaSigner::KeyGen()
     return kp;
 }
 
-MlDsaSigner::Signature
-MlDsaSigner::Sign(const std::vector<uint8_t>& message)
+SimulatedMlDsa::Signature
+SimulatedMlDsa::Sign(const std::vector<uint8_t>& message)
 {
     // Ensure we have identity keys
     if (!m_keysGenerated)
@@ -156,8 +156,8 @@ MlDsaSigner::Sign(const std::vector<uint8_t>& message)
     return sig;
 }
 
-MlDsaSigner::VerifyResult
-MlDsaSigner::Verify(const std::vector<uint8_t>& message,
+SimulatedMlDsa::VerifyResult
+SimulatedMlDsa::Verify(const std::vector<uint8_t>& message,
                      const Signature& sig,
                      const std::vector<uint8_t>& publicKey)
 {
@@ -187,7 +187,7 @@ MlDsaSigner::Verify(const std::vector<uint8_t>& message,
 }
 
 std::vector<uint8_t>
-MlDsaSigner::GetPublicKey() const
+SimulatedMlDsa::GetPublicKey() const
 {
     if (m_keysGenerated)
     {

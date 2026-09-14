@@ -3,8 +3,8 @@
 // Copyright (c) 2026 Kyber-6G Project
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef HYBRID_KEM_COMBINER_H
-#define HYBRID_KEM_COMBINER_H
+#ifndef SIMULATED_HYBRID_KEM_COMBINER_H
+#define SIMULATED_HYBRID_KEM_COMBINER_H
 
 #include "crystals-kyber-kem.h"
 #include "hardware-profile.h"
@@ -46,14 +46,14 @@ enum class CryptoMode
  *   2. Responder calls Encapsulate() → sends ECDH pub + Kyber ciphertext
  *   3. Initiator calls Decapsulate() → both derive identical session key
  */
-class HybridKemCombiner : public Object
+class SimulatedHybridKemCombiner : public Object
 {
   public:
     /// Combined key pair (ECDH + Kyber)
     struct HybridKeyPair
     {
-        X25519Ecdh::KeyPair ecdhKeys;
-        CrystalsKyberKem::KeyPair kyberKeys;
+        SimulatedX25519::KeyPair ecdhKeys;
+        SimulatedMlKem::KeyPair kyberKeys;
         Time totalGenerationTime;
 
         /// Total public key wire size (for RRC IE)
@@ -81,14 +81,14 @@ class HybridKemCombiner : public Object
 
     static TypeId GetTypeId();
 
-    HybridKemCombiner();
-    ~HybridKemCombiner() override;
+    SimulatedHybridKemCombiner();
+    ~SimulatedHybridKemCombiner() override;
 
     /**
      * \brief Set the cryptographic mode to use for evaluation.
      */
     void SetCryptoMode(CryptoMode mode);
-    void SetKyberLevel(CrystalsKyberKem::SecurityLevel level);
+    void SetKyberLevel(SimulatedMlKem::SecurityLevel level);
     void SetHardwareProfile(const HardwareProfile& profile);
     void SetParallelHandshake(bool parallel);
 
@@ -134,8 +134,8 @@ class HybridKemCombiner : public Object
 
   private:
     CryptoMode m_cryptoMode;
-    Ptr<X25519Ecdh> m_ecdh;
-    Ptr<CrystalsKyberKem> m_kyber;
+    Ptr<SimulatedX25519> m_ecdh;
+    Ptr<SimulatedMlKem> m_kyber;
     HardwareProfile m_hwProfile;
     bool m_parallelHandshake{false};
 
@@ -143,7 +143,7 @@ class HybridKemCombiner : public Object
     Time CombineParallelTime(Time a, Time b) const;
 
     /// Deterministic simulated HKDF-SHA256(ecdhSs || kyberSs, salt)
-    static std::vector<uint8_t> SimulatedHkdf(const std::vector<uint8_t>& ecdhSs,
+    static std::vector<uint8_t> SimulatedKeyCombiner(const std::vector<uint8_t>& ecdhSs,
                                               const std::vector<uint8_t>& kyberSs);
 
     /// Simulation-only: coordinate Kyber/ECDH secrets across encaps/decaps peers
@@ -154,4 +154,4 @@ class HybridKemCombiner : public Object
 } // namespace pqc
 } // namespace ns3
 
-#endif // HYBRID_KEM_COMBINER_H
+#endif // SIMULATED_HYBRID_KEM_COMBINER_H

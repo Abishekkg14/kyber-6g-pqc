@@ -14,52 +14,52 @@ namespace ns3
 namespace pqc
 {
 
-NS_LOG_COMPONENT_DEFINE("X25519Ecdh");
-NS_OBJECT_ENSURE_REGISTERED(X25519Ecdh);
+NS_LOG_COMPONENT_DEFINE("SimulatedX25519");
+NS_OBJECT_ENSURE_REGISTERED(SimulatedX25519);
 
 TypeId
-X25519Ecdh::GetTypeId()
+SimulatedX25519::GetTypeId()
 {
     static TypeId tid =
-        TypeId("ns3::pqc::X25519Ecdh")
+        TypeId("ns3::pqc::SimulatedX25519")
             .SetParent<Object>()
             .SetGroupName("PqcSecurity")
-            .AddConstructor<X25519Ecdh>()
+            .AddConstructor<SimulatedX25519>()
             .AddAttribute("KeyGenTime",
                           "Simulated X25519 key generation time",
                           TimeValue(MicroSeconds(40)),
-                          MakeTimeAccessor(&X25519Ecdh::m_keyGenTime),
+                          MakeTimeAccessor(&SimulatedX25519::m_keyGenTime),
                           MakeTimeChecker())
             .AddAttribute("DhTime",
                           "Simulated X25519 DH shared secret computation time",
                           TimeValue(MicroSeconds(50)),
-                          MakeTimeAccessor(&X25519Ecdh::m_dhTime),
+                          MakeTimeAccessor(&SimulatedX25519::m_dhTime),
                           MakeTimeChecker())
             .AddTraceSource("KeyGenLatency",
                             "Time taken for X25519 key generation",
-                            MakeTraceSourceAccessor(&X25519Ecdh::m_keyGenTrace),
+                            MakeTraceSourceAccessor(&SimulatedX25519::m_keyGenTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("DhLatency",
                             "Time taken for X25519 DH computation",
-                            MakeTraceSourceAccessor(&X25519Ecdh::m_dhTrace),
+                            MakeTraceSourceAccessor(&SimulatedX25519::m_dhTrace),
                             "ns3::Time::TracedCallback");
 
     return tid;
 }
 
-X25519Ecdh::X25519Ecdh()
+SimulatedX25519::SimulatedX25519()
 {
     m_rng = CreateObject<UniformRandomVariable>();
     m_rng->SetAttribute("Min", DoubleValue(0.0));
     m_rng->SetAttribute("Max", DoubleValue(255.0));
 }
 
-X25519Ecdh::~X25519Ecdh()
+SimulatedX25519::~SimulatedX25519()
 {
 }
 
 std::vector<uint8_t>
-X25519Ecdh::GenerateRandomBytes(uint32_t size)
+SimulatedX25519::GenerateRandomBytes(uint32_t size)
 {
     std::vector<uint8_t> bytes(size);
     for (uint32_t i = 0; i < size; ++i)
@@ -69,8 +69,8 @@ X25519Ecdh::GenerateRandomBytes(uint32_t size)
     return bytes;
 }
 
-X25519Ecdh::KeyPair
-X25519Ecdh::KeyGen()
+SimulatedX25519::KeyPair
+SimulatedX25519::KeyGen()
 {
     KeyPair kp;
     kp.publicKey = GenerateRandomBytes(PUBLIC_KEY_SIZE);
@@ -83,8 +83,8 @@ X25519Ecdh::KeyGen()
     return kp;
 }
 
-X25519Ecdh::SharedSecretResult
-X25519Ecdh::ComputeSharedSecret(const std::vector<uint8_t>& mySecretKey,
+SimulatedX25519::SharedSecretResult
+SimulatedX25519::ComputeSharedSecret(const std::vector<uint8_t>& mySecretKey,
                                  const std::vector<uint8_t>& peerPublicKey)
 {
     SharedSecretResult result;

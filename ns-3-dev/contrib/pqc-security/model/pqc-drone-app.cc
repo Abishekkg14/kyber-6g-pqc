@@ -69,7 +69,7 @@ PqcDroneApp::DoDispose()
 
 void
 PqcDroneApp::Setup(bool isCommander, Ipv4Address peerAddress, uint16_t peerPort, 
-                   Ptr<AesGcmCipher> cipher, Ptr<PqcMetricsCollector> metrics)
+                   Ptr<SimulatedAesGcm> cipher, Ptr<PqcMetricsCollector> metrics)
 {
     m_isCommander = isCommander;
     m_peerAddress = peerAddress;
@@ -166,7 +166,7 @@ PqcDroneApp::TransmitPacket(PacketType type, uint32_t payloadSize)
     // 2. Encrypt using AES-GCM
     if (m_cipher && m_cipher->HasKeys())
     {
-        AesGcmCipher::EncryptResult result = m_cipher->Encrypt(dummyPlaintext);
+        SimulatedAesGcm::EncryptResult result = m_cipher->Encrypt(dummyPlaintext);
         
         Ptr<Packet> p = Create<Packet>(result.ciphertext.size());
         p->AddHeader(seqTs);
@@ -212,7 +212,7 @@ PqcDroneApp::HandleRead(Ptr<Socket> socket)
 
         if (m_cipher && m_cipher->HasKeys())
         {
-            AesGcmCipher::DecryptResult result = m_cipher->Decrypt(dummyCiphertext);
+            SimulatedAesGcm::DecryptResult result = m_cipher->Decrypt(dummyCiphertext);
             
             if (!result.authenticated)
             {

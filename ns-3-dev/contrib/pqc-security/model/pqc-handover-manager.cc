@@ -60,7 +60,7 @@ PqcHandoverManager::GetTypeId()
 PqcHandoverManager::PqcHandoverManager()
     : m_poolTargetSize(3)
 {
-    m_hybridKem = CreateObject<HybridKemCombiner>();
+    m_hybridKem = CreateObject<SimulatedHybridKemCombiner>();
 }
 
 PqcHandoverManager::~PqcHandoverManager()
@@ -102,7 +102,7 @@ PqcHandoverManager::RapidRekey(const PqcHandoverContext& ctx)
     NS_LOG_INFO("  Previous key generation: " << ctx.previousKeys.keyGeneration);
 
     // 1. Get key pair (from pool if available, otherwise generate)
-    HybridKemCombiner::HybridKeyPair localKeys;
+    SimulatedHybridKemCombiner::HybridKeyPair localKeys;
 
     if (!m_precomputedKeys.empty())
     {

@@ -16,29 +16,29 @@ namespace ns3
 namespace pqc
 {
 
-NS_LOG_COMPONENT_DEFINE("CrystalsKyberKem");
-NS_OBJECT_ENSURE_REGISTERED(CrystalsKyberKem);
+NS_LOG_COMPONENT_DEFINE("SimulatedMlKem");
+NS_OBJECT_ENSURE_REGISTERED(SimulatedMlKem);
 
 // ── FIPS 203 Table 1: Kyber parameter sets ──
-const std::map<CrystalsKyberKem::SecurityLevel, CrystalsKyberKem::Sizes>
-    CrystalsKyberKem::SIZE_TABLE = {
+const std::map<SimulatedMlKem::SecurityLevel, SimulatedMlKem::Sizes>
+    SimulatedMlKem::SIZE_TABLE = {
         {KYBER_512, {800, 1632, 768, 32}},
         {KYBER_768, {1184, 2400, 1088, 32}},
         {KYBER_1024, {1568, 3168, 1568, 32}},
 };
 
 TypeId
-CrystalsKyberKem::GetTypeId()
+SimulatedMlKem::GetTypeId()
 {
     static TypeId tid =
-        TypeId("ns3::pqc::CrystalsKyberKem")
+        TypeId("ns3::pqc::SimulatedMlKem")
             .SetParent<Object>()
             .SetGroupName("PqcSecurity")
-            .AddConstructor<CrystalsKyberKem>()
+            .AddConstructor<SimulatedMlKem>()
             .AddAttribute("SecurityLevel",
                           "Kyber security level (0=512, 1=768, 2=1024)",
                           EnumValue(KYBER_768),
-                          MakeEnumAccessor<SecurityLevel>(&CrystalsKyberKem::m_level),
+                          MakeEnumAccessor<SecurityLevel>(&SimulatedMlKem::m_level),
                           MakeEnumChecker(KYBER_512,
                                           "KYBER_512",
                                           KYBER_768,
@@ -49,53 +49,53 @@ CrystalsKyberKem::GetTypeId()
                 "KeyGenTime",
                 "Simulated key generation time (ARM Cortex-A72 benchmark)",
                 TimeValue(MicroSeconds(150)),
-                MakeTimeAccessor(&CrystalsKyberKem::m_keyGenTime),
+                MakeTimeAccessor(&SimulatedMlKem::m_keyGenTime),
                 MakeTimeChecker())
             .AddAttribute(
                 "EncapsTime",
                 "Simulated encapsulation time",
                 TimeValue(MicroSeconds(180)),
-                MakeTimeAccessor(&CrystalsKyberKem::m_encapsTime),
+                MakeTimeAccessor(&SimulatedMlKem::m_encapsTime),
                 MakeTimeChecker())
             .AddAttribute(
                 "DecapsTime",
                 "Simulated decapsulation time",
                 TimeValue(MicroSeconds(190)),
-                MakeTimeAccessor(&CrystalsKyberKem::m_decapsTime),
+                MakeTimeAccessor(&SimulatedMlKem::m_decapsTime),
                 MakeTimeChecker())
             .AddTraceSource("KeyGenLatency",
                             "Time taken for Kyber key generation",
-                            MakeTraceSourceAccessor(&CrystalsKyberKem::m_keyGenTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlKem::m_keyGenTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("EncapsLatency",
                             "Time taken for Kyber encapsulation",
-                            MakeTraceSourceAccessor(&CrystalsKyberKem::m_encapsTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlKem::m_encapsTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("DecapsLatency",
                             "Time taken for Kyber decapsulation",
-                            MakeTraceSourceAccessor(&CrystalsKyberKem::m_decapsTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlKem::m_decapsTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("PublicKeySize",
                             "Size of generated Kyber public key in bytes",
-                            MakeTraceSourceAccessor(&CrystalsKyberKem::m_publicKeySizeTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlKem::m_publicKeySizeTrace),
                             "ns3::TracedValueCallback::Uint32")
             .AddTraceSource("CiphertextSize",
                             "Size of Kyber ciphertext in bytes",
-                            MakeTraceSourceAccessor(&CrystalsKyberKem::m_ciphertextSizeTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlKem::m_ciphertextSizeTrace),
                             "ns3::TracedValueCallback::Uint32")
             .AddTraceSource("CryptoEnergy",
                             "Simulated Energy consumed by computation in microjoules",
-                            MakeTraceSourceAccessor(&CrystalsKyberKem::m_energyTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlKem::m_energyTrace),
                             "ns3::TracedValueCallback::Double")
             .AddTraceSource("CryptoMemory",
                             "Simulated peak memory footprint by computation in bytes",
-                            MakeTraceSourceAccessor(&CrystalsKyberKem::m_memoryTrace),
+                            MakeTraceSourceAccessor(&SimulatedMlKem::m_memoryTrace),
                             "ns3::TracedValueCallback::Uint32");
 
     return tid;
 }
 
-CrystalsKyberKem::CrystalsKyberKem()
+SimulatedMlKem::SimulatedMlKem()
     : m_level(KYBER_768)
 {
     m_rng = CreateObject<UniformRandomVariable>();
@@ -103,12 +103,12 @@ CrystalsKyberKem::CrystalsKyberKem()
     m_rng->SetAttribute("Max", DoubleValue(255.0));
 }
 
-CrystalsKyberKem::~CrystalsKyberKem()
+SimulatedMlKem::~SimulatedMlKem()
 {
 }
 
 std::vector<uint8_t>
-CrystalsKyberKem::GenerateRandomBytes(uint32_t size)
+SimulatedMlKem::GenerateRandomBytes(uint32_t size)
 {
     std::vector<uint8_t> bytes(size);
     for (uint32_t i = 0; i < size; ++i)
@@ -118,26 +118,26 @@ CrystalsKyberKem::GenerateRandomBytes(uint32_t size)
     return bytes;
 }
 
-CrystalsKyberKem::Sizes
-CrystalsKyberKem::GetSizes() const
+SimulatedMlKem::Sizes
+SimulatedMlKem::GetSizes() const
 {
     return SIZE_TABLE.at(m_level);
 }
 
-CrystalsKyberKem::SecurityLevel
-CrystalsKyberKem::GetLevel() const
+SimulatedMlKem::SecurityLevel
+SimulatedMlKem::GetLevel() const
 {
     return m_level;
 }
 
 void
-CrystalsKyberKem::SetSecurityLevel(SecurityLevel level)
+SimulatedMlKem::SetSecurityLevel(SecurityLevel level)
 {
     m_level = level;
 }
 
-CrystalsKyberKem::EnergyMetrics
-CrystalsKyberKem::GetEnergyMetrics() const
+SimulatedMlKem::EnergyMetrics
+SimulatedMlKem::GetEnergyMetrics() const
 {
     // HITL-calibrated: RPi4 Cortex-A72 embedded measurements (hitl_benchmarks_extended.csv)
     // Kyber-512:  KeyGen=1.2mJ, Encaps=1.5mJ, Decaps=1.6mJ
@@ -148,8 +148,8 @@ CrystalsKyberKem::GetEnergyMetrics() const
     return { 2.35, 2.35, 2.35 }; // KYBER_1024 — HITL-calibrated RPi4 benchmark — §2.2 RPi4 benchmark
 }
 
-CrystalsKyberKem::KeyPair
-CrystalsKyberKem::KeyGen()
+SimulatedMlKem::KeyPair
+SimulatedMlKem::KeyGen()
 {
     auto sizes = GetSizes();
     KeyPair kp;
@@ -180,8 +180,8 @@ CrystalsKyberKem::KeyGen()
     return kp;
 }
 
-CrystalsKyberKem::EncapsResult
-CrystalsKyberKem::Encapsulate(const std::vector<uint8_t>& publicKey)
+SimulatedMlKem::EncapsResult
+SimulatedMlKem::Encapsulate(const std::vector<uint8_t>& publicKey)
 {
     auto sizes = GetSizes();
     EncapsResult result;
@@ -218,8 +218,8 @@ CrystalsKyberKem::Encapsulate(const std::vector<uint8_t>& publicKey)
     return result;
 }
 
-CrystalsKyberKem::DecapsResult
-CrystalsKyberKem::Decapsulate(const std::vector<uint8_t>& secretKey,
+SimulatedMlKem::DecapsResult
+SimulatedMlKem::Decapsulate(const std::vector<uint8_t>& secretKey,
                                const std::vector<uint8_t>& ciphertext)
 {
     auto sizes = GetSizes();
@@ -239,7 +239,7 @@ CrystalsKyberKem::Decapsulate(const std::vector<uint8_t>& secretKey,
     // In simulation, shared secret is deterministic from the encapsulation
     // (both sides derive the same random bytes in a real KEM).
     // We generate a fresh random value here; in the simulation framework,
-    // the HybridKemCombiner coordinates to ensure both sides get identical keys.
+    // the SimulatedHybridKemCombiner coordinates to ensure both sides get identical keys.
     result.sharedSecret = GenerateRandomBytes(sizes.sharedSecretSize);
 
     // Level-aware timing: Kyber-1024 decaps 510us (+46.6% over 768's 348us)

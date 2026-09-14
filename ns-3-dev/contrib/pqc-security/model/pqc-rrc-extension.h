@@ -68,8 +68,8 @@ class PqcRrcExtension : public Object
      */
     void SetCryptoMode(CryptoMode mode);
 
-    void SetKyberLevel(CrystalsKyberKem::SecurityLevel level);
-    void SetMlDsaLevel(MlDsaSigner::Level level);
+    void SetKyberLevel(SimulatedMlKem::SecurityLevel level);
+    void SetMlDsaLevel(SimulatedMlDsa::Level level);
     void SetHardwareProfile(const HardwareProfile& profile);
     void SetParallelHandshake(bool parallel);
 
@@ -174,13 +174,13 @@ class PqcRrcExtension : public Object
 
   private:
     Role m_role;
-    Ptr<HybridKemCombiner> m_hybridKem;
-    Ptr<MlDsaSigner> m_signer;
-    Ptr<MlDsaSigner> m_verifier; // Separate instance for verification
+    Ptr<SimulatedHybridKemCombiner> m_hybridKem;
+    Ptr<SimulatedMlDsa> m_signer;
+    Ptr<SimulatedMlDsa> m_verifier; // Separate instance for verification
     Ptr<PqcPdcpLayer> m_pdcpLayer;
 
     // State
-    HybridKemCombiner::HybridKeyPair m_localKeys;
+    SimulatedHybridKemCombiner::HybridKeyPair m_localKeys;
     PqcSessionKeys m_sessionKeys;
     bool m_handshakeComplete{false};
     uint32_t m_bytesSent{0};

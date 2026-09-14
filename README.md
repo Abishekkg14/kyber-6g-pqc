@@ -167,7 +167,7 @@ npm run dev
 | **Digital Signature** | ECDSA (secp256r1) | ML-DSA-87 (Dilithium-5) | Level-5 |
 | **Signature Size** | 64 Bytes | 4,627 Bytes | — |
 | **Payload Encryption** | AES-128-GCM | AES-256-GCM | — |
-| **Forward Secrecy** | Per-Session | Per-Handover / 0-RTT | Post-Quantum |
+| **Forward Secrecy** | Per-Session | Per-Handover / Cached Rapid Rekey (1-RTT) | Post-Quantum |
 
 ---
 

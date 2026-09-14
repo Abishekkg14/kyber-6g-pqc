@@ -45,8 +45,8 @@ class KyberSizesTestCase : public TestCase
     void DoRun() override
     {
         // Test Kyber-512
-        auto kyber512 = CreateObject<CrystalsKyberKem>();
-        kyber512->SetAttribute("SecurityLevel", EnumValue(CrystalsKyberKem::KYBER_512));
+        auto kyber512 = CreateObject<SimulatedMlKem>();
+        kyber512->SetAttribute("SecurityLevel", EnumValue(SimulatedMlKem::KYBER_512));
         auto kp512 = kyber512->KeyGen();
         NS_TEST_ASSERT_MSG_EQ(kp512.publicKey.size(), 800u, "Kyber-512 PK should be 800 bytes");
         NS_TEST_ASSERT_MSG_EQ(kp512.secretKey.size(), 1632u, "Kyber-512 SK should be 1632 bytes");
@@ -55,8 +55,8 @@ class KyberSizesTestCase : public TestCase
         NS_TEST_ASSERT_MSG_EQ(enc512.sharedSecret.size(), 32u, "SS should be 32 bytes");
 
         // Test Kyber-768
-        auto kyber768 = CreateObject<CrystalsKyberKem>();
-        kyber768->SetAttribute("SecurityLevel", EnumValue(CrystalsKyberKem::KYBER_768));
+        auto kyber768 = CreateObject<SimulatedMlKem>();
+        kyber768->SetAttribute("SecurityLevel", EnumValue(SimulatedMlKem::KYBER_768));
         auto kp768 = kyber768->KeyGen();
         NS_TEST_ASSERT_MSG_EQ(kp768.publicKey.size(), 1184u, "Kyber-768 PK should be 1184 bytes");
         NS_TEST_ASSERT_MSG_EQ(kp768.secretKey.size(), 2400u, "Kyber-768 SK should be 2400 bytes");
@@ -64,8 +64,8 @@ class KyberSizesTestCase : public TestCase
         NS_TEST_ASSERT_MSG_EQ(enc768.ciphertext.size(), 1088u, "Kyber-768 CT should be 1088 bytes");
 
         // Test Kyber-1024
-        auto kyber1024 = CreateObject<CrystalsKyberKem>();
-        kyber1024->SetAttribute("SecurityLevel", EnumValue(CrystalsKyberKem::KYBER_1024));
+        auto kyber1024 = CreateObject<SimulatedMlKem>();
+        kyber1024->SetAttribute("SecurityLevel", EnumValue(SimulatedMlKem::KYBER_1024));
         auto kp1024 = kyber1024->KeyGen();
         NS_TEST_ASSERT_MSG_EQ(kp1024.publicKey.size(), 1568u, "Kyber-1024 PK should be 1568 bytes");
         auto enc1024 = kyber1024->Encapsulate(kp1024.publicKey);
@@ -88,7 +88,7 @@ class X25519SizesTestCase : public TestCase
 
     void DoRun() override
     {
-        auto ecdh = CreateObject<X25519Ecdh>();
+        auto ecdh = CreateObject<SimulatedX25519>();
         auto kp = ecdh->KeyGen();
         NS_TEST_ASSERT_MSG_EQ(kp.publicKey.size(), 32u, "X25519 PK should be 32 bytes");
         NS_TEST_ASSERT_MSG_EQ(kp.secretKey.size(), 32u, "X25519 SK should be 32 bytes");
@@ -113,7 +113,7 @@ class HybridKemSizesTestCase : public TestCase
 
     void DoRun() override
     {
-        auto hybrid = CreateObject<HybridKemCombiner>();
+        auto hybrid = CreateObject<SimulatedHybridKemCombiner>();
         auto hkp = hybrid->GenerateKeyPair();
 
         // Total PK = 32 (ECDH) + 1184 (Kyber-768) = 1216
@@ -147,8 +147,8 @@ class MlDsaSizesTestCase : public TestCase
     void DoRun() override
     {
         // ML-DSA-65
-        auto signer65 = CreateObject<MlDsaSigner>();
-        signer65->SetAttribute("Level", EnumValue(MlDsaSigner::ML_DSA_65));
+        auto signer65 = CreateObject<SimulatedMlDsa>();
+        signer65->SetAttribute("Level", EnumValue(SimulatedMlDsa::ML_DSA_65));
 
         std::vector<uint8_t> message = {0x01, 0x02, 0x03};
         auto sig = signer65->Sign(message);
@@ -178,7 +178,7 @@ class AesGcmOverheadTestCase : public TestCase
 
     void DoRun() override
     {
-        auto cipher = CreateObject<AesGcmCipher>();
+        auto cipher = CreateObject<SimulatedAesGcm>();
 
         // Install dummy keys
         PqcSessionKeys keys;
@@ -276,8 +276,8 @@ class KyberLevelPropagationTestCase : public TestCase
 
     void DoRun() override
     {
-        auto hybrid = CreateObject<HybridKemCombiner>();
-        hybrid->SetKyberLevel(CrystalsKyberKem::KYBER_512);
+        auto hybrid = CreateObject<SimulatedHybridKemCombiner>();
+        hybrid->SetKyberLevel(SimulatedMlKem::KYBER_512);
         auto hkp = hybrid->GenerateKeyPair();
         NS_TEST_ASSERT_MSG_EQ(hkp.kyberKeys.publicKey.size(), 800u, "512 PK size");
         Simulator::Destroy();
@@ -294,7 +294,7 @@ class HybridDerivationConsistencyTestCase : public TestCase
 
     void DoRun() override
     {
-        auto hybrid = CreateObject<HybridKemCombiner>();
+        auto hybrid = CreateObject<SimulatedHybridKemCombiner>();
         auto hkp = hybrid->GenerateKeyPair();
         auto enc = hybrid->Encapsulate(hkp.ecdhKeys.publicKey, hkp.kyberKeys.publicKey);
         auto dec = hybrid->Decapsulate(hkp, enc.ecdhPublicKey, enc.kyberCiphertext);
@@ -459,12 +459,12 @@ class ParallelVsSequentialTimingTestCase : public TestCase
 
     void DoRun() override
     {
-        auto seq = CreateObject<HybridKemCombiner>();
+        auto seq = CreateObject<SimulatedHybridKemCombiner>();
         seq->SetHardwareProfile(GetHardwareProfile(HardwareProfileId::JETSON_ORIN));
         seq->SetParallelHandshake(false);
         auto hkp = seq->GenerateKeyPair();
 
-        auto par = CreateObject<HybridKemCombiner>();
+        auto par = CreateObject<SimulatedHybridKemCombiner>();
         par->SetHardwareProfile(GetHardwareProfile(HardwareProfileId::JETSON_ORIN));
         par->SetParallelHandshake(true);
         auto encSeq = seq->Encapsulate(hkp.ecdhKeys.publicKey, hkp.kyberKeys.publicKey);

@@ -67,9 +67,9 @@ PqcRrcExtension::PqcRrcExtension()
       m_cryptoMode(CryptoMode::HYBRID_KYBER_ECDH),
       m_enableAuth(true)
 {
-    m_hybridKem = CreateObject<HybridKemCombiner>();
-    m_signer = CreateObject<MlDsaSigner>();
-    m_verifier = CreateObject<MlDsaSigner>();
+    m_hybridKem = CreateObject<SimulatedHybridKemCombiner>();
+    m_signer = CreateObject<SimulatedMlDsa>();
+    m_verifier = CreateObject<SimulatedMlDsa>();
 }
 
 PqcRrcExtension::~PqcRrcExtension()
@@ -99,7 +99,7 @@ PqcRrcExtension::SetCryptoMode(CryptoMode mode)
 }
 
 void
-PqcRrcExtension::SetKyberLevel(CrystalsKyberKem::SecurityLevel level)
+PqcRrcExtension::SetKyberLevel(SimulatedMlKem::SecurityLevel level)
 {
     if (m_hybridKem)
     {
@@ -108,7 +108,7 @@ PqcRrcExtension::SetKyberLevel(CrystalsKyberKem::SecurityLevel level)
 }
 
 void
-PqcRrcExtension::SetMlDsaLevel(MlDsaSigner::Level level)
+PqcRrcExtension::SetMlDsaLevel(SimulatedMlDsa::Level level)
 {
     if (m_signer)
     {
@@ -352,7 +352,7 @@ PqcRrcExtension::ProcessConnectionRequest(const PqcRrcIePayload& uePayload)
                             uePayload.ecdhPublicKey.begin(),
                             uePayload.ecdhPublicKey.end());
 
-        MlDsaSigner::Signature sig;
+        SimulatedMlDsa::Signature sig;
         sig.sigBytes = uePayload.mlDsaSignature;
 
         auto verifyResult = m_verifier->Verify(dataToVerify, sig, uePayload.mlDsaCertificate);
@@ -449,7 +449,7 @@ PqcRrcExtension::CompleteKeyExchange(const PqcRrcIePayload& gnbResponse)
                             gnbResponse.ecdhPublicKey.begin(),
                             gnbResponse.ecdhPublicKey.end());
 
-        MlDsaSigner::Signature sig;
+        SimulatedMlDsa::Signature sig;
         sig.sigBytes = gnbResponse.mlDsaSignature;
 
         // In real implementation, would use gNB's cert from AMF

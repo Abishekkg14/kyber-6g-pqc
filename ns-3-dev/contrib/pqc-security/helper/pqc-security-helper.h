@@ -34,8 +34,8 @@ namespace pqc
  * Usage:
  * \code
  *   PqcSecurityHelper pqc;
- *   pqc.SetKyberLevel(CrystalsKyberKem::KYBER_768);
- *   pqc.SetMlDsaLevel(MlDsaSigner::ML_DSA_65);
+ *   pqc.SetKyberLevel(SimulatedMlKem::KYBER_768);
+ *   pqc.SetMlDsaLevel(SimulatedMlDsa::ML_DSA_65);
  *   pqc.SetEnableHybridKem(true);
  *   pqc.SetEnableQuantumAttacker(true);
  *   pqc.Install(gnbNetDevices, ueNetDevices);
@@ -52,8 +52,8 @@ class PqcSecurityHelper
 
     // ── Configuration ──
 
-    void SetKyberLevel(CrystalsKyberKem::SecurityLevel level);
-    void SetMlDsaLevel(MlDsaSigner::Level level);
+    void SetKyberLevel(SimulatedMlKem::SecurityLevel level);
+    void SetMlDsaLevel(SimulatedMlDsa::Level level);
     void SetCryptoMode(CryptoMode mode);
     void SetEnableAuthentication(bool enable);
     void SetEnableQuantumAttacker(bool enable);
@@ -136,8 +136,8 @@ class PqcSecurityHelper
   private:
     void ApplyDeviceConfig(Ptr<PqcRrcExtension> rrc);
     // Configuration
-    CrystalsKyberKem::SecurityLevel m_kyberLevel;
-    MlDsaSigner::Level m_mlDsaLevel;
+    SimulatedMlKem::SecurityLevel m_kyberLevel;
+    SimulatedMlDsa::Level m_mlDsaLevel;
     CryptoMode m_cryptoMode;
     bool m_enableAuth;
     bool m_enableQuantumAttacker;

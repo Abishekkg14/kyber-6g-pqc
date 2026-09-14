@@ -58,7 +58,7 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 ROOT_PLOT_DIR = ROOT_DIR
 
 # Input files
-HITL_CSV = os.path.join(ROOT_DIR, "hitl_benchmarks_extended.csv")
+HITL_CSV = os.path.join(PROJECT_DIR, "hitl", "data", "hitl_benchmarks_extended.csv") if os.path.exists(os.path.join(PROJECT_DIR, "hitl", "data", "hitl_benchmarks_extended.csv")) else os.path.join(ROOT_DIR, "hitl_benchmarks_extended.csv")
 BASELINE_CSV = os.path.join(SIM_DATA_DIR, "sim_results_1to1_baseline.csv")
 SWARM_CSV = os.path.join(SIM_DATA_DIR, "sim_results_swarm_sweep.csv")
 
@@ -130,9 +130,9 @@ def plot_hw_vs_sim_validation(hitl_df: pd.DataFrame, sim_df: pd.DataFrame) -> No
     # ── Panel A: Handshake Latency Box Plot ──
     ax = axes[0]
     hw_full = hitl_df[hitl_df["Mode"] == "FULL_PQC"]["Total_Handshake_ms"]
-    hw_rekey = hitl_df[hitl_df["Mode"] == "0RTT_REKEY"]["Total_Handshake_ms"]
+    hw_rekey = hitl_df[hitl_df["Mode"].isin(["CACHED_REKEY", "0RTT_REKEY"])]["Total_Handshake_ms"]
     sim_full = sim_df[sim_df["Mode"] == "FULL_PQC"]["Total_Handshake_ms"]
-    sim_rekey = sim_df[sim_df["Mode"] == "0RTT_REKEY"]["Total_Handshake_ms"]
+    sim_rekey = sim_df[sim_df["Mode"].isin(["CACHED_REKEY", "0RTT_REKEY"])]["Total_Handshake_ms"]
 
     bp_data = [hw_full, sim_full, hw_rekey, sim_rekey]
     bp_colors = [COLORS["hw"], COLORS["sim"], COLORS["hw"], COLORS["sim"]]
@@ -153,9 +153,9 @@ def plot_hw_vs_sim_validation(hitl_df: pd.DataFrame, sim_df: pd.DataFrame) -> No
     # ── Panel B: Energy Bar Chart ──
     ax = axes[1]
     hw_full_e = hitl_df[hitl_df["Mode"] == "FULL_PQC"]["Energy_mJ"].mean()
-    hw_rekey_e = hitl_df[hitl_df["Mode"] == "0RTT_REKEY"]["Energy_mJ"].mean()
+    hw_rekey_e = hitl_df[hitl_df["Mode"].isin(["CACHED_REKEY", "0RTT_REKEY"])]["Energy_mJ"].mean()
     sim_full_e = sim_df[sim_df["Mode"] == "FULL_PQC"]["Energy_mJ"].mean()
-    sim_rekey_e = sim_df[sim_df["Mode"] == "0RTT_REKEY"]["Energy_mJ"].mean()
+    sim_rekey_e = sim_df[sim_df["Mode"].isin(["CACHED_REKEY", "0RTT_REKEY"])]["Energy_mJ"].mean()
 
     x = np.arange(2)
     width = 0.35
@@ -165,7 +165,7 @@ def plot_hw_vs_sim_validation(hitl_df: pd.DataFrame, sim_df: pd.DataFrame) -> No
                    label="Calibrated Sim (S/W)", color=COLORS["sim"], alpha=0.8, edgecolor="white")
 
     ax.set_xticks(x)
-    ax.set_xticklabels(["Full Handshake", "0-RTT Rekey"])
+    ax.set_xticklabels(["Full Handshake", "Cached Rekey (1-RTT)"])
     ax.set_ylabel("Energy Dissipation (mJ)")
     ax.set_title("(b) Energy Profile")
     ax.legend(loc="upper right", fontsize=8)
@@ -279,7 +279,8 @@ def plot_latency_vs_mobility(swarm_df: pd.DataFrame) -> None:
         generate_rekey_ms, queuing_delay_mm1_ms, handover_delay_ms,
         HITL_CSV, SEED
     )
-    cal = load_hitl_calibration(HITL_CSV)
+    res = load_hitl_calibration(HITL_CSV)
+    cal = res[0] if isinstance(res, tuple) else res
 
     velocities = np.arange(0, 125, 5)
     rng = np.random.default_rng(SEED + 100)
@@ -344,7 +345,7 @@ def plot_energy_vs_swarm(swarm_df: pd.DataFrame) -> None:
     ax1.plot(sizes, df["Full_Energy_Mean_mJ"], "o-", color=COLORS["energy_full"],
              linewidth=2, markersize=6, label=f"Full Handshake (~240 mJ)")
     ax1.plot(sizes, df["Rekey_Energy_Mean_mJ"], "s-", color=COLORS["energy_rekey"],
-             linewidth=2, markersize=6, label=f"0-RTT Rekey (~1.6 mJ)")
+             linewidth=2, markersize=6, label=f"Cached Rekey (1-RTT) (~1.6 mJ)")
 
     ax1.set_xlabel("Swarm Size (Drones)")
     ax1.set_ylabel("Per-Handshake Energy (mJ)")
@@ -360,7 +361,7 @@ def plot_energy_vs_swarm(swarm_df: pd.DataFrame) -> None:
     ax2.bar(sizes - 2, cumulative_full, width=4, color=COLORS["energy_full"],
             alpha=0.8, label="Full Handshake (cumulative)", edgecolor="white")
     ax2.bar(sizes + 2, cumulative_rekey, width=4, color=COLORS["energy_rekey"],
-            alpha=0.8, label="0-RTT Rekey (cumulative)", edgecolor="white")
+            alpha=0.8, label="Cached Rekey (1-RTT) (cumulative)", edgecolor="white")
 
     ax2.set_xlabel("Swarm Size (Drones)")
     ax2.set_ylabel("Cumulative Energy (J) — 100 Handshakes/Drone")
@@ -533,7 +534,9 @@ def plot_urllc_heatmap(swarm_df: pd.DataFrame) -> None:
 
     # Plot heatmap of actual latency values
     import matplotlib.colors as mcolors
-    norm = mcolors.TwoSlopeNorm(vmin=pivot.values.min(), vcenter=10.0, vmax=max(pivot.values.max(), 15.0))
+    vmin = min(float(pivot.values.min()), 9.5)
+    vmax = max(float(pivot.values.max()), 10.5)
+    norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=10.0, vmax=vmax)
     cmap = plt.cm.RdYlGn_r
 
     im = ax.imshow(pivot.values, cmap=cmap, norm=norm, aspect="auto")

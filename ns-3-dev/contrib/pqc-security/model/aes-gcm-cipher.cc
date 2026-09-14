@@ -3,6 +3,13 @@
 // Copyright (c) 2026 Kyber-6G Project
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <cstdint>
+#include <vector>
+#include <string>
+#include <memory>
+#include <algorithm>
+#include <iostream>
+
 #include "aes-gcm-cipher.h"
 
 #include "ns3/log.h"
@@ -13,63 +20,63 @@ namespace ns3
 namespace pqc
 {
 
-NS_LOG_COMPONENT_DEFINE("AesGcmCipher");
-NS_OBJECT_ENSURE_REGISTERED(AesGcmCipher);
+NS_LOG_COMPONENT_DEFINE("SimulatedAesGcm");
+NS_OBJECT_ENSURE_REGISTERED(SimulatedAesGcm);
 
 TypeId
-AesGcmCipher::GetTypeId()
+SimulatedAesGcm::GetTypeId()
 {
     static TypeId tid =
-        TypeId("ns3::pqc::AesGcmCipher")
+        TypeId("ns3::pqc::SimulatedAesGcm")
             .SetParent<Object>()
             .SetGroupName("PqcSecurity")
-            .AddConstructor<AesGcmCipher>()
+            .AddConstructor<SimulatedAesGcm>()
             .AddAttribute("EncryptTimePerByte",
                           "Simulated AES-GCM encryption time per byte",
                           TimeValue(NanoSeconds(1)),
-                          MakeTimeAccessor(&AesGcmCipher::m_encryptTimePerByte),
+                          MakeTimeAccessor(&SimulatedAesGcm::m_encryptTimePerByte),
                           MakeTimeChecker())
             .AddAttribute("DecryptTimePerByte",
                           "Simulated AES-GCM decryption time per byte",
                           TimeValue(NanoSeconds(1)),
-                          MakeTimeAccessor(&AesGcmCipher::m_decryptTimePerByte),
+                          MakeTimeAccessor(&SimulatedAesGcm::m_decryptTimePerByte),
                           MakeTimeChecker())
             .AddAttribute("EncryptFixedOverhead",
                           "Fixed per-packet encryption setup time",
                           TimeValue(MicroSeconds(1)),
-                          MakeTimeAccessor(&AesGcmCipher::m_encryptFixedOverhead),
+                          MakeTimeAccessor(&SimulatedAesGcm::m_encryptFixedOverhead),
                           MakeTimeChecker())
             .AddAttribute("DecryptFixedOverhead",
                           "Fixed per-packet decryption setup time",
                           TimeValue(MicroSeconds(1)),
-                          MakeTimeAccessor(&AesGcmCipher::m_decryptFixedOverhead),
+                          MakeTimeAccessor(&SimulatedAesGcm::m_decryptFixedOverhead),
                           MakeTimeChecker())
             .AddTraceSource("EncryptLatency",
                             "Per-packet AES-GCM encryption time",
-                            MakeTraceSourceAccessor(&AesGcmCipher::m_encryptTrace),
+                            MakeTraceSourceAccessor(&SimulatedAesGcm::m_encryptTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("DecryptLatency",
                             "Per-packet AES-GCM decryption time",
-                            MakeTraceSourceAccessor(&AesGcmCipher::m_decryptTrace),
+                            MakeTraceSourceAccessor(&SimulatedAesGcm::m_decryptTrace),
                             "ns3::Time::TracedCallback")
             .AddTraceSource("OverheadBytes",
                             "Plaintext vs encrypted sizes",
-                            MakeTraceSourceAccessor(&AesGcmCipher::m_overheadTrace),
+                            MakeTraceSourceAccessor(&SimulatedAesGcm::m_overheadTrace),
                             "ns3::TracedCallback::Uint32Uint32");
 
     return tid;
 }
 
-AesGcmCipher::AesGcmCipher()
+SimulatedAesGcm::SimulatedAesGcm()
 {
 }
 
-AesGcmCipher::~AesGcmCipher()
+SimulatedAesGcm::~SimulatedAesGcm()
 {
 }
 
 void
-AesGcmCipher::InstallKeys(const PqcSessionKeys& keys)
+SimulatedAesGcm::InstallKeys(const PqcSessionKeys& keys)
 {
     m_keys = keys;
     m_keysInstalled = true;
@@ -77,13 +84,13 @@ AesGcmCipher::InstallKeys(const PqcSessionKeys& keys)
 }
 
 bool
-AesGcmCipher::HasKeys() const
+SimulatedAesGcm::HasKeys() const
 {
     return m_keysInstalled;
 }
 
-AesGcmCipher::EncryptResult
-AesGcmCipher::Encrypt(const std::vector<uint8_t>& plaintext)
+SimulatedAesGcm::EncryptResult
+SimulatedAesGcm::Encrypt(const std::vector<uint8_t>& plaintext)
 {
     EncryptResult result;
 
@@ -122,8 +129,8 @@ AesGcmCipher::Encrypt(const std::vector<uint8_t>& plaintext)
     return result;
 }
 
-AesGcmCipher::DecryptResult
-AesGcmCipher::Decrypt(const std::vector<uint8_t>& ciphertext)
+SimulatedAesGcm::DecryptResult
+SimulatedAesGcm::Decrypt(const std::vector<uint8_t>& ciphertext)
 {
     DecryptResult result;
 

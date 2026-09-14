@@ -3,8 +3,8 @@
 // Copyright (c) 2026 Kyber-6G Project
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef X25519_ECDH_H
-#define X25519_ECDH_H
+#ifndef SIMULATED_X25519_H
+#define SIMULATED_X25519_H
 
 #include "ns3/nstime.h"
 #include "ns3/object.h"
@@ -27,7 +27,7 @@ namespace pqc
  * benchmark-derived computation delays. Used as the classical
  * component of the hybrid KEM.
  */
-class X25519Ecdh : public Object
+class SimulatedX25519 : public Object
 {
   public:
     static constexpr uint32_t PUBLIC_KEY_SIZE = 32;  ///< X25519 public key
@@ -49,8 +49,8 @@ class X25519Ecdh : public Object
 
     static TypeId GetTypeId();
 
-    X25519Ecdh();
-    ~X25519Ecdh() override;
+    SimulatedX25519();
+    ~SimulatedX25519() override;
 
     /**
      * \brief Generate an X25519 key pair.
@@ -77,4 +77,4 @@ class X25519Ecdh : public Object
 } // namespace pqc
 } // namespace ns3
 
-#endif // X25519_ECDH_H
+#endif // SIMULATED_X25519_H

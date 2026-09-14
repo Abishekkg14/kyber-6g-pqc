@@ -308,19 +308,19 @@ main(int argc, char* argv[])
     {
         // Configure Kyber level
         if (kyberLevel == "512")
-            pqcHelper.SetKyberLevel(CrystalsKyberKem::KYBER_512);
+            pqcHelper.SetKyberLevel(SimulatedMlKem::KYBER_512);
         else if (kyberLevel == "768")
-            pqcHelper.SetKyberLevel(CrystalsKyberKem::KYBER_768);
+            pqcHelper.SetKyberLevel(SimulatedMlKem::KYBER_768);
         else if (kyberLevel == "1024")
-            pqcHelper.SetKyberLevel(CrystalsKyberKem::KYBER_1024);
+            pqcHelper.SetKyberLevel(SimulatedMlKem::KYBER_1024);
 
         // Configure ML-DSA level
         if (mlDsaLevel == "44")
-            pqcHelper.SetMlDsaLevel(MlDsaSigner::ML_DSA_44);
+            pqcHelper.SetMlDsaLevel(SimulatedMlDsa::ML_DSA_44);
         else if (mlDsaLevel == "65")
-            pqcHelper.SetMlDsaLevel(MlDsaSigner::ML_DSA_65);
+            pqcHelper.SetMlDsaLevel(SimulatedMlDsa::ML_DSA_65);
         else if (mlDsaLevel == "87")
-            pqcHelper.SetMlDsaLevel(MlDsaSigner::ML_DSA_87);
+            pqcHelper.SetMlDsaLevel(SimulatedMlDsa::ML_DSA_87);
 
         pqcHelper.SetCryptoMode(enablePqc ? CryptoMode::HYBRID_KYBER_ECDH : CryptoMode::ECC_ONLY);
         pqcHelper.SetHardwareProfile(hardwareProfile);

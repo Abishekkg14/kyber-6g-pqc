@@ -30,7 +30,7 @@ struct SecurityBitInfo
 };
 
 SecurityBitInfo
-GetSecurityBits(CryptoMode mode, CrystalsKyberKem::SecurityLevel kyberLevel)
+GetSecurityBits(CryptoMode mode, SimulatedMlKem::SecurityLevel kyberLevel)
 {
     SecurityBitInfo info{128.0, 0.0, 80.0};
     switch (mode)
@@ -42,13 +42,13 @@ GetSecurityBits(CryptoMode mode, CrystalsKyberKem::SecurityLevel kyberLevel)
         break;
     case CryptoMode::KYBER_ONLY:
     case CryptoMode::KYBER_CACHED:
-        if (kyberLevel == CrystalsKyberKem::KYBER_512)
+        if (kyberLevel == SimulatedMlKem::KYBER_512)
         {
             info.classical = 128.0;
             info.quantum = 118.0;
             info.attackCostLog2 = 118.0;
         }
-        else if (kyberLevel == CrystalsKyberKem::KYBER_1024)
+        else if (kyberLevel == SimulatedMlKem::KYBER_1024)
         {
             info.classical = 256.0;
             info.quantum = 230.0;
@@ -62,13 +62,13 @@ GetSecurityBits(CryptoMode mode, CrystalsKyberKem::SecurityLevel kyberLevel)
         }
         break;
     case CryptoMode::HYBRID_KYBER_ECDH:
-        if (kyberLevel == CrystalsKyberKem::KYBER_512)
+        if (kyberLevel == SimulatedMlKem::KYBER_512)
         {
             info.classical = 128.0;
             info.quantum = 118.0;
             info.attackCostLog2 = 118.0;
         }
-        else if (kyberLevel == CrystalsKyberKem::KYBER_1024)
+        else if (kyberLevel == SimulatedMlKem::KYBER_1024)
         {
             info.classical = 256.0;
             info.quantum = 230.0;
@@ -88,8 +88,8 @@ GetSecurityBits(CryptoMode mode, CrystalsKyberKem::SecurityLevel kyberLevel)
 } // namespace
 
 PqcSecurityHelper::PqcSecurityHelper()
-    : m_kyberLevel(CrystalsKyberKem::KYBER_768),
-      m_mlDsaLevel(MlDsaSigner::ML_DSA_65),
+    : m_kyberLevel(SimulatedMlKem::KYBER_768),
+      m_mlDsaLevel(SimulatedMlDsa::ML_DSA_65),
       m_cryptoMode(CryptoMode::HYBRID_KYBER_ECDH),
       m_enableAuth(true),
       m_enableQuantumAttacker(false),
@@ -107,8 +107,8 @@ PqcSecurityHelper::~PqcSecurityHelper()
 {
 }
 
-void PqcSecurityHelper::SetKyberLevel(CrystalsKyberKem::SecurityLevel level) { m_kyberLevel = level; }
-void PqcSecurityHelper::SetMlDsaLevel(MlDsaSigner::Level level) { m_mlDsaLevel = level; }
+void PqcSecurityHelper::SetKyberLevel(SimulatedMlKem::SecurityLevel level) { m_kyberLevel = level; }
+void PqcSecurityHelper::SetMlDsaLevel(SimulatedMlDsa::Level level) { m_mlDsaLevel = level; }
 void PqcSecurityHelper::SetCryptoMode(CryptoMode mode) { m_cryptoMode = mode; }
 void PqcSecurityHelper::SetEnableAuthentication(bool enable) { m_enableAuth = enable; }
 void PqcSecurityHelper::SetEnableQuantumAttacker(bool enable) { m_enableQuantumAttacker = enable; }
@@ -294,7 +294,7 @@ PqcSecurityHelper::DoHandshake(uint32_t ueIndex, uint32_t gnbIndex)
         m_metricsCollector->RecordCacheHitRate(m_keyCache->GetHitRate());
         if (result == PqcKeyCache::LookupResult::HIT)
         {
-            Ptr<HybridKemCombiner> kem = CreateObject<HybridKemCombiner>();
+            Ptr<SimulatedHybridKemCombiner> kem = CreateObject<SimulatedHybridKemCombiner>();
             kem->SetCryptoMode(m_cryptoMode);
             kem->SetKyberLevel(m_kyberLevel);
             kem->SetHardwareProfile(m_hwProfile);

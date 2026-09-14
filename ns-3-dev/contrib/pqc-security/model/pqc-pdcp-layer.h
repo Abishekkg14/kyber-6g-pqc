@@ -111,7 +111,7 @@ class PqcPdcpLayer : public Object
   private:
     Mode m_mode;
     PqcSessionKeys m_sessionKeys;
-    Ptr<AesGcmCipher> m_cipher;
+    Ptr<SimulatedAesGcm> m_cipher;
 
     // Counters
     uint64_t m_totalOverheadBytes{0};
