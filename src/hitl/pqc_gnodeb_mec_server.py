@@ -49,6 +49,9 @@ def recv_framed_udp(sock):
         if len(packet) < 4:
             continue
         msg_type, frag_idx, total_frags = struct.unpack("!HBB", packet[:4])
+        MAX_ALLOWED_FRAGMENTS = 64  # DoS guard: max valid fragment count per protocol spec
+        if total_frags == 0 or total_frags > MAX_ALLOWED_FRAGMENTS:
+            continue  # Drop malformed/oversized fragment claims
         chunk = packet[4:]
         key = (addr, msg_type)
         if key not in buffers:
@@ -77,13 +80,19 @@ class SessionCache:
             "mobility_hash": mobility_hash,
             "created": time.time()
         }
-        self.nonces[ue_id] = 0
+        # Only initialize nonce for new UEs; preserve across rekeys
+        if ue_id not in self.nonces:
+            self.nonces[ue_id] = 0
 
-    def get(self, ue_id):
+    def get(self, ue_id, mobility_hash=None):
         entry = self.store.get(ue_id)
-        if entry and (time.time() - entry["created"] < 3600):
-            return entry
-        return None
+        if not entry or (time.time() - entry["created"] >= 3600):
+            return None
+        if mobility_hash is not None and entry.get("mobility_hash") != mobility_hash:
+            # Mobility changed — invalidate stale cache entry
+            del self.store[ue_id]
+            return None
+        return entry
 
     def validate_nonce(self, ue_id, nonce):
         last_nonce = self.nonces.get(ue_id, -1)
@@ -167,7 +176,8 @@ def main():
 
                 # Verify Drone ML-DSA-87 Signature
                 verifier = oqs.Signature(SIG_ALG)
-                is_valid = verifier.verify(pk_drone_x + pk_drone_k, drone_sig, drone_sig_pk)
+                transcript_to_verify = ue_id + struct.pack("!I", mobility_hash) + pk_drone_x + pk_drone_k
+                is_valid = verifier.verify(transcript_to_verify, drone_sig, drone_sig_pk)
                 verifier.free()
                 if not is_valid:
                     print(f"[-] UAV Signature Verification FAILED from {client_addr}!")
@@ -207,6 +217,11 @@ def main():
                 nonce = payload[16:28]
                 ciphertext = payload[28:]
                 cached_key = cache.store[ue_id]["combined_secret"]
+
+                # P0-5: Validate monotonic nonce to reject replayed C2 packets
+                if not cache.validate_nonce(ue_id, cmd_seq):
+                    print(f"[-] [REPLAY] Replayed/out-of-order packet rejected: seq={cmd_seq} from {client_addr}")
+                    continue
 
                 cmd_bytes = decrypt_dual(cached_key, nonce, ciphertext)
                 if cmd_bytes:

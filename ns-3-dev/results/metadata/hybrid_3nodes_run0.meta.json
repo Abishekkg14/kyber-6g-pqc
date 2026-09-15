@@ -1,0 +1,7 @@
+{
+  "crypto_mode": "hybrid",
+  "nodes": "3",
+  "run_index": "0",
+  "scenario": "auto",
+  "seed": "42"
+}

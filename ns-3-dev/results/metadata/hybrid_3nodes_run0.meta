@@ -1,0 +1,12 @@
+seed,42
+run_index,0
+scenario,auto
+kyber_level,2
+crypto_mode,3
+hardware_profile,jetson-nano
+parallel_handshake,0
+cache_enabled,0
+cache_ttl_s,300
+edge_backhaul_ms,2
+battery_wh,74
+modeled_fields,crypto_energy,battery_life,attack_cost,security_bits

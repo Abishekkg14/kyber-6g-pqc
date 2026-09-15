@@ -7,6 +7,7 @@
 #define PQC_PDCP_LAYER_H
 
 #include "aes-gcm-cipher.h"
+#include "pqc-key-cache.h"
 #include "pqc-session-keys.h"
 
 #include "ns3/nstime.h"
@@ -101,6 +102,23 @@ class PqcPdcpLayer : public Object
      */
     uint64_t GetPacketsProcessed() const;
 
+    /**
+     * \brief Set the key cache for anti-replay verification.
+     * \param cache Key cache instance.
+     * \param ueIndex UE index for cache lookup.
+     */
+    void SetKeyCache(Ptr<PqcKeyCache> cache, uint32_t ueIndex);
+
+    /**
+     * \brief Get count of GCM authentication failures.
+     */
+    uint64_t GetAuthFailures() const;
+
+    /**
+     * \brief Get count of replay rejections.
+     */
+    uint64_t GetReplayRejections() const;
+
     // ── Trace sources for metrics ──
     TracedCallback<uint32_t, uint32_t> m_txOverheadTrace; // original_size, encrypted_size
     TracedCallback<uint32_t, uint32_t> m_rxOverheadTrace; // encrypted_size, decrypted_size
@@ -112,11 +130,15 @@ class PqcPdcpLayer : public Object
     Mode m_mode;
     PqcSessionKeys m_sessionKeys;
     Ptr<SimulatedAesGcm> m_cipher;
+    Ptr<PqcKeyCache> m_keyCache{nullptr};
+    uint32_t m_ueIndex{0};
 
     // Counters
     uint64_t m_totalOverheadBytes{0};
     uint64_t m_packetsEncrypted{0};
     uint64_t m_packetsDecrypted{0};
+    uint64_t m_authFailures{0};
+    uint64_t m_replayRejections{0};
 };
 
 } // namespace pqc

@@ -207,5 +207,24 @@ PqcPdcpLayer::GetPacketsProcessed() const
     return m_packetsEncrypted + m_packetsDecrypted;
 }
 
+void
+PqcPdcpLayer::SetKeyCache(Ptr<PqcKeyCache> cache, uint32_t ueIndex)
+{
+    m_keyCache = cache;
+    m_ueIndex = ueIndex;
+}
+
+uint64_t
+PqcPdcpLayer::GetAuthFailures() const
+{
+    return m_authFailures;
+}
+
+uint64_t
+PqcPdcpLayer::GetReplayRejections() const
+{
+    return m_replayRejections;
+}
+
 } // namespace pqc
 } // namespace ns3

@@ -55,6 +55,9 @@ def recv_framed_udp(sock, timeout=5.0):
         if len(packet) < 6:
             continue
         msg_type, frag_idx, total_frags, seq_id = struct.unpack("!HBBH", packet[:6])
+        MAX_ALLOWED_FRAGMENTS = 64  # DoS guard per protocol.py spec (ML-KEM-1024 + ML-DSA-87 max ~5 frags in practice)
+        if total_frags == 0 or total_frags > MAX_ALLOWED_FRAGMENTS:
+            continue  # Drop malformed/oversized fragment claims
         chunk = packet[6:]
         
         key = (addr, msg_type, seq_id)
@@ -113,6 +116,13 @@ class MecKeyCache:
         if time.time() - entry["created_at"] > self.ttl:
             del self.store[ue_id]
             return "STALE", None
+        if entry["mobility_hash"] != mobility_hash:
+            del self.store[ue_id]
+            # STALE_MOBILITY: UAV has changed cell/coordinates.
+            # Caller must initiate a full PQC renegotiation (0x01 handshake),
+            # NOT a 1-RTT cached rekey. Reusing keys across distinct mobility
+            # cells breaks forward secrecy and location-binding guarantees.
+            return "STALE_MOBILITY", None
         return "HIT", entry["combined_secret"]
 
     def put(self, ue_id, secret, mobility_hash):
@@ -121,7 +131,10 @@ class MecKeyCache:
             "created_at": time.time(),
             "mobility_hash": mobility_hash
         }
-        self.nonce_watermarks[ue_id] = 0
+        # Only initialize nonce watermark for new UEs; preserve existing watermark
+        # across rekeys to prevent replay window reopening (CVE-class fix)
+        if ue_id not in self.nonce_watermarks:
+            self.nonce_watermarks[ue_id] = 0
 
     def validate_nonce(self, ue_id, nonce_val):
         wm = self.nonce_watermarks.get(ue_id, 0)
@@ -195,7 +208,8 @@ def process_handshake_message(msg_type, payload, signer, gnb_sig_pk, cache, TRUS
         
         if ue_id not in TRUSTED_UAV_REGISTRY:
             TRUSTED_UAV_REGISTRY[ue_id] = drone_sig_pk
-            print(f"[+] [ENROLL] Enrolled verified UAV identity: {ue_id.decode('ascii', errors='ignore').strip()}")
+            print(f"[!] [TOFU-ENROLL] Trust-On-First-Use enrollment for UAV: {ue_id.decode('ascii', errors='ignore').strip()}")
+            print(f"    WARNING: Production deployments MUST use pre-provisioned PKI or hardware-bound identity.")
         elif TRUSTED_UAV_REGISTRY[ue_id] != drone_sig_pk:
             print(f"[-] [AUTH ERROR] Public key mismatch for UAV {ue_id}! Handshake rejected.")
             return None, None

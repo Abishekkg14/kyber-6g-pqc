@@ -49,6 +49,9 @@ def recv_framed_udp(sock):
         if len(packet) < 4:
             continue
         msg_type, frag_idx, total_frags = struct.unpack("!HBB", packet[:4])
+        MAX_ALLOWED_FRAGMENTS = 64  # DoS guard: max valid fragment count per protocol spec
+        if total_frags == 0 or total_frags > MAX_ALLOWED_FRAGMENTS:
+            continue  # Drop malformed/oversized fragment claims
         chunk = packet[4:]
         key = (addr, msg_type)
         if key not in buffers:
@@ -77,13 +80,19 @@ class SessionCache:
             "mobility_hash": mobility_hash,
             "created": time.time()
         }
-        self.nonces[ue_id] = 0
+        # Only initialize nonce for new UEs; preserve across rekeys
+        if ue_id not in self.nonces:
+            self.nonces[ue_id] = 0
 
-    def get(self, ue_id):
+    def get(self, ue_id, mobility_hash=None):
         entry = self.store.get(ue_id)
-        if entry and (time.time() - entry["created"] < 3600):
-            return entry
-        return None
+        if not entry or (time.time() - entry["created"] >= 3600):
+            return None
+        if mobility_hash is not None and entry.get("mobility_hash") != mobility_hash:
+            # Mobility changed — invalidate stale cache entry
+            del self.store[ue_id]
+            return None
+        return entry
 
     def validate_nonce(self, ue_id, nonce):
         last_nonce = self.nonces.get(ue_id, -1)
@@ -167,7 +176,8 @@ def main():
 
                 # Verify Drone ML-DSA-87 Signature
                 verifier = oqs.Signature(SIG_ALG)
-                is_valid = verifier.verify(pk_drone_x + pk_drone_k, drone_sig, drone_sig_pk)
+                transcript_to_verify = ue_id + struct.pack("!I", mobility_hash) + pk_drone_x + pk_drone_k
+                is_valid = verifier.verify(transcript_to_verify, drone_sig, drone_sig_pk)
                 verifier.free()
                 if not is_valid:
                     print(f"[-] UAV Signature Verification FAILED from {client_addr}!")
@@ -207,6 +217,11 @@ def main():
                 nonce = payload[16:28]
                 ciphertext = payload[28:]
                 cached_key = cache.store[ue_id]["combined_secret"]
+
+                # P0-5: Validate monotonic nonce to reject replayed C2 packets
+                if not cache.validate_nonce(ue_id, cmd_seq):
+                    print(f"[-] [REPLAY] Replayed/out-of-order packet rejected: seq={cmd_seq} from {client_addr}")
+                    continue
 
                 cmd_bytes = decrypt_dual(cached_key, nonce, ciphertext)
                 if cmd_bytes:
@@ -252,11 +267,12 @@ def main():
 
             # Message 0x10 & 0x11: Image Transfers
             elif msg_type == 0x10:
+                hdr_aad = payload[:16]  # uav_id (8B) + b"IMG_META" (8B)
                 ue_id = payload[:8]
-                nonce = payload[8:20]
-                ciphertext = payload[20:]
+                nonce = payload[16:28]
+                ciphertext = payload[28:]
                 cached_key = cache.store[ue_id]["combined_secret"]
-                plain_meta = decrypt_dual(cached_key, nonce, ciphertext)
+                plain_meta = decrypt_dual(cached_key, nonce, ciphertext, aad=hdr_aad)
                 if plain_meta:
                     name_len, total_size, total_chunks = struct.unpack("!HII", plain_meta[:10])
                     filename = plain_meta[10 : 10 + name_len].decode('utf-8', errors='ignore')
@@ -270,12 +286,13 @@ def main():
                     print(f"\n[+] [IMAGE INCOMING] {filename} ({total_size} Bytes)")
 
             elif msg_type == 0x11:
+                chunk_aad = payload[:12]  # uav_id (8B) + chunk_idx (4B)
                 ue_id = payload[:8]
                 chunk_idx = struct.unpack("!I", payload[8:12])[0]
                 nonce = payload[12:24]
                 ciphertext = payload[24:]
                 cached_key = cache.store[ue_id]["combined_secret"]
-                chunk_data = decrypt_dual(cached_key, nonce, ciphertext)
+                chunk_data = decrypt_dual(cached_key, nonce, ciphertext, aad=chunk_aad)
                 transfer = cache.image_transfers.get(ue_id)
                 if transfer and chunk_data is not None:
                     transfer["chunks"][chunk_idx] = chunk_data
@@ -285,19 +302,21 @@ def main():
                         with open(out_path, "wb") as img_f:
                             img_f.write(full_img)
                         print(f"[+] [IMAGE SAVED] {out_path}")
-                        reply_nonce = os.urandom(12)
-                        reply_ct = AESGCM(cached_key).encrypt(reply_nonce, b"IMAGE_VERIFIED_AND_SAVED", None)
-                        send_framed_udp(sock, client_addr, 0x12, reply_nonce + reply_ct)
+                        ack_aad = ue_id + b"IMG_ACK"
+                        reply_nonce = struct.pack("!QI", total_chunks, 0x41434B31)
+                        reply_ct = AESGCM(cached_key).encrypt(reply_nonce, b"IMAGE_VERIFIED_AND_SAVED", associated_data=ack_aad)
+                        send_framed_udp(sock, client_addr, 0x12, ack_aad + reply_nonce + reply_ct)
                         del cache.image_transfers[ue_id]
 
-            # Message 0x20: Video Frames
+            # Message 0x20: Video Frames with Deterministic Nonces & Clear Header AAD
             elif msg_type == 0x20:
+                header_aad = payload[:14]  # uav_id (8B) + frame_id (4B) + fps (2B)
                 ue_id = payload[:8]
                 frame_id, fps = struct.unpack("!IH", payload[8:14])
                 nonce = payload[14:26]
                 ciphertext = payload[26:]
                 cached_key = cache.store[ue_id]["combined_secret"]
-                video_frame_data = decrypt_dual(cached_key, nonce, ciphertext)
+                video_frame_data = decrypt_dual(cached_key, nonce, ciphertext, aad=header_aad)
                 if video_frame_data and (frame_id + 1) % fps == 0:
                     print(f"    [Decrypted Video Frame #{frame_id+1:03d}] Size: {len(video_frame_data)} B @ {fps} FPS")
 
