@@ -315,7 +315,7 @@ def perform_pqc_handshake(sock, dest, uav_id):
 
     t_handshake_ms = (time.perf_counter_ns() - t_start) / 1e6
     print(f"[+] [SUCCESS] Level-5 Handshake Authenticated in {t_handshake_ms:.2f} ms")
-    print(f"[+] Master Session Key Established: {k_session.hex()[:24]}...")
+    print(f"[+] Master Session Key Established: {k_session.hex()}")
     kem.free()
     signer.free()
     return k_session

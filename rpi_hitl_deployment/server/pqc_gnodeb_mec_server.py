@@ -209,6 +209,7 @@ def main():
 
                 send_framed_udp(sock, client_addr, 0x02, resp_payload)
                 print(f"[+] [RRC-AUTH-OK] UAV {ue_id.decode('ascii', errors='ignore').strip()} Authenticated from {client_addr[0]}:{client_addr[1]}")
+                print(f"[+] Master Session Key Established: {combined_secret.hex()}")
 
             # Message 0x08: Encrypted C2 Flight Command & Telemetry Packet
             elif msg_type == 0x08:
