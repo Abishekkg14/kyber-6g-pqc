@@ -128,3 +128,30 @@ Evaluated on the 30% held-out test split, confirming physical-to-simulation equi
 | **CPU Power (Active)** | 4.85 W | 4.85 W | **0.00%** | $\le 2.00\%$ | **PASS** |
 | **RF TX / RX Power** | 0.52 W / 0.16 W | 0.52 W / 0.16 W | **0.00%** | $\le 2.00\%$ | **PASS** |
 | **Steady-State SoC Temperature** | 48.50 °C | 48.50 °C | **Nominal** | — | **PASS** |
+
+> **Statistical Note:** The HITL dataset contains only N=2 full-handshake
+> (FULL_PQC) measurements (iterations 1 and 51 — cold-start and warm-cache).
+> Full-handshake statistics in the validation table above are therefore point
+> estimates, not distributional. The cached-rekey metrics (N=98) provide
+> statistically robust distributional comparisons. For publication, additional
+> independent cold-start repetitions (≥30) are recommended to support boxplot
+> or CI representation of full-handshake latency/energy.
+
+> **URLLC Tail Latency Note (3GPP Compliance):** The Cached Rekey **mean** latency
+> (~8.2 ms) meets the sub-10 ms URLLC bound. However, the **P99 tail latency**
+> under wireless channel fading reaches **~11.6 ms** at N=1 and increases with
+> swarm density. This exceeds the strict 10 ms P99 URLLC threshold defined in
+> 3GPP TR 22.804. Claims of URLLC compliance should specify that **mean**
+> latency meets the bound, while P99 tail jitter may require additional
+> link-layer optimizations (e.g., HARQ redundancy, prioritized scheduling)
+> for unconditional compliance.
+>
+> **Cryptographic Security Note:** The "Cached Rekey (1-RTT)" mode uses
+> `HKDF(cached_master_secret, ephemeral_salt)` for key ratcheting/evolution.
+> This provides efficient session key rotation but does **not** constitute
+> Perfect Forward Secrecy (PFS), which requires fresh ephemeral asymmetric
+> key exchange per session. The full handshake (with fresh ML-KEM-1024 +
+> X25519 key generation) provides genuine forward secrecy. Deployment
+> policy should trigger periodic full re-handshakes at configurable intervals
+> (e.g., every `cacheTtl` seconds or on mobility cell change) to maintain
+> forward secrecy guarantees.

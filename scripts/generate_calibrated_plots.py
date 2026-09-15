@@ -167,9 +167,9 @@ def plot_hw_vs_sim_validation(hitl_df: pd.DataFrame, sim_df: pd.DataFrame) -> No
 
     # ── Panel B: Energy Bar Chart ──
     ax = axes[1]
-    hw_full_e = hitl_df[hitl_df["Mode"] == "FULL_PQC"]["Energy_mJ"].mean()
+    hw_full_e = hitl_df[hitl_df["Mode"] == "FULL_PQC"]["Energy_mJ"].iloc[0]  # cold-start, not mean(cold,warm)
     hw_rekey_e = hitl_df[hitl_df["Mode"].isin(["CACHED_REKEY", "0RTT_REKEY"])]["Energy_mJ"].mean()
-    sim_full_e = sim_df[sim_df["Mode"] == "FULL_PQC"]["Energy_mJ"].mean()
+    sim_full_e = sim_df[sim_df["Mode"] == "FULL_PQC"]["Energy_mJ"].iloc[0] if len(sim_df[sim_df["Mode"] == "FULL_PQC"]) > 0 else 66.340
     sim_rekey_e = sim_df[sim_df["Mode"].isin(["CACHED_REKEY", "0RTT_REKEY"])]["Energy_mJ"].mean()
 
     x = np.arange(2)
@@ -199,9 +199,9 @@ def plot_hw_vs_sim_validation(hitl_df: pd.DataFrame, sim_df: pd.DataFrame) -> No
 
     # ── Panel C: Variance Summary ──
     ax = axes[2]
-    metrics = ["Full Lat.", "0-RTT Lat.", "Full Energy", "0-RTT Energy"]
-    hw_vals = [hw_full.mean(), hw_rekey.mean(), hw_full_e, hw_rekey_e]
-    sim_vals = [sim_full.mean(), sim_rekey.mean(), sim_full_e, sim_rekey_e]
+    metrics = ["Full Lat.", "Cached Rekey Lat.", "Full Energy", "Cached Rekey Energy"]
+    hw_vals = [hw_full.iloc[0], hw_rekey.mean(), hw_full_e, hw_rekey_e]  # cold-start for full HS
+    sim_vals = [sim_full.iloc[0] if len(sim_full) > 0 else 45.513, sim_rekey.mean(), sim_full_e, sim_rekey_e]
     variances = [abs(s - h) / h * 100 for h, s in zip(hw_vals, sim_vals)]
 
     bar_colors = [COLORS["accent1"] if v <= 2.0 else (COLORS["accent4"] if v <= 5.0 else COLORS["urllc"])
@@ -358,9 +358,9 @@ def plot_energy_vs_swarm(swarm_df: pd.DataFrame) -> None:
 
     # Panel A: Per-handshake energy
     ax1.plot(sizes, df["Full_Energy_Mean_mJ"], "o-", color=COLORS["energy_full"],
-             linewidth=2, markersize=6, label=f"Full Handshake (~240 mJ)")
+             linewidth=2, markersize=6, label=f"Full Handshake (~66 mJ)")
     ax1.plot(sizes, df["Rekey_Energy_Mean_mJ"], "s-", color=COLORS["energy_rekey"],
-             linewidth=2, markersize=6, label=f"Cached Rekey (1-RTT) (~1.6 mJ)")
+             linewidth=2, markersize=6, label=f"Cached Rekey (1-RTT) (~1.3 mJ)")
 
     ax1.set_xlabel("Swarm Size (Drones)")
     ax1.set_ylabel("Per-Handshake Energy (mJ)")

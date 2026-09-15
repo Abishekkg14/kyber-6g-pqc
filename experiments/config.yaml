@@ -44,7 +44,7 @@ hitl_calibration:
   idle_power_w: 1.20                  # Idle SoC power draw
   rf_tx_power_w: 0.52                 # Wi-Fi / 5G RF TX power
   rf_rx_power_w: 0.16                 # Wi-Fi / 5G RF RX power
-  soc_temp_c: 49.80                   # Steady-state SoC thermal plateau
+  soc_temp_c: 48.50                   # Steady-state SoC thermal plateau
   parallel_formula: "T_parallel = max(T_X25519, T_MLKEM) * 1.10"
 
 # ── NIST Level-5 Primitive Sizes & Wire Framing ──
