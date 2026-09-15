@@ -62,7 +62,7 @@ def plot_flight_telemetry_profile():
     ax3.set_title('(c) AES-256-GCM Telemetry Latency under Active Flight Maneuvers')
     ax3.legend(loc='upper right')
 
-    plt.suptitle('Physical UAV Avionics Telemetry & PQC Stream Profile (Raspberry Pi 4)', y=0.98, fontweight='bold')
+    plt.suptitle('Representative UAV Avionics Telemetry & PQC Stream Profile (Raspberry Pi 4)\nSynthetic 20 Hz telemetry streamed through real HITL PQC link', y=0.98, fontweight='bold')
     plt.tight_layout(rect=[0, 0, 1, 0.96])
     
     out_file = os.path.join(HITL_PLOTS_DIR, "hitl_flight_telemetry_profile.png")
@@ -90,8 +90,8 @@ def plot_jitter_cdf():
     ax.axvline(10.0, color='#c0392b', linestyle=':', linewidth=2.0, label='URLLC Strict Bound (10 ms)')
     ax.set_xscale('log')
     ax.set_xlabel('Round-Trip Latency (ms) [Logarithmic Scale]')
-    ax.set_ylabel('Empirical CDF (Probability)')
-    ax.set_title('Empirical Latency CDF & Jitter Bounds on Raspberry Pi 4 Testbed', fontweight='bold')
+    ax.set_ylabel('CDF (Probability)')
+    ax.set_title('Representative Latency CDF & Jitter Bounds (HITL-Calibrated Distributions)\nRaspberry Pi 4 — Synthetic samples drawn from measured parameters', fontweight='bold')
     ax.grid(True, which='both', linestyle=':', alpha=0.6)
     ax.set_ylim([0, 1.05])
     ax.legend(loc='lower right', framealpha=0.9)

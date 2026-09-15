@@ -73,7 +73,7 @@ COLORS = {
     "hw": "#2E86AB",          # Steel blue — hardware
     "sim": "#E8550E",         # Burnt orange — simulation
     "full": "#D64045",        # Red — full handshake
-    "rekey": "#1B998B",       # Teal — 0-RTT rekey
+    "rekey": "#1B998B",       # Teal — 1-RTT cached rekey
     "energy_full": "#7B2D8E", # Purple — full energy
     "energy_rekey": "#F0C808",# Gold — rekey energy
     "urllc": "#D64045",       # Red — URLLC deadline
@@ -245,11 +245,11 @@ def plot_latency_vs_swarm(swarm_df: pd.DataFrame) -> None:
     ax.fill_between(sizes, df["Full_Handshake_P50_ms"], df["Full_Handshake_P99_ms"],
                     alpha=0.15, color=COLORS["full"], label="Full (P50–P99)")
 
-    # 0-RTT rekey
+    # 1-RTT cached rekey
     ax.plot(sizes, df["Cached_Rekey_Mean_ms"], "s-", color=COLORS["rekey"],
-            linewidth=2, markersize=6, label="0-RTT RapidRekey (Mean)", zorder=5)
+            linewidth=2, markersize=6, label="1-RTT Cached RapidRekey (Mean)", zorder=5)
     ax.fill_between(sizes, df["Cached_Rekey_P50_ms"], df["Cached_Rekey_P99_ms"],
-                    alpha=0.15, color=COLORS["rekey"], label="0-RTT (P50–P99)")
+                    alpha=0.15, color=COLORS["rekey"], label="1-RTT (P50–P99)")
 
     # URLLC deadline
     ax.axhline(y=10.0, color=COLORS["urllc"], linestyle="--", linewidth=2,
@@ -317,7 +317,7 @@ def plot_latency_vs_mobility(swarm_df: pd.DataFrame) -> None:
     ax.plot(velocities, full_means, "o-", color=COLORS["full"],
             linewidth=2, markersize=4, label="Full Cold-Start Handshake")
     ax.plot(velocities, rekey_means, "s-", color=COLORS["rekey"],
-            linewidth=2, markersize=4, label="0-RTT RapidRekey (Cached)")
+            linewidth=2, markersize=4, label="1-RTT Cached RapidRekey")
 
     ax.axhline(y=10.0, color=COLORS["urllc"], linestyle="--", linewidth=2,
                alpha=0.8, label="URLLC 10 ms Deadline")
@@ -386,14 +386,14 @@ def plot_energy_vs_swarm(swarm_df: pd.DataFrame) -> None:
     # Annotate savings ratio
     if len(cumulative_full) > 0 and cumulative_rekey[-1] > 0:
         ratio = cumulative_full[-1] / cumulative_rekey[-1]
-        ax2.annotate(f"Full/0-RTT ratio: {ratio:.0f}×",
+        ax2.annotate(f"Full/1-RTT ratio: {ratio:.0f}×",
                      xy=(sizes[-1], cumulative_full[-1]),
                      xytext=(-60, -20), textcoords="offset points",
                      fontsize=9, fontweight="bold", color=COLORS["energy_full"],
                      arrowprops=dict(arrowstyle="->", color=COLORS["energy_full"]))
 
     fig.suptitle("Energy Dissipation Analysis — RPi4 Cortex-A72 SWaP-C Profile\n"
-                 "P_cpu=5.0W | P_idle=1.0W | P_tx=0.52W | P_rx=0.16W",
+                 "P_cpu=4.85W | P_idle=1.20W | P_tx=0.52W | P_rx=0.16W",
                  fontsize=12, fontweight="bold", y=1.04)
     fig.tight_layout()
     save_plot(fig, "energy_vs_swarm_scale.png")
@@ -488,7 +488,7 @@ def plot_crypto_breakdown() -> None:
 
     bars = ax1.barh(names, values, color=colors_bar, alpha=0.85, edgecolor="white")
     ax1.set_xlabel("Processing Time (ms)")
-    ax1.set_title("(a) Cryptographic Component Breakdown\nCortex-A72 @ 1.5 GHz")
+    ax1.set_title("(a) Analytical Primitive Timing\nCortex-A72 @ 1.5 GHz (liboqs microbenchmarks)")
     ax1.invert_yaxis()
 
     for bar, val in zip(bars, values):
@@ -521,8 +521,8 @@ def plot_crypto_breakdown() -> None:
                      xytext=(0, 5), textcoords="offset points",
                      ha="center", va="bottom", fontsize=10, fontweight="bold")
 
-    fig.suptitle("PQC Cryptographic Overhead Analysis\n"
-                 "ML-KEM-1024 + X25519 + ML-DSA-87 + AES-256-GCM",
+    fig.suptitle("PQC Cryptographic Overhead Analysis (Analytical Component Timing)\n"
+                 "ML-KEM-1024 + X25519 + ML-DSA-87 (liboqs microbenchmarks, NOT measured HITL totals)",
                  fontsize=12, fontweight="bold", y=1.04)
     fig.tight_layout()
     save_plot(fig, "crypto_latency_breakdown.png")
@@ -555,7 +555,7 @@ def plot_urllc_heatmap(swarm_df: pd.DataFrame) -> None:
     cmap = plt.cm.RdYlGn_r
 
     im = ax.imshow(pivot.values, cmap=cmap, norm=norm, aspect="auto")
-    cbar = fig.colorbar(im, ax=ax, label="0-RTT P99 Latency (ms)")
+    cbar = fig.colorbar(im, ax=ax, label="1-RTT Cached Rekey P99 Latency (ms)")
 
     # Labels
     ax.set_xticks(range(len(pivot.columns)))
@@ -564,7 +564,7 @@ def plot_urllc_heatmap(swarm_df: pd.DataFrame) -> None:
     ax.set_yticklabels([f"{v:.0f}" for v in pivot.index])
     ax.set_xlabel("Swarm Size (Drones)")
     ax.set_ylabel("UAV Velocity (m/s)")
-    ax.set_title("0-RTT RapidRekey P99 Latency — URLLC Compliance Map\n"
+    ax.set_title("1-RTT Cached RapidRekey P99 Latency — URLLC Compliance Map\n"
                  "Green ≤ 10 ms (URLLC) | Red > 10 ms (Non-compliant)")
 
     # Annotate cells
