@@ -418,13 +418,13 @@ def validate_against_hitl(sim_df: pd.DataFrame, test_hitl_df: pd.DataFrame) -> p
     sim_rekey = sim_df[sim_df["Mode"].isin(["CACHED_REKEY", "0RTT_REKEY"])]
 
     # Use iteration-1 specifically for cold-start comparison
-    hw_cold = hitl_full.iloc[0]["Total_Handshake_ms"]  # 99.449
+    hw_cold = hitl_full.iloc[0]["Total_Handshake_ms"]
     sw_cold = sim_full.iloc[0]["Total_Handshake_ms"]
 
     hw_rekey_mean = hitl_rekey["Total_Handshake_ms"].mean()
     sw_rekey_mean = sim_rekey["Total_Handshake_ms"].mean()
 
-    hw_cold_e = hitl_full.iloc[0]["Energy_mJ"]  # 240.4962
+    hw_cold_e = hitl_full.iloc[0]["Energy_mJ"]
     sw_cold_e = sim_full.iloc[0]["Energy_mJ"]
 
     hw_rekey_e = hitl_rekey["Energy_mJ"].mean()

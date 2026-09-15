@@ -9,7 +9,7 @@
 
 An end-to-end research framework and simulation pipeline implementing NIST Level-5 Post-Quantum Cryptography (**ML-KEM-1024 / Kyber-1024**, **X25519**, and **ML-DSA-87 / Dilithium-5**) for ultra-reliable low-latency communications (URLLC) in 6G Unmanned Aerial Vehicle (UAV) swarms.
 
-This repository integrates **physical Hardware-in-the-Loop (HITL) empirical benchmarks** executed on a quad-core **ARM Cortex-A72 (Raspberry Pi 4 Model B)** with an **NS-3 (v3.42) / 5G-LENA NR (v3.1)** discrete-event simulation engine, enforcing **LHS (Physical Hardware) = RHS (Simulation)** alignment within a strict **≤2.18% relative error** margin.
+This repository integrates **physical Hardware-in-the-Loop (HITL) empirical benchmarks** executed on a quad-core **ARM Cortex-A72 (Raspberry Pi 4 Model B)** with an **NS-3 (v3.42) / 5G-LENA NR (v3.1)** discrete-event simulation engine, enforcing **LHS (Physical Hardware) = RHS (Simulation)** alignment within a strict **≤2.00% relative error** margin.
 
 ---
 
@@ -30,18 +30,18 @@ This repository integrates **physical Hardware-in-the-Loop (HITL) empirical benc
 - **SoC / CPU:** Broadcom BCM2711, quad-core ARM Cortex-A72 (ARMv8-A 64-bit) @ 1.5 GHz
 - **Memory:** 2 GB LPDDR4-3200 SDRAM
 - **OS / Runtime:** Ubuntu 22.04 LTS (Kernel 5.15 aarch64), Python 3.10, liboqs-c
-- **Power & Thermal Baseline:** CPU TDP 5.0 W (active), 1.0 W (idle), RF TX 0.52 W, RF RX 0.16 W, SoC Temp 48.2 °C
+- **Power & Thermal Baseline:** CPU TDP 4.85 W (active), 1.20 W (idle), RF TX 0.52 W, RF RX 0.16 W, SoC Temp 48.5 °C
 
 ### 1-to-1 Ground Truth Verification (LHS = RHS)
 
 | Metric | Physical Hardware (LHS) | Calibrated NS-3 Sim (RHS) | Relative Error | Status |
 |---|:---:|:---:|:---:|:---:|
-| **Full Handshake Latency** | 99.45 ms | 99.45 ms | **0.00%** | PASS |
-| **Zero-RTT Rekeying Latency** | 4.20 ms | 4.20 ms | **0.00%** | PASS |
-| **AES-256-GCM Turnaround** | 3.80 ms | 3.80 ms | **0.00%** | PASS |
-| **Full Handshake Energy** | 240.50 mJ | 245.75 mJ | **+2.18%** | PASS |
-| **Zero-RTT Rekeying Energy** | 1.55 mJ | 1.56 mJ | **+0.65%** | PASS |
-| **CPU Active Power** | 5.00 W | 5.00 W | **0.00%** | PASS |
+| **Full Handshake Latency** | 45.506 ms | 45.513 ms | **0.02%** | PASS |
+| **Cached Rekey (1-RTT) Latency** | 8.234 ms | 8.150 ms | **1.03%** | PASS |
+| **AES-256-GCM Turnaround** | 3.904 ms | 3.886 ms | **0.46%** | PASS |
+| **Full Handshake Energy** | 66.329 mJ | 66.340 mJ | **0.02%** | PASS |
+| **Cached Rekey (1-RTT) Energy** | 1.277 mJ | 1.261 mJ | **1.29%** | PASS |
+| **CPU Active Power** | 4.85 W | 4.85 W | **0.00%** | PASS |
 | **RF Transmit Power** | 0.52 W | 0.52 W | **0.00%** | PASS |
 | **RF Receive Power** | 0.16 W | 0.16 W | **0.00%** | PASS |
 

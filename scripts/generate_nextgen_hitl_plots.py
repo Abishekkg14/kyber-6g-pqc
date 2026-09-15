@@ -72,15 +72,15 @@ def plot_flight_telemetry_profile():
 
 def plot_jitter_cdf():
     np.random.seed(42)
-    avionics_rtt = np.random.normal(1.04, 0.25, 1000)
-    rekey_rtt = np.random.normal(4.20, 0.35, 1000)
-    cold_handshake = np.random.normal(99.45, 3.50, 1000)
+    avionics_rtt = np.random.normal(3.904, 0.666, 1000)
+    rekey_rtt = np.random.normal(8.234, 1.156, 1000)
+    cold_handshake = np.random.normal(45.506, 2.500, 1000)
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
     for data, label, col, ls in [
         (avionics_rtt, 'Avionics Telemetry Plane (AES-256-GCM)', '#27ae60', '-'),
-        (rekey_rtt, '0-RTT Rapid Rekeying (Cache Hit)', '#2980b9', '--'),
+        (rekey_rtt, '1-RTT Rapid Rekeying (Cache Hit)', '#2980b9', '--'),
         (cold_handshake, 'Cold-Start Full Handshake (ML-KEM+DSA)', '#e74c3c', '-.')
     ]:
         sorted_d = np.sort(data)
