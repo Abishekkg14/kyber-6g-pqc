@@ -778,6 +778,10 @@ def plot_kyber_level_selection(out):
 # Plot 13: Handoff Latency CDF (FIXED: Monte Carlo CDF from distributions)
 # ──────────────────────────────────────────────────────────────────────────
 def plot_handoff_latency_cdf(data, out):
+    """IMPORTANT: This function generates illustrative handoff latency
+    distributions from hard-coded gamma-distribution parameters, NOT from
+    NS-3 simulation output. The actual simulation data in `data` is not
+    used for the CDF curves — only the hard-coded parameters below."""
     fig, ax = plt.subplots(figsize=(9, 5.5))
 
     rng = np.random.default_rng(42)
@@ -863,6 +867,10 @@ def plot_5g_vs_6g_comparison(out):
 
     modes = ['X25519', 'ML-KEM-1024', 'Hybrid-1024']
     # 5G (3.5 GHz): measured from NS-3
+    # IMPORTANT: These are assumed illustrative base latencies for a
+    # 5G vs 6G scenario projection — NOT NS-3 simulation output.
+    # Confidence intervals quantify MC randomness around these assumed
+    # constants, not measurement uncertainty.
     base_5g = [120, 650, 770]
     # 6G (140 GHz THz): ~20% faster propagation, lower queueing
     base_6g = [95, 520, 625]

@@ -119,13 +119,12 @@ InstallDroneApplications(NodeContainer drones,
 
     // Derive authentic session keys via SimulatedHybridKemCombiner (PQC Handshake)
     Ptr<SimulatedHybridKemCombiner> combiner = CreateObject<SimulatedHybridKemCombiner>();
-    Ptr<SimulatedMlKem> mlKem = CreateObject<SimulatedMlKem>();
-    Ptr<SimulatedX25519> x25519 = CreateObject<SimulatedX25519>();
-    auto kemKp = mlKem->GenerateKeyPair();
-    auto ecdhKp = x25519->GenerateKeyPair();
-    std::vector<uint8_t> ss;
-    auto hybridCt = combiner->Encapsulate(ecdhKp.first, kemKp.first, ss);
-    PqcSessionKeys cmdrKeys = combiner->DeriveSessionKeys(ss);
+    // Use the combiner's unified GenerateKeyPair (internally calls KeyGen on both ECDH + ML-KEM)
+    auto initiatorKp = combiner->GenerateKeyPair();
+    // Responder-side encapsulation toward initiator's public keys
+    auto encapsResult = combiner->Encapsulate(initiatorKp.ecdhKeys.publicKey,
+                                               initiatorKp.kyberKeys.publicKey);
+    PqcSessionKeys cmdrKeys = combiner->DeriveSessionKeys(encapsResult.combinedSecret);
     Simulator::Schedule(Seconds(1.2), &SimulatedAesGcm::InstallKeys, cmdrCipher, cmdrKeys);
 
     for (uint32_t i = 1; i < drones.GetN(); ++i)
@@ -141,7 +140,9 @@ InstallDroneApplications(NodeContainer drones,
         droneApp->SetStartTime(Seconds(1.0 + i * 0.05));
         droneApp->SetStopTime(simTime);
 
-        std::vector<uint8_t> droneSs = combiner->Decapsulate(hybridCt, ecdhKp.second, kemKp.second);
+        std::vector<uint8_t> droneSs = combiner->Decapsulate(initiatorKp,
+                                                              encapsResult.ecdhPublicKey,
+                                                              encapsResult.kyberCiphertext);
         PqcSessionKeys droneKeys = combiner->DeriveSessionKeys(droneSs);
         Simulator::Schedule(Seconds(1.2 + i * 0.05), &SimulatedAesGcm::InstallKeys, cipher, droneKeys);
     }

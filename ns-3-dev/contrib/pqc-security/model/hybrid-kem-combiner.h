@@ -34,12 +34,14 @@ enum class CryptoMode
 /**
  * \brief Hybrid KEM combining X25519 ECDH + CRYSTALS-Kyber.
  *
- * Implements the dual-KEM combiner:
- *   shared_secret = HKDF-SHA256(ECDH_ss || Kyber_ss, "Kyber6G-HybridKEM-v1")
+ * Simulation-only deterministic combiner calibrated to represent the
+ * latency/size behavior of the real HITL HKDF-SHA256 construction.
+ * NOT a cryptographic HKDF implementation — see the HITL benchmark
+ * server for the real HKDF(ECDH_ss || Kyber_ss) implementation.
  *
- * Security guarantee: the combined secret is secure if EITHER
- * the classical (X25519) or post-quantum (Kyber) scheme remains unbroken.
- * This follows NIST SP 800-56C Rev. 2 hybrid construction guidance.
+ * Security model: the combined secret is secure if EITHER
+ * the classical (X25519) or post-quantum (ML-KEM-1024) scheme remains
+ * unbroken. This follows NIST SP 800-56C Rev. 2 hybrid construction guidance.
  *
  * The combiner manages the full lifecycle:
  *   1. Initiator calls GenerateKeyPair() → sends public keys

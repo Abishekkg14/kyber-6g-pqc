@@ -406,7 +406,10 @@ def simulate_single_config(args):
         'security_bits_classical': const_dict(float(profile['security_classical'])),
         'security_bits_quantum': const_dict(float(profile['security_quantum'])),
         'attack_cost_log2_ops': const_dict(float(profile['attack_cost_log2'])),
-        'security_strength_score': const_dict(float(max(profile['security_classical'], profile['security_quantum']))),
+        # NOTE: security_strength_score conflates classical and quantum security
+                # into a single scalar. For publication, separate these into:
+                # classical_security_bits, quantum_security_estimate, nist_category
+                'security_strength_score': const_dict(float(max(profile['security_classical'], profile['security_quantum']))),
         'security_latency_efficiency': const_dict(sec_eff),
         'rrc_request_size_bytes': const_dict(float(profile['rrc_request_bytes']), count=n_nodes * 2),
         'rrc_setup_size_bytes': const_dict(float(profile['rrc_setup_bytes']), count=n_nodes * 2),
@@ -537,7 +540,10 @@ def merge_ns3_and_mc(mc_results, ns3_data):
 # Baseline generation for "Previous vs Improved"
 # =====================================================================
 
-def generate_baseline(mc_results):
+def generate_synthetic_degraded_baseline(mc_results):
+    """NOTE: This generates a SYNTHETIC degraded baseline by scaling current
+    results by fixed factors (1.25x-1.35x). It does NOT represent actual
+    measurements from a prior version of the system."""
     """Generate a degraded baseline for comparison."""
     baseline = []
     for entry in mc_results:
@@ -631,7 +637,7 @@ def main():
     print(f"  Written: {JSON_OUT}")
 
     print(f"\n[5] Generating baseline (previous version)...")
-    baseline = generate_baseline(merged)
+    baseline = generate_synthetic_degraded_baseline(merged)
     baseline_out = {'metadata': {**meta, 'note': 'Degraded baseline for comparison'}, 'results': baseline}
     with open(BASELINE_JSON, 'w') as f:
         json.dump(baseline_out, f, indent=2)

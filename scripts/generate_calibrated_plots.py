@@ -231,9 +231,9 @@ def plot_latency_vs_swarm(swarm_df: pd.DataFrame) -> None:
                     alpha=0.15, color=COLORS["full"], label="Full (P50–P99)")
 
     # 0-RTT rekey
-    ax.plot(sizes, df["Rekey_0RTT_Mean_ms"], "s-", color=COLORS["rekey"],
+    ax.plot(sizes, df["Cached_Rekey_Mean_ms"], "s-", color=COLORS["rekey"],
             linewidth=2, markersize=6, label="0-RTT RapidRekey (Mean)", zorder=5)
-    ax.fill_between(sizes, df["Rekey_0RTT_P50_ms"], df["Rekey_0RTT_P99_ms"],
+    ax.fill_between(sizes, df["Cached_Rekey_P50_ms"], df["Cached_Rekey_P99_ms"],
                     alpha=0.15, color=COLORS["rekey"], label="0-RTT (P50–P99)")
 
     # URLLC deadline
@@ -241,7 +241,7 @@ def plot_latency_vs_swarm(swarm_df: pd.DataFrame) -> None:
                alpha=0.8, label="URLLC 10 ms Deadline")
 
     # Find crossing point
-    compliant = df[df["Rekey_0RTT_P99_ms"] < 10.0]
+    compliant = df[df["Cached_Rekey_P99_ms"] < 10.0]
     if not compliant.empty:
         max_n = compliant["Swarm_Size"].max()
         ax.axvline(x=max_n, color=COLORS["urllc"], linestyle=":", linewidth=1, alpha=0.5)
@@ -523,7 +523,7 @@ def plot_urllc_heatmap(swarm_df: pd.DataFrame) -> None:
     pivot = swarm_df.pivot_table(
         index="Velocity_ms",
         columns="Swarm_Size",
-        values="Rekey_0RTT_P99_ms",
+        values="Cached_Rekey_P99_ms",
         aggfunc="mean"
     )
 

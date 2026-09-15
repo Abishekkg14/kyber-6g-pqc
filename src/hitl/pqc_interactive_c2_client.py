@@ -50,6 +50,8 @@ def recv_framed_udp(sock, timeout=5.0):
         if len(packet) < 4:
             continue
         msg_type, frag_idx, total_frags = struct.unpack("!HBB", packet[:4])
+        if total_frags == 0 or total_frags > 16:
+            continue  # Drop malformed/oversized fragment claims
         chunk = packet[4:]
         key = (addr, msg_type)
         if key not in buffers:
@@ -275,8 +277,8 @@ def perform_pqc_handshake(sock, dest, uav_id):
     signer = oqs.Signature(SIG_ALG)
     pk_drone_sig = signer.generate_keypair()
 
-    drone_sig = signer.sign(pk_drone_x + pk_drone_k)
     mobility_hash = 0x6A7B8C9D
+    drone_sig = signer.sign(uav_id + struct.pack("!I", mobility_hash) + pk_drone_x + pk_drone_k)
 
     msg1 = uav_id + struct.pack("!I", mobility_hash) + pk_drone_x + pk_drone_k + struct.pack("!H", len(drone_sig)) + drone_sig + pk_drone_sig
     send_framed_udp(sock, dest, 0x01, msg1)

@@ -16,9 +16,9 @@ cd ns-3-dev
 | Scenario | Description |
 |----------|-------------|
 | `baseline-ecc` | X25519-only baseline |
-| `kyber512/768/1024` | Kyber-only at NIST levels |
-| `kyber768-cached` | Kyber with mobility-aware cache |
-| `hybrid-kyber768-x25519` | Dual KEM (proposed) |
+| `mlkem512/768/1024` | ML-KEM-only at NIST levels |
+| `mlkem1024-cached` | ML-KEM with mobility-aware cache |
+| `hybrid-mlkem1024-x25519` | Dual KEM (proposed) |
 | `dense-urban-nlos` | Shadowing + urban canyon stress |
 | `high-speed-handover` | Elevated mobility + rekey |
 | `core-bottleneck` | S1u delay 10 ms |
@@ -35,9 +35,9 @@ cd ns-3-dev
 | jetson-orin | 0.25× | 15.0 | 2.0 | 4 |
 | edge-server | 0.1× | 45.0 | 8.0 | 8 |
 
-## Kyber-768 selection rationale
+## ML-KEM-1024 Selection Rationale
 
-Kyber-768 balances NIST Level 3 quantum security (~203 bits), moderate handshake size (1184 B PK), and lower latency/energy than Kyber-1024 while exceeding Kyber-512 security margin for long-lived drone credentials.
+ML-KEM-1024 (FIPS 203) provides NIST Level 5 quantum security (256-bit classical equivalent), with 1568-byte public keys and ciphertexts. Selected for maximum security margin appropriate for long-lived military drone credentials and compliance with the highest NIST post-quantum security category.
 
 ## Parallel vs sequential hybrid
 
@@ -45,7 +45,7 @@ Kyber-768 balances NIST Level 3 quantum security (~203 bits), moderate handshake
 
 ## Monte Carlo protocol
 
-Default `--numRuns=30` with `RngSeedManager::SetSeed(seed + run)`. Aggregate via `aggregate_results.py` for 95% CI.
+Default `--numRuns=100` (or `--numRuns=3` for smoke testing) with `RngSeedManager::SetSeed(seed + run)`. Aggregate via `aggregate_results.py` for 95% CI.
 
 ## Modeled vs measured fields
 

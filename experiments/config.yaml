@@ -34,11 +34,11 @@ defaults:
 hitl_calibration:
   full_handshake_ms: 45.506           # Cold-start full mutual auth handshake
   warm_handshake_ms: 20.820           # Warm-start full mutual auth handshake
-  zero_rtt_rekey_ms: 8.234            # 1-RTT cached rapid rekey (symmetric-bound)
+  cached_rekey_1rtt_ms: 8.234          # 1-RTT cached rapid rekey (symmetric-bound, NOT forward-secret)
   aes_gcm_turnaround_ms: 3.904        # AES-256-GCM 512B telemetry roundtrip
   full_handshake_energy_mj: 66.329    # Cold-start full handshake energy
   warm_handshake_energy_mj: 22.046    # Warm-start full handshake energy
-  zero_rtt_rekey_energy_mj: 1.277     # 1-RTT cached rekey energy
+  cached_rekey_1rtt_energy_mj: 1.277  # 1-RTT cached rekey energy (HKDF key ratcheting, not PFS)
   aes_gcm_energy_mj: 0.812            # AES-GCM telemetry energy
   cpu_power_w: 4.85                   # Active Cortex-A72 power under dual-core PQC load
   idle_power_w: 1.20                  # Idle SoC power draw
@@ -104,10 +104,10 @@ scenarios:
   - hitl-swarm-sweep            # Multi-drone parametric sweep
   # ── Original scenarios ──
   - baseline-ecc
-  - kyber768
-  - kyber768-cached
-  - hybrid-kyber768-x25519
-  - hybrid-kyber768-x25519-cached
+  - mlkem1024
+  - mlkem1024-cached
+  - hybrid-mlkem1024-x25519
+  - hybrid-mlkem1024-x25519-cached
   - dense-urban-nlos
   - high-speed-handover
   - quantum-attack

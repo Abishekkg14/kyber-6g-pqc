@@ -87,7 +87,7 @@ def load_hitl_calibration(hitl_path: str) -> tuple[dict, pd.DataFrame]:
     full = train_df[train_df["Mode"] == "FULL_PQC"]
     rekey = train_df[train_df["Mode"].isin(["CACHED_REKEY", "0RTT_REKEY"])]
 
-    # Extract empirical cold & warm samples
+    # Extract empirical cold & warm samples (RPi4 hardware ground-truth anchors)
     cold_row = df[df["Iteration"] == 1].iloc[0]
     warm_row = df[df["Iteration"] == 51].iloc[0] if len(df[df["Iteration"] == 51]) > 0 else cold_row
 
@@ -115,22 +115,22 @@ def load_hitl_calibration(hitl_path: str) -> tuple[dict, pd.DataFrame]:
         "rekey_energy_std_mj": rekey["Energy_mJ"].std(),
 
         # ── AES-GCM Turnaround ──
-        "aes_gcm_mean_ms": df["AES_GCM_Tx_Rx_ms"].mean(),
-        "aes_gcm_std_ms": df["AES_GCM_Tx_Rx_ms"].std(),
-        "aes_gcm_median_ms": df["AES_GCM_Tx_Rx_ms"].median(),
+        "aes_gcm_mean_ms": train_df["AES_GCM_Tx_Rx_ms"].mean(),
+        "aes_gcm_std_ms": train_df["AES_GCM_Tx_Rx_ms"].std(),
+        "aes_gcm_median_ms": train_df["AES_GCM_Tx_Rx_ms"].median(),
 
         # ── CPU & Thermal ──
-        "cpu_load_mean": df["CPU_Load_Percent"].mean(),
-        "soc_temp_mean": df["SoC_Temp_C"].mean(),
-        "soc_temp_std": df["SoC_Temp_C"].std(),
+        "cpu_load_mean": train_df["CPU_Load_Percent"].mean(),
+        "soc_temp_mean": train_df["SoC_Temp_C"].mean(),
+        "soc_temp_std": train_df["SoC_Temp_C"].std(),
 
         # Raw distributions for resampling
         "rekey_handshake_values": rekey["Total_Handshake_ms"].values.copy(),
         "rekey_energy_values": rekey["Energy_mJ"].values.copy(),
         "rekey_crypto_values": rekey["Crypto_Proc_ms"].values.copy(),
-        "aes_gcm_values": df["AES_GCM_Tx_Rx_ms"].values.copy(),
-        "cpu_load_values": df["CPU_Load_Percent"].values.copy(),
-        "soc_temp_values": df["SoC_Temp_C"].values.copy(),
+        "aes_gcm_values": train_df["AES_GCM_Tx_Rx_ms"].values.copy(),
+        "cpu_load_values": train_df["CPU_Load_Percent"].values.copy(),
+        "soc_temp_values": train_df["SoC_Temp_C"].values.copy(),
     }
 
     print("  HITL Calibration Constants Loaded:")
@@ -150,8 +150,8 @@ def load_hitl_calibration(hitl_path: str) -> tuple[dict, pd.DataFrame]:
 
 # ── SWaP-C Energy Constants (HITL measured) ──
 ENERGY = {
-    "cpu_power_w": 5.00,
-    "idle_power_w": 1.00,
+    "cpu_power_w": 4.85,                   # Matches config.yaml & RPi4 HITL measurement
+    "idle_power_w": 1.20,                  # Matches config.yaml & RPi4 HITL measurement
     "rf_tx_power_w": 0.52,
     "rf_rx_power_w": 0.16,
 }
@@ -378,15 +378,15 @@ def run_swarm_sweep(cal: dict,
                 "Full_Handshake_P50_ms": round(np.percentile(full_lats, 50), 3),
                 "Full_Handshake_P95_ms": round(np.percentile(full_lats, 95), 3),
                 "Full_Handshake_P99_ms": round(np.percentile(full_lats, 99), 3),
-                "Rekey_0RTT_Mean_ms": round(np.mean(rekey_lats), 3),
-                "Rekey_0RTT_P50_ms": round(np.percentile(rekey_lats, 50), 3),
-                "Rekey_0RTT_P95_ms": round(np.percentile(rekey_lats, 95), 3),
-                "Rekey_0RTT_P99_ms": round(np.percentile(rekey_lats, 99), 3),
+                "Cached_Rekey_Mean_ms": round(np.mean(rekey_lats), 3),
+                "Cached_Rekey_P50_ms": round(np.percentile(rekey_lats, 50), 3),
+                "Cached_Rekey_P95_ms": round(np.percentile(rekey_lats, 95), 3),
+                "Cached_Rekey_P99_ms": round(np.percentile(rekey_lats, 99), 3),
                 "Full_Energy_Mean_mJ": round(np.mean(full_energies), 4),
                 "Rekey_Energy_Mean_mJ": round(np.mean(rekey_energies), 4),
                 "Queue_Delay_Mean_ms": round(np.mean([queuing_delay_mm1_ms(n_drones, rng) for _ in range(100)]), 3),
                 "PDR": round(np.mean(pdrs), 6),
-                "URLLC_Compliant_0RTT": "YES" if np.percentile(rekey_lats, 99) < URLLC_DEADLINE_MS else "NO",
+                "URLLC_Compliant_CachedRekey": "YES" if np.percentile(rekey_lats, 99) < URLLC_DEADLINE_MS else "NO",
             })
 
             status = "✓" if np.percentile(rekey_lats, 99) < URLLC_DEADLINE_MS else "✗"
@@ -508,7 +508,7 @@ def main() -> None:
     # URLLC threshold
     default_vel = swarm_df[swarm_df["Velocity_ms"] == 25.0]
     if not default_vel.empty:
-        compliant = default_vel[default_vel["URLLC_Compliant_0RTT"] == "YES"]
+        compliant = default_vel[default_vel["URLLC_Compliant_CachedRekey"] == "YES"]
         if not compliant.empty:
             max_drones = compliant["Swarm_Size"].max()
             print(f"\n  ═══ URLLC THRESHOLD: 0-RTT < {URLLC_DEADLINE_MS} ms up to "

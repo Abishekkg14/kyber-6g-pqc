@@ -145,7 +145,26 @@ PqcPdcpLayer::ProcessRxPdu(Ptr<Packet> packet)
     if (!decResult.authenticated)
     {
         NS_LOG_WARN("PQC-PDCP RX: GCM authentication FAILED!");
+        m_authFailures++;
         return nullptr;
+    }
+
+    // P0-7: Validate nonce/sequence to reject replayed PDUs.
+    // The AES-GCM nonce (first 8 bytes of plaintext header) serves as
+    // the monotonic sequence number for anti-replay protection.
+    if (m_keyCache && decResult.plaintext.size() >= 8)
+    {
+        uint64_t rxNonce = 0;
+        for (int i = 0; i < 8; ++i)
+        {
+            rxNonce = (rxNonce << 8) | decResult.plaintext[i];
+        }
+        if (!m_keyCache->ValidateNonce(m_ueIndex, rxNonce))
+        {
+            NS_LOG_WARN("PQC-PDCP RX: Replay detected — nonce " << rxNonce << " rejected");
+            m_replayRejections++;
+            return nullptr;
+        }
     }
 
     // Create new packet with decrypted content
