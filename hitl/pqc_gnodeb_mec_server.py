@@ -49,7 +49,8 @@ def recv_framed_udp(sock):
         if len(packet) < 4:
             continue
         msg_type, frag_idx, total_frags = struct.unpack("!HBB", packet[:4])
-        if total_frags == 0 or total_frags > 16:
+        MAX_ALLOWED_FRAGMENTS = 64  # DoS guard: max valid fragment count per protocol spec
+        if total_frags == 0 or total_frags > MAX_ALLOWED_FRAGMENTS:
             continue  # Drop malformed/oversized fragment claims
         chunk = packet[4:]
         key = (addr, msg_type)

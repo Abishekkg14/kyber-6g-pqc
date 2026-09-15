@@ -610,7 +610,7 @@ def plot_previous_vs_improved(data, out):
                      color=COLORS.get(crypto, '#333'), lw=2, alpha=alpha,
                      marker=MARKERS.get(crypto, 'o'), markersize=6)
 
-    ax2.set_title('(b) Handoff Latency: Previous vs Improved', fontweight='bold')
+    ax2.set_title('(b) Handoff Latency: Previous vs Improved\n(Analytical: 1.25×–1.35× synthetic degradation, NOT empirical)', fontweight='bold')
     ax2.set_xlabel('Drones')
     ax2.set_ylabel('Handoff Latency (ms)')
     ax2.legend(fontsize=8)
@@ -814,7 +814,7 @@ def plot_handoff_latency_cdf(data, out):
 
     ax.set_xlabel('Handoff Latency (ms)')
     ax.set_ylabel('CDF')
-    ax.set_title('Handoff Latency CDF: Cached vs Uncached PQC', fontweight='bold')
+    ax.set_title('Handoff Latency CDF: Cached vs Uncached PQC\n(Analytical Model — Monte Carlo Projection, NOT NS-3/HITL traces)', fontweight='bold')
     ax.legend(fontsize=9)
     ax.grid(True, ls='--', alpha=0.4)
     ax.set_xlim(0, None)
@@ -898,7 +898,7 @@ def plot_5g_vs_6g_comparison(out):
     ax.set_xticks(x)
     ax.set_xticklabels(modes, fontsize=11)
     ax.set_ylabel('Handshake Latency (us)')
-    ax.set_title('5G vs Projected 6G: KE Handshake Latency', fontweight='bold')
+    ax.set_title('5G vs Projected 6G: KE Handshake Latency\n(Analytical Projection — assumed base latencies, NOT NS-3 simulation output)', fontweight='bold')
     ax.axhline(1000, color='#059669', ls=':', lw=1.5, label='6G target: sub-1ms')
     ax.legend()
     ax.grid(axis='y', ls='--', alpha=0.3)

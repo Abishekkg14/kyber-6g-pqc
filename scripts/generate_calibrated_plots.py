@@ -134,21 +134,36 @@ def plot_hw_vs_sim_validation(hitl_df: pd.DataFrame, sim_df: pd.DataFrame) -> No
     sim_full = sim_df[sim_df["Mode"] == "FULL_PQC"]["Total_Handshake_ms"]
     sim_rekey = sim_df[sim_df["Mode"].isin(["CACHED_REKEY", "0RTT_REKEY"])]["Total_Handshake_ms"]
 
-    bp_data = [hw_full, sim_full, hw_rekey, sim_rekey]
-    bp_colors = [COLORS["hw"], COLORS["sim"], COLORS["hw"], COLORS["sim"]]
-    bp_labels = ["H/W Full", "Sim Full", "H/W 0-RTT", "Sim 0-RTT"]
+    # ── N=2 FULL_PQC: degenerate boxplot — render as scatter markers ──
+    # The HITL dataset has only N=2 FULL_PQC measurements (cold-start + warm).
+    # Boxplots require N≥30 for meaningful quartiles/whiskers. Using scatter
+    # plot for full handshake rows; boxplot only for cached rekey (N=98).
+    ax.scatter([1] * len(hw_full), hw_full.values, color=COLORS["hw"],
+               zorder=5, s=140, marker="D", label=f"H/W Full (N={len(hw_full)}, point estimates)")
+    ax.scatter([2] * len(sim_full), sim_full.values, color=COLORS["sim"],
+               zorder=5, s=140, marker="D", label=f"Sim Full (N={len(sim_full)}, point estimates)")
 
-    bp = ax.boxplot(bp_data, patch_artist=True, widths=0.6,
-                    tick_labels=bp_labels,
+    # Boxplot for statistically robust cached rekey data (N=98)
+    bp = ax.boxplot([hw_rekey.values, sim_rekey.values],
+                    positions=[3, 4], patch_artist=True, widths=0.6,
                     medianprops=dict(color="black", linewidth=1.5))
-    for patch, color in zip(bp["boxes"], bp_colors):
-        patch.set_facecolor(color)
-        patch.set_alpha(0.7)
+    bp_colors_rekey = [COLORS["hw"], COLORS["sim"]]
+    for p, color in zip(bp["boxes"], bp_colors_rekey):
+        p.set_facecolor(color)
+        p.set_alpha(0.7)
+    ax.plot([], [], color=COLORS["hw"], alpha=0.7, linewidth=6,
+            label=f"H/W Cached Rekey (N={len(hw_rekey)})")
+    ax.plot([], [], color=COLORS["sim"], alpha=0.7, linewidth=6,
+            label=f"Sim Cached Rekey (N={len(sim_rekey)})")
 
+    ax.set_xticks([1, 2, 3, 4])
+    ax.set_xticklabels(["H/W Full\n(N=2)", "Sim Full\n(N=2)",
+                         "H/W Rekey\n(N=98)", "Sim Rekey\n(N=98)"])
     ax.set_ylabel("Handshake Latency (ms)")
-    ax.set_title("(a) Latency Distribution")
-    ax.axhline(y=10.0, color=COLORS["urllc"], linestyle="--", linewidth=1, alpha=0.7, label="URLLC 10 ms")
-    ax.legend(loc="upper right", fontsize=8)
+    ax.set_title("(a) Latency Distribution\n(◆ = point estimate, box = distribution N≥30)")
+    ax.axhline(y=10.0, color=COLORS["urllc"], linestyle="--", linewidth=1, alpha=0.7, label="URLLC 10 ms mean bound")
+    ax.axhline(y=11.6, color=COLORS["urllc"], linestyle=":", linewidth=1, alpha=0.5, label="P99 tail (~11.6 ms)")
+    ax.legend(loc="upper right", fontsize=7)
 
     # ── Panel B: Energy Bar Chart ──
     ax = axes[1]

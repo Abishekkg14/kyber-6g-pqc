@@ -386,7 +386,9 @@ def run_swarm_sweep(cal: dict,
                 "Rekey_Energy_Mean_mJ": round(np.mean(rekey_energies), 4),
                 "Queue_Delay_Mean_ms": round(np.mean([queuing_delay_mm1_ms(n_drones, rng) for _ in range(100)]), 3),
                 "PDR": round(np.mean(pdrs), 6),
-                "URLLC_Compliant_CachedRekey": "YES" if np.percentile(rekey_lats, 99) < URLLC_DEADLINE_MS else "NO",
+                # URLLC compliance: mean < 10ms threshold.
+                # P99 (~11.6ms at N=1 under fading) exceeds 3GPP threshold — do NOT claim P99 compliance.
+                "URLLC_Compliant_CachedRekey": "MEAN_ONLY" if np.mean(rekey_lats) < URLLC_DEADLINE_MS and np.percentile(rekey_lats, 99) >= URLLC_DEADLINE_MS else ("YES" if np.percentile(rekey_lats, 99) < URLLC_DEADLINE_MS else "NO"),
             })
 
             status = "✓" if np.percentile(rekey_lats, 99) < URLLC_DEADLINE_MS else "✗"

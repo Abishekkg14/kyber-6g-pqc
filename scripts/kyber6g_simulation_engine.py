@@ -541,9 +541,21 @@ def merge_ns3_and_mc(mc_results, ns3_data):
 # =====================================================================
 
 def generate_synthetic_degraded_baseline(mc_results):
-    """NOTE: This generates a SYNTHETIC degraded baseline by scaling current
-    results by fixed factors (1.25x-1.35x). It does NOT represent actual
-    measurements from a prior version of the system."""
+    """
+    *** ANALYTICAL PROJECTION — NOT EMPIRICAL HISTORICAL DATA ***
+
+    This function generates a SYNTHETIC degraded baseline by applying
+    fixed scalar multipliers (1.25x for Kyber1024, 1.35x for Kyber1024-Cached)
+    to the current calibrated simulation output. It does NOT represent:
+      - Actual measurements from a prior/competing architecture
+      - Physical HITL benchmark data
+      - Any independently verified classical baseline
+
+    For publication, this figure MUST be labeled as an "Analytical Projection"
+    in plot titles, legends, and captions. If a genuine classical ECC/X25519
+    baseline is required, run pqc_benchmark_client.py with --mode ecc
+    and substitute those measurements here.
+    """
     """Generate a degraded baseline for comparison."""
     baseline = []
     for entry in mc_results:
@@ -556,6 +568,8 @@ def generate_synthetic_degraded_baseline(mc_results):
         for k, v in entry['metrics'].items():
             b['metrics'][k] = dict(v)
 
+        # ANALYTICAL PROJECTION: 1.25x/1.35x scalar — NOT empirical data.
+        # Replace with genuine classical ECC benchmark data for publication.
         degradation = 1.35 if entry['crypto'] == 'Kyber1024-Cached' else 1.25
         for lat_key in ['handshake_latency_us', 'handoff_latency_ms', 'e2e_app_latency_ms']:
             if lat_key in b['metrics']:

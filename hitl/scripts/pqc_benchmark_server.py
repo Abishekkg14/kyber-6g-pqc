@@ -249,6 +249,11 @@ def process_handshake_message(msg_type, payload, signer, gnb_sig_pk, cache, TRUS
             ).derive(cached_secret)
             cache.put(ue_id, new_session_key, mobility_hash)
             return 0x04, b"CACHED_REKEY_ACK"
+        elif status == "STALE_MOBILITY":
+            # UAV has moved to a new cell — force full PQC renegotiation.
+            # The client MUST re-initiate with msg_type=0x01 (full handshake).
+            print(f"[!] STALE_MOBILITY for {ue_id}: forcing full renegotiation")
+            return 0x05, b"STALE_MOBILITY_RENEGOTIATE"
         else:
             return 0x05, b"CACHE_MISS_FALLBACK"
 

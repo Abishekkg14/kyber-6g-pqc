@@ -52,3 +52,11 @@ Default `--numRuns=100` (or `--numRuns=3` for smoke testing) with `RngSeedManage
 **Modeled:** energy (mJ), battery life projection, attack-cost estimates, Kyber-level selection bar chart when sweep CSVs absent.
 
 **Measured (simulated workload):** handshake latency, RRC sizes, PDR, queueing delay, cache hit rate.
+
+## URLLC Compliance Qualification
+
+The cached rekey **mean** latency (~8.2 ms) meets the 3GPP sub-10 ms URLLC deadline.
+The **P99 tail latency** (~11.6 ms at N=1, increasing with swarm density) exceeds the
+strict P99 URLLC bound under wireless fading. Documentation must not claim unconditional
+URLLC compliance — only mean-bound compliance should be asserted without additional
+link-layer scheduling or HARQ optimizations.
