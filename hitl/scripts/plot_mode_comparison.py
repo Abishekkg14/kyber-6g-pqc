@@ -68,7 +68,7 @@ LABELS = [
 
 fig, axes = plt.subplots(2, 2, figsize=(13, 9))
 fig.suptitle('Physical Hardware-in-the-Loop Mode Comparison: Raspberry Pi 4 ARM Cortex-A72\n'
-             'HITL-Calibrated Values from 100-Iteration Benchmark', fontsize=13, fontweight='bold', y=1.02)
+             'HITL-Calibrated Hybrid & Cached Results with Comparative Security Baselines', fontsize=13, fontweight='bold', y=1.02)
 
 # ── (a) Handshake Latency ──
 ax = axes[0, 0]
