@@ -3,4 +3,4 @@ Full Handshake Latency (ms),45.506,45.513,0.02,✓ MATCH
 Cached Rekey (1-RTT) Latency (ms),8.2343,8.1495,1.03,✓ MATCH
 Full Handshake Energy (mJ),66.3286,66.3395,0.02,✓ MATCH
 Cached Rekey (1-RTT) Energy (mJ),1.2773,1.2607,1.29,✓ MATCH
-AES-256-GCM Turnaround (ms),3.904,3.978,1.9,✓ MATCH
+AES-256-GCM Turnaround (ms),3.904,3.886,0.46,✓ MATCH
