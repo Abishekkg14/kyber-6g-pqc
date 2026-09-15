@@ -197,10 +197,12 @@ def main():
             print(f"    [Micro-Epoch Ratchet] Advanced to Epoch {epoch_id} (New GOP Key Established via HKDF)")
 
         frame_data = frames[f_idx]
-        nonce, ct, enc_us = engine.encrypt_slice(frame_data, frame_id=f_idx, chunk_id=0)
+        # AAD: Clear packet header binds sequence counter & video metadata
+        header_aad = uav_id + struct.pack("!IH", f_idx, args.fps)
+        nonce, ct, enc_us = engine.encrypt_slice(frame_data, frame_id=f_idx, chunk_id=0, aad=header_aad)
 
-        # Build Video PDU (Msg 0x20)
-        pdu = uav_id + struct.pack("!IH", f_idx, args.fps) + nonce + ct
+        # Build Video PDU (Msg 0x20) with authenticated clear header
+        pdu = header_aad + nonce + ct
         send_framed_udp(sock, dest, 0x20, pdu)
 
         t_frame_end = time.perf_counter_ns()

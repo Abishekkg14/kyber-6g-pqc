@@ -175,8 +175,9 @@ def main():
 
     # 3. Transmit Metadata Header (0x10)
     meta = struct.pack("!HII", len(filename.encode('utf-8')), total_size, total_chunks) + filename.encode('utf-8')
-    nonce_hdr, ct_hdr, _ = engine.encrypt_slice(meta, frame_id=0, chunk_id=0)
-    send_framed_udp(sock, dest, 0x10, uav_id + nonce_hdr + ct_hdr)
+    hdr_aad = uav_id + b"IMG_META"
+    nonce_hdr, ct_hdr, _ = engine.encrypt_slice(meta, frame_id=0, chunk_id=0, aad=hdr_aad)
+    send_framed_udp(sock, dest, 0x10, hdr_aad + nonce_hdr + ct_hdr)
 
     # 4. Encrypt and Stream Chunks (0x11)
     print(f"\n[*] Encrypting and Transmitting Chunks ({args.cipher})...")
@@ -186,11 +187,12 @@ def main():
 
     for i in range(total_chunks):
         chunk_slice = img_bytes[i * args.chunk_size : (i + 1) * args.chunk_size]
-        nonce_c, ct_c, lat_us = engine.encrypt_slice(chunk_slice, frame_id=1, chunk_id=i)
+        chunk_aad = uav_id + struct.pack("!I", i)
+        nonce_c, ct_c, lat_us = engine.encrypt_slice(chunk_slice, frame_id=1, chunk_id=i, aad=chunk_aad)
         enc_latencies.append(lat_us)
         encrypted_bytes_pool.append(ct_c)
 
-        payload = uav_id + struct.pack("!I", i) + nonce_c + ct_c
+        payload = chunk_aad + nonce_c + ct_c
         send_framed_udp(sock, dest, 0x11, payload)
 
         if (i + 1) % 20 == 0 or (i + 1) == total_chunks:
@@ -207,9 +209,10 @@ def main():
     # 5. Await Base Tower Verification ACK (0x12)
     ack_type, ack_payload, _ = recv_framed_udp(sock, timeout=5.0)
     if ack_type == 0x12 and ack_payload is not None:
-        ack_nonce = ack_payload[:12]
-        ack_ct = ack_payload[12:]
-        pt, _, is_ok = engine.decrypt_slice(ack_nonce, ack_ct)
+        ack_aad = uav_id + b"IMG_ACK"
+        ack_nonce = ack_payload[len(ack_aad) : len(ack_aad) + 12]
+        ack_ct = ack_payload[len(ack_aad) + 12 :]
+        pt, _, is_ok = engine.decrypt_slice(ack_nonce, ack_ct, aad=ack_aad)
         ack_str = pt.decode('utf-8', errors='ignore') if is_ok else "AUTH_FAILED"
         print(f"\n[+] [IMAGE UPLOAD SUCCESSFUL!]")
         print(f"    Base Station ACK:   {ack_str}")
