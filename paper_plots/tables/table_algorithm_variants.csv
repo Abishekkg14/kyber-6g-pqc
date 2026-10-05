@@ -1,0 +1,47 @@
+machine,operation,n,median_us,p5_us,p95_us
+Raspberry Pi 4B (UAV),ML-KEM-1024 keygen,300,115.85,115.52,123.28
+Raspberry Pi 4B (UAV),ML-KEM-1024 encapsulate,300,126.44,126.0,131.17
+Raspberry Pi 4B (UAV),ML-KEM-1024 decapsulate,300,130.57,130.24,131.95
+Raspberry Pi 4B (UAV),X25519 keygen,300,100.91,100.67,103.03
+Raspberry Pi 4B (UAV),X25519 exchange,300,260.62,260.4,267.16
+Raspberry Pi 4B (UAV),ML-DSA-87 keygen,300,442.92,438.92,453.95
+Raspberry Pi 4B (UAV),ML-DSA-87 sign,300,768.46,539.9,1637.54
+Raspberry Pi 4B (UAV),ML-DSA-87 verify,300,454.51,453.79,464.57
+Raspberry Pi 4B (UAV),ML-KEM-512 keygen,300,61.61,61.33,65.5
+Raspberry Pi 4B (UAV),ML-KEM-512 encapsulate,300,68.92,68.52,69.56
+Raspberry Pi 4B (UAV),ML-KEM-512 decapsulate,300,64.81,64.57,65.28
+Raspberry Pi 4B (UAV),ML-KEM-768 keygen,300,86.2,85.85,90.18
+Raspberry Pi 4B (UAV),ML-KEM-768 encapsulate,300,94.39,93.85,97.17
+Raspberry Pi 4B (UAV),ML-KEM-768 decapsulate,300,93.65,93.31,94.39
+Raspberry Pi 4B (UAV),ML-DSA-44 keygen,300,169.02,165.13,172.27
+Raspberry Pi 4B (UAV),ML-DSA-44 sign,300,334.64,227.18,836.57
+Raspberry Pi 4B (UAV),ML-DSA-44 verify,300,187.96,187.31,197.75
+Raspberry Pi 4B (UAV),ML-DSA-65 keygen,300,273.05,272.44,280.93
+Raspberry Pi 4B (UAV),ML-DSA-65 sign,300,555.34,334.23,1443.15
+Raspberry Pi 4B (UAV),ML-DSA-65 verify,300,284.57,283.72,294.88
+Raspberry Pi 4B (UAV),Ed25519 keygen,300,96.99,96.89,99.14
+Raspberry Pi 4B (UAV),Ed25519 sign,300,86.45,86.41,88.23
+Raspberry Pi 4B (UAV),Ed25519 verify,300,262.44,262.18,265.07
+Laptop (ground station),ML-KEM-1024 keygen,300,20.83,20.64,23.57
+Laptop (ground station),ML-KEM-1024 encapsulate,300,22.64,22.48,25.7
+Laptop (ground station),ML-KEM-1024 decapsulate,300,24.54,24.45,25.42
+Laptop (ground station),X25519 keygen,300,31.23,30.86,55.39
+Laptop (ground station),X25519 exchange,300,30.98,30.77,41.16
+Laptop (ground station),ML-DSA-87 keygen,300,71.85,71.07,84.9
+Laptop (ground station),ML-DSA-87 sign,300,126.74,87.24,291.19
+Laptop (ground station),ML-DSA-87 verify,300,79.03,78.06,99.68
+Laptop (ground station),ML-KEM-512 keygen,300,11.01,10.76,11.58
+Laptop (ground station),ML-KEM-512 encapsulate,300,12.59,12.47,13.95
+Laptop (ground station),ML-KEM-512 decapsulate,300,12.7,12.62,14.26
+Laptop (ground station),ML-KEM-768 keygen,300,16.1,15.93,19.18
+Laptop (ground station),ML-KEM-768 encapsulate,300,17.41,17.3,19.79
+Laptop (ground station),ML-KEM-768 decapsulate,300,18.44,18.29,20.73
+Laptop (ground station),ML-DSA-44 keygen,300,28.16,27.88,34.42
+Laptop (ground station),ML-DSA-44 sign,300,67.22,39.04,166.33
+Laptop (ground station),ML-DSA-44 verify,300,35.27,35.09,45.07
+Laptop (ground station),ML-DSA-65 keygen,300,46.6,46.26,52.2
+Laptop (ground station),ML-DSA-65 sign,300,88.75,57.61,241.32
+Laptop (ground station),ML-DSA-65 verify,300,54.6,52.24,69.19
+Laptop (ground station),Ed25519 keygen,300,30.12,29.81,33.18
+Laptop (ground station),Ed25519 sign,300,30.63,29.58,32.37
+Laptop (ground station),Ed25519 verify,300,92.19,91.78,98.46

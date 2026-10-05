@@ -1,0 +1,13 @@
+ground_station_on,forged_per_s_asked,forged_per_s_sent,mbit_per_s,genuine_connections_tried,connected,median_ms,slowest_ms,refused_after_signature_check,dropped_unverified_by_the_ration,ration_per_s
+Raspberry Pi 4B (UAV),0,0,0.0,6,6,9.9,11.8,0,0,561.0
+Raspberry Pi 4B (UAV),100,100,5.2,6,6,18.0,28.9,192,0,561.0
+Raspberry Pi 4B (UAV),300,300,15.61,6,6,11.5,13.7,561,0,561.0
+Raspberry Pi 4B (UAV),1000,1000,52.02,6,6,1213.8,4815.1,6443,5050,561.0
+Raspberry Pi 4B (UAV),3000,3000,156.07,6,6,8572.4,32737.2,48725,211896,561.0
+Raspberry Pi 4B (UAV),as fast as one process can,4860,252.82,6,6,10011.5,31783.4,45793,291346,561.0
+Laptop (ground station),0,0,0.0,6,6,5.1,5.6,0,0,3274.0
+Laptop (ground station),100,100,5.2,6,6,5.1,5.6,183,0,3274.0
+Laptop (ground station),300,300,15.61,6,6,5.2,5.5,553,0,3274.0
+Laptop (ground station),1000,1000,52.02,6,6,5.2,5.4,1839,0,3274.0
+Laptop (ground station),3000,3000,156.07,6,6,7.2,7.4,5538,0,3274.0
+Laptop (ground station),as fast as one process can,10324,537.12,6,6,2412.0,2424.2,42552,42869,3274.0

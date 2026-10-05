@@ -1,0 +1,3 @@
+(* the UAV is captured after it wrote its files: the attacker gets every secret it holds, which is its signing key
+   (the ground station's recording keys are on the UAV as PUBLIC keys only) *)
+let FileLeak(sk: sskey, dk: kemsk, x: scalar) = phase 1; out(c, sk).

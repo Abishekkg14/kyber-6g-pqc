@@ -1,37 +1,35 @@
-import { lazy, Suspense } from 'react'
+import Figure from '../components/Figure'
 
-const DroneSwarmScene = lazy(() => import('../components/DroneSwarmScene'))
-
-export default function Hero() {
-    return (
-        <section className="hero" aria-label="Project Introduction">
-            <span className="section-label">Research Project</span>
-            <h1>
-                Post-Quantum Secure<br />
-                <span className="accent">Military Drone Swarm</span><br />
-                Communication
-            </h1>
-            <p className="hero-sub">
-                An NS-3 simulation framework evaluating CRYSTALS-Kyber hybrid key exchange
-                for 6G drone swarm networks — comparing post-quantum and classical
-                cryptographic performance under realistic mobility conditions.
-            </p>
-            <div className="hero-tags">
-                <span className="tag kyber">CRYSTALS-Kyber</span>
-                <span className="tag">AES-256-GCM</span>
-                <span className="tag ecc">X25519-ECDH</span>
-                <span className="tag">ML-DSA</span>
-                <span className="tag">NS-3 · 5G-LENA NR</span>
-                <span className="tag">M/M/1 Queueing</span>
-            </div>
-
-            <Suspense fallback={
-                <div className="scene-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ color: '#64748b', fontSize: '0.8rem' }}>Loading 3D visualization...</span>
-                </div>
-            }>
-                <DroneSwarmScene />
-            </Suspense>
-        </section>
-    )
+export default function Hero({ data }) {
+  return (
+    <section className="hero" aria-label="Project introduction">
+      <span className="section-label">Research prototype · measured on real hardware</span>
+      <h1>
+        A post-quantum secure link<br />
+        for a UAV's <span className="accent">video, images, audio</span><br />
+        and telemetry
+      </h1>
+      <p className="hero-sub">
+        A Raspberry Pi 4B as the UAV's companion computer and a ground control station exchange live video, photos,
+        sealed audio, telemetry and commands. Sessions are established with ML-KEM-1024 and X25519 together and
+        authenticated with ML-DSA-87; the data itself is encrypted with AES-256-GCM. The prototype runs over Wi-Fi.
+      </p>
+      <div className="hero-tags">
+        <span className="tag kyber">ML-KEM-1024 + X25519</span>
+        <span className="tag kyber">ML-DSA-87</span>
+        <span className="tag">AES-256-GCM</span>
+        <span className="tag">1-RTT Cached RapidRekey</span>
+        <span className="tag ecc">ProVerif models</span>
+        <span className="tag ecc">NIST ACVP vectors</span>
+        <span className="tag">Raspberry Pi 4B</span>
+      </div>
+      <div className="hero-figure">
+        <Figure
+          name="fig18_architecture"
+          caption="The streams of the UAV node, the secure link on both sides, and what the ground station does with each."
+        />
+      </div>
+      {data && <p className="hero-note">Results on this page were generated from the repository on {data.generated}.</p>}
+    </section>
+  )
 }

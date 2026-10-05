@@ -1,0 +1,11 @@
+Third-party browser libraries served by the ground station itself, so the dashboard works without internet
+(only the map background tiles are fetched from the network). Unmodified upstream files.
+
+  leaflet.js, leaflet.css, images/   Leaflet 1.9.4            BSD-2-Clause   https://leafletjs.com
+  leaflet-heat.js                    Leaflet.heat 0.2.0       BSD-2-Clause   https://github.com/Leaflet/Leaflet.heat
+  chart.umd.js                       Chart.js 4.4.1           MIT            https://www.chartjs.org
+  three.module.js, OrbitControls.js  three.js r160            MIT            https://threejs.org
+  PressStart2P.woff2                 Press Start 2P (latin)   SIL OFL 1.1    https://fonts.google.com/specimen/Press+Start+2P
+  VT323.woff2                        VT323 (latin)            SIL OFL 1.1    https://fonts.google.com/specimen/VT323
+
+fonts.css is written by this project and only declares the two fonts above.

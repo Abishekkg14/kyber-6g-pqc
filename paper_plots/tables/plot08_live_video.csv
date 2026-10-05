@@ -1,0 +1,15 @@
+quantity,value
+records per second,356.0
+frames per second,30.0
+records per frame,11.87
+video bit rate (kbit/s),3001.5
+seal and send per record on the Pi (us),154.9
+share of one core (%),5.52
+bytes per second: H.264 video and capture times,375428
+"bytes per second: Record header, frame position, AES-GCM tag",17446
+bytes per second: UDP and IP headers,9969
+recording: frames,587
+keyframes: median bytes,58240.0
+keyframes: records each (median),53.0
+other frames: median bytes,11273
+other frames: records each (median),11

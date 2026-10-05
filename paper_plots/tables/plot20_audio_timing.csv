@@ -1,0 +1,9 @@
+machine,clip_blocks,runs_each,place,median_ms,spread_between_places_ms,spread_of_the_control_ms,verdict
+Raspberry Pi 4B (UAV),256,60,first block,10.078,0.0191,0.0318,PASS
+Raspberry Pi 4B (UAV),256,60,middle block,10.0589,0.0191,0.0318,PASS
+Raspberry Pi 4B (UAV),256,60,last block,10.0688,0.0191,0.0318,PASS
+Raspberry Pi 4B (UAV),256,60,first block (again: the control),10.0462,0.0191,0.0318,PASS
+Laptop (ground station),256,60,first block,1.6678,0.0056,0.0389,PASS
+Laptop (ground station),256,60,middle block,1.6666,0.0056,0.0389,PASS
+Laptop (ground station),256,60,last block,1.6622,0.0056,0.0389,PASS
+Laptop (ground station),256,60,first block (again: the control),1.6289,0.0056,0.0389,PASS

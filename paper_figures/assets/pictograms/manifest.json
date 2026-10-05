@@ -1,0 +1,349 @@
+{
+ "family": "Material Design Icons (Pictogrammers)",
+ "version": "7.4.47",
+ "licence": "Apache-2.0",
+ "icons": {
+  "uav": {
+   "icon": "quadcopter",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/quadcopter.svg",
+   "selected_by": "preferred",
+   "sha256": "81581ce8ce3c577e6344ec9c79d907a713f0a9f9cdfea253b29afbf96b2773a4"
+  },
+  "camera": {
+   "icon": "video",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/video.svg",
+   "selected_by": "preferred",
+   "sha256": "3b467c44cb0453d736a8579897e589fd9f5ea8dada4fe7133e9c8d885aef31f0"
+  },
+  "photo": {
+   "icon": "camera",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/camera.svg",
+   "selected_by": "preferred",
+   "sha256": "516d986147740920dc48e4d5809759a514a9fc74d3d2feb09b4342d82f0f8fb0"
+  },
+  "image": {
+   "icon": "image",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/image.svg",
+   "selected_by": "preferred",
+   "sha256": "96faafde4aab7866bac029741645581074b2aa5e027a9f34ab42162c02768eb1"
+  },
+  "film": {
+   "icon": "filmstrip",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/filmstrip.svg",
+   "selected_by": "preferred",
+   "sha256": "f86c620db563a16c02127c2e52546e1e5637ec3181ebe3a4893e8dd802f6836b"
+  },
+  "gnss": {
+   "icon": "satellite-variant",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/satellite-variant.svg",
+   "selected_by": "preferred",
+   "sha256": "cdc0728e368983384eaf61b99d3b0c081c88febece4cb9f2c5a71a6e4c3a5a83"
+  },
+  "position": {
+   "icon": "map-marker",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/map-marker.svg",
+   "selected_by": "preferred",
+   "sha256": "c7ff5fb2793fac98598e3c183a74c8e7c7e88b9bbe6dc0e54d3dad3422326100"
+  },
+  "antenna": {
+   "icon": "radio-tower",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/radio-tower.svg",
+   "selected_by": "preferred",
+   "sha256": "49826e7126772763ae620f54e3b293196289515b98f71b8367ecd6bc476cf606"
+  },
+  "wifi": {
+   "icon": "wifi",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/wifi.svg",
+   "selected_by": "preferred",
+   "sha256": "6408a13bd6d7cff9cfc15e1970b1e99f357bc7495ec33a0ad56c070477bfff34"
+  },
+  "laptop": {
+   "icon": "laptop",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/laptop.svg",
+   "selected_by": "preferred",
+   "sha256": "b7cb21d2fdee535a95fc0486d8e327c3ec3de4b750184b2b740bf16306e8d3e5"
+  },
+  "monitor": {
+   "icon": "monitor-dashboard",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/monitor-dashboard.svg",
+   "selected_by": "preferred",
+   "sha256": "4592b5a6fee1aee7d8f73428346346220893c4d91c8ee74254b1dadf57e6efd8"
+  },
+  "chip": {
+   "icon": "chip",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/chip.svg",
+   "selected_by": "preferred",
+   "sha256": "25d01e8fb16adf89ed3637f6f9da0c7f92cd00380b22e2a5239b517605a4b5c1"
+  },
+  "server": {
+   "icon": "server",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/server.svg",
+   "selected_by": "preferred",
+   "sha256": "1a3ec73dad24092b4a9325043b3ed8d7905534179f0c32b1a8dc4fb71e495aaf"
+  },
+  "database": {
+   "icon": "database",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/database.svg",
+   "selected_by": "preferred",
+   "sha256": "a311197979d5a2eb8e199c0d09050742564db865e0b31849941014445d1a2695"
+  },
+  "sd": {
+   "icon": "sd",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/sd.svg",
+   "selected_by": "preferred",
+   "sha256": "059403a75bcfa9c2875ad7504bb58ffcc982c5bd7c3dc3721a0ffd2f841932fa"
+  },
+  "key": {
+   "icon": "key-variant",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/key-variant.svg",
+   "selected_by": "preferred",
+   "sha256": "00abfb58da5e991791b7b186fa4e52755e843133b3aa2db0a63c928aa4a9a775"
+  },
+  "keys": {
+   "icon": "key-chain-variant",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/key-chain-variant.svg",
+   "selected_by": "preferred",
+   "sha256": "d68f285961fa2aa93520f59e7bc950c1b182af65e823b97eb6064f6b785cdcd6"
+  },
+  "lock": {
+   "icon": "lock",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/lock.svg",
+   "selected_by": "preferred",
+   "sha256": "75a9713390b968b3c6e1df7932f607008b7badd5de435db118fd30f11c0a3950"
+  },
+  "unlock": {
+   "icon": "lock-open-variant",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/lock-open-variant.svg",
+   "selected_by": "preferred",
+   "sha256": "7de980a77436c57c801b1f9ea3204a2dd9bb570b20bd87eefd238b60cc769875"
+  },
+  "file": {
+   "icon": "file-document-outline",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/file-document-outline.svg",
+   "selected_by": "preferred",
+   "sha256": "b8d4fe3216c95add292c77b1aff7ee79df7bdc7ac7bf7be05408a80509900380"
+  },
+  "file_key": {
+   "icon": "file-key",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/file-key.svg",
+   "selected_by": "preferred",
+   "sha256": "b657bf89e68c4a6db8c9e442d4a21a05018af3e3c09bfeef5007a9f53017e30c"
+  },
+  "file_lock": {
+   "icon": "file-lock",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/file-lock.svg",
+   "selected_by": "preferred",
+   "sha256": "60d6035e3a55141711fa8e3ec0113d2a178e166896f39bb5eecb062cbde65bbd"
+  },
+  "shield": {
+   "icon": "shield-check",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/shield-check.svg",
+   "selected_by": "preferred",
+   "sha256": "b9b57a3631526f6acaa40c5fe15f41db391449f05ff7df7ea7eaa5b93e8663e1"
+  },
+  "shield_key": {
+   "icon": "shield-key",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/shield-key.svg",
+   "selected_by": "preferred",
+   "sha256": "a1e6c57306b9933e284e3a667e6534fe544195ae733faee0e181fe71d66d66de"
+  },
+  "signature": {
+   "icon": "draw-pen",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/draw-pen.svg",
+   "selected_by": "preferred",
+   "sha256": "04bc311c817c90aa7a87ae1fd29093a5368e5ccce3e0c3457e713822aae76299"
+  },
+  "certificate": {
+   "icon": "certificate",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/certificate.svg",
+   "selected_by": "preferred",
+   "sha256": "d6822a97bbd619dac6c823eb66d359ab69f574d6449eb3db281115f2ac6c16ab"
+  },
+  "fingerprint": {
+   "icon": "fingerprint",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/fingerprint.svg",
+   "selected_by": "preferred",
+   "sha256": "449229c4d725aa37f2ffddf37d5bfb9839d00c9a4182d4659d755fa2528e2d7c"
+  },
+  "random": {
+   "icon": "dice-multiple",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/dice-multiple.svg",
+   "selected_by": "preferred",
+   "sha256": "3ee77b43aae21e0f53e687d9ea9f50e61dc60d704a3c5d793dcc48d19fa73318"
+  },
+  "refresh": {
+   "icon": "cached",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/cached.svg",
+   "selected_by": "preferred",
+   "sha256": "d237c05910eb99257c56266b90ea420d2fa1200a6a6a4b46d305d90906542a5e"
+  },
+  "ratchet": {
+   "icon": "cog-clockwise",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/cog-clockwise.svg",
+   "selected_by": "preferred",
+   "sha256": "457aa20e883b09302468d488234b2613c0d7c06779acc7d48d60733f85f54779"
+  },
+  "clock": {
+   "icon": "clock-outline",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/clock-outline.svg",
+   "selected_by": "preferred",
+   "sha256": "d976b50f0f991081033b6e1df53a081924550b4407b9e86b9c7084aa53536526"
+  },
+  "timer": {
+   "icon": "timer-outline",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/timer-outline.svg",
+   "selected_by": "preferred",
+   "sha256": "b4f04fba964552c6efb0b8e0844fcbe7bc3c077f14ec1fc4ffe2d30552bb0852"
+  },
+  "operator": {
+   "icon": "account",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/account.svg",
+   "selected_by": "preferred",
+   "sha256": "9ddbb6920b2a825dcc02ae93623cf5a27100c7e3a57a11cd46bdcf0606a66f74"
+  },
+  "adversary": {
+   "icon": "incognito",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/incognito.svg",
+   "selected_by": "preferred",
+   "sha256": "bc03d48474789f97a9e779317a7c8c8c37e41ae6a5ca075ca97168836f156e35"
+  },
+  "eye": {
+   "icon": "eye",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/eye.svg",
+   "selected_by": "preferred",
+   "sha256": "ab49527351943e3cd7861227ec4752ec67938e20eb49e9103eb3d65cc66c41bf"
+  },
+  "edit": {
+   "icon": "pencil",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/pencil.svg",
+   "selected_by": "preferred",
+   "sha256": "455670885ac21bdc2ffc7d6a1c14b65e5dad2ad79ccee9e6afa1ba070cd6f9a1"
+  },
+  "replay": {
+   "icon": "repeat",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/repeat.svg",
+   "selected_by": "preferred",
+   "sha256": "ee145f7503fd78a3c91cf18cdb65ec3fe154d92e09973c440ac058dbfb31aa19"
+  },
+  "downgrade": {
+   "icon": "arrow-down-bold-circle",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/arrow-down-bold-circle.svg",
+   "selected_by": "preferred",
+   "sha256": "7334b70c635e538696b90485201a6eee1836d837f05591e265e0168107fe141a"
+  },
+  "mask": {
+   "icon": "drama-masks",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/drama-masks.svg",
+   "selected_by": "preferred",
+   "sha256": "626a357ef4ca26640429e8dd9ea84aeec8e3f528736a727041401262c78382a8"
+  },
+  "key_off": {
+   "icon": "key-remove",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/key-remove.svg",
+   "selected_by": "preferred",
+   "sha256": "d0ea2201a2fed957916ad2896dcfd50b6a217a55c6c015bda18a48ca1922e2d6"
+  },
+  "brain": {
+   "icon": "brain",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/brain.svg",
+   "selected_by": "preferred",
+   "sha256": "d022e627cc5d2e521b6d6b8cd867775ce34f611fbff47988b24574991a5f7a66"
+  },
+  "search": {
+   "icon": "magnify",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/magnify.svg",
+   "selected_by": "preferred",
+   "sha256": "be900e81ac13a0c8353e86dd2f383d5bbc43b4714c5d6acdb5ec492da8027cd4"
+  },
+  "detect": {
+   "icon": "scan-helper",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/scan-helper.svg",
+   "selected_by": "preferred",
+   "sha256": "0ce0a39773119d9283da61d749d4320e102527431f7a8674048b8cb7af3ed385"
+  },
+  "teach": {
+   "icon": "school",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/school.svg",
+   "selected_by": "preferred",
+   "sha256": "040ab4e185d47f0957185dc66ac851549cfe4b8c1c5615382e27779d1a62cc09"
+  },
+  "tap": {
+   "icon": "gesture-tap",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/gesture-tap.svg",
+   "selected_by": "preferred",
+   "sha256": "134b9c543698f722248a895cae2888f6078fc2d393285a0a4252a9ed57b4e11b"
+  },
+  "tune": {
+   "icon": "tune-variant",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/tune-variant.svg",
+   "selected_by": "preferred",
+   "sha256": "bd4c06e967cc28ee3179aa1bd793d10f886526b0202a964f4171ff86b903da7a"
+  },
+  "chart": {
+   "icon": "chart-line",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/chart-line.svg",
+   "selected_by": "preferred",
+   "sha256": "0119a9776dd83839c5ed78c8912b3258b93237e016bdd605c626411a4464b3c8"
+  },
+  "bars": {
+   "icon": "chart-bar",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/chart-bar.svg",
+   "selected_by": "preferred",
+   "sha256": "297701ab64123576e8f77da486764820b7f05c6465c6601909b2ed6c137da04c"
+  },
+  "scale": {
+   "icon": "scale-balance",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/scale-balance.svg",
+   "selected_by": "preferred",
+   "sha256": "b73d8efd663d780ddd5706040c13636eb50d2bd33e90f7e2f145d2ba5d63785f"
+  },
+  "command": {
+   "icon": "console-line",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/console-line.svg",
+   "selected_by": "preferred",
+   "sha256": "0a22cead8e8620630f0d62c776290d441920c5d72ad11a91d4ffdebb35543de2"
+  },
+  "packet": {
+   "icon": "package-variant-closed",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/package-variant-closed.svg",
+   "selected_by": "preferred",
+   "sha256": "5799b473c5c8f93aaebdcca01926f0d4f97deabcb6b4d1af8362d5eefe0b5329"
+  },
+  "counter": {
+   "icon": "counter",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/counter.svg",
+   "selected_by": "preferred",
+   "sha256": "f0bb7d623939fb59c8e1b5a574463c1a5d1e0e02caea5d79e4619b2a30ce22c1"
+  },
+  "hash": {
+   "icon": "pound",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/pound.svg",
+   "selected_by": "preferred",
+   "sha256": "3cc52886468b69a072362d6c870ffc94274caa8628555dd480d8f3fbb6325d75"
+  },
+  "cloud": {
+   "icon": "cloud",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/cloud.svg",
+   "selected_by": "preferred",
+   "sha256": "c423f0acaecf8c8bf7f36235adbdb8d44ee790023e803601263198eca23250f0"
+  },
+  "cell_tower": {
+   "icon": "access-point",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/access-point.svg",
+   "selected_by": "preferred",
+   "sha256": "a5d868dabdce13fe82c8569b8d3a729e026af0341db4b682e74ddc1915f73c09"
+  },
+  "save": {
+   "icon": "content-save",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/content-save.svg",
+   "selected_by": "preferred",
+   "sha256": "dc435c42946f570717e8a8e2843167309efa4123274d79871208301d222657a4"
+  },
+  "play": {
+   "icon": "play-box",
+   "source": "https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/play-box.svg",
+   "selected_by": "preferred",
+   "sha256": "5e4ee74f3250bb2db501a80ad5a1658f7250b1342f8c7670a680e224e28e3c5f"
+  }
+ }
+}

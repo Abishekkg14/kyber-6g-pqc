@@ -1,0 +1,3 @@
+machine,cpu,arch,platform,python,liboqs,cryptography,openssl,cpu_has_aes,governor,temp_c,clock_rate
+Raspberry Pi 4B (UAV),Raspberry Pi 4 Model B Rev 1.5,aarch64,Linux-6.18.34+rpt-rpi-v8-aarch64-with-glibc2.41,3.13.5,0.16.0,50.0.1,OpenSSL 4.0.2 25 Aug 2026,False,ondemand,51.6,1.0
+Laptop (ground station),AMD Ryzen 5 5625U with Radeon Graphics,x86_64,Linux-5.15.167.4-microsoft-standard-WSL2-x86_64-with-glibc2.35,3.10.12,0.16.0,50.0.1,OpenSSL 4.0.2 25 Aug 2026,True,,,1.002497

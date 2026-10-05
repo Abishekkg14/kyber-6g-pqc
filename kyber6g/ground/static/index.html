@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kyber-6G Ground Station</title>
+<!-- fonts and libraries are served by the ground station itself (static/vendor): the dashboard works without internet
+     (only the map background tiles need it) -->
+<link rel="stylesheet" href="/static/vendor/fonts.css">
+<link rel="stylesheet" href="/static/vendor/leaflet.css">
+<style>
+:root{
+  --gui:#c6c6c6; --ink:#3f3f3f; --panel:#1d1d1f; --slot:#8b8b8b; --slot-dark:#373737;
+  --text:#ffffff; --muted:#aaaaaa; --yellow:#ffff55; --green:#55ff55; --red:#ff5555; --aqua:#55ffff;
+  --gold:#ffaa00; --purple:#ff55ff; --blue:#5555ff;
+  --px:"Press Start 2P", monospace; --vt:"VT323", ui-monospace, monospace;
+  --dirt:none; --stone:none; --grass:none; --deep:none; --plank:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:#2b1d10 var(--dirt);background-size:64px 64px;image-rendering:pixelated;color:var(--text);
+  font:20px/1.15 var(--vt);text-shadow:2px 2px 0 #3f3f3f}
+body::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,.45);pointer-events:none;z-index:-1}
+a{color:var(--aqua)}
+/* ---------- header (grass block) ---------- */
+header{background:#5a8f29 var(--grass);background-size:64px 64px;border-bottom:6px solid #3b2a14;
+  display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 16px}
+header h1{font:16px/1.4 var(--px);margin:0;color:var(--yellow);text-shadow:3px 3px 0 #3f3f15;letter-spacing:1px}
+header .sub{font-size:18px;color:#fff;opacity:.95}
+.grow{flex:1}
+.pill{font:10px/1 var(--px);padding:8px 10px;background:#000a;border:3px solid #000;box-shadow:inset 2px 2px #555,inset -2px -2px #111;
+  white-space:nowrap;text-align:center;display:inline-block}
+/* the status pills stay together (they wrap as one group) and each has a fixed width: "9/23" becoming "10/23" or
+   "3.1 FPS" becoming "IDLE" must not push its neighbours sideways */
+.pills{display:flex;gap:10px;flex-wrap:nowrap;margin-left:auto}
+#pRec{min-width:17ch}#pLink{min-width:13ch}#pGnss{min-width:18ch}#pDet{min-width:12ch}#pDb{min-width:15ch}
+@media (max-width:760px){.pills{flex-wrap:wrap;margin-left:0}}
+.ok{color:var(--green)}.warn{color:var(--gold)}.bad{color:var(--red)}.dim{color:var(--muted)}.aqua{color:var(--aqua)}.yel{color:var(--yellow)}
+/* ---------- buttons (minecraft) ---------- */
+.mc-btn,button{font:10px/1.3 var(--px);color:#fff;text-shadow:2px 2px 0 #383838;cursor:pointer;
+  background:#6f6f6f var(--stone);background-size:48px 48px;border:3px solid #000;padding:9px 12px;
+  box-shadow:inset 3px 3px 0 #aaa8,inset -3px -3px 0 #3338;min-height:38px}
+button:hover{background-color:#7d86c8;box-shadow:inset 3px 3px 0 #c8cdfa,inset -3px -3px 0 #3a3f72;color:#ffffa0}
+button:active{box-shadow:inset -3px -3px 0 #aaa8,inset 3px 3px 0 #3338}
+button.on{color:var(--yellow);outline:3px solid var(--yellow);outline-offset:-6px}
+button.danger{color:#ffb0b0}
+select,input{font:20px var(--vt);background:#000;color:#fff;border:3px solid #a0a0a0;padding:4px 6px}
+/* ---------- tabs ---------- */
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px 0}
+nav button{min-width:120px}
+nav button.active{background-color:#8b8b8b;color:var(--yellow);outline:none;transform:translateY(2px)}
+main{padding:10px 16px 90px}
+.view{display:none}.view.active{display:grid;gap:12px}
+.cols{grid-template-columns:minmax(0,1.6fr) minmax(320px,1fr)}
+.cols3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+@media (max-width:1000px){.cols{grid-template-columns:1fr}}
+/* ---------- panels (deepslate GUI) ---------- */
+.panel{background:#1d1d1f var(--deep);background-size:64px 64px;border:4px solid #000;
+  box-shadow:inset 3px 3px 0 #5b5b5b,inset -3px -3px 0 #0e0e0e;padding:12px;min-width:0;position:relative}
+.panel>h2{font:11px/1.4 var(--px);color:var(--yellow);text-shadow:2px 2px 0 #3f3f15;margin:0 0 10px;
+  display:flex;align-items:center;gap:8px;min-height:21px}
+/* the live text at the right of a heading takes the space that is left and is cut with an ellipsis: it must never
+   wrap, or the heading (and everything below it) would change height whenever the text changes */
+.panel>h2 .r{flex:1 1 0;min-width:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font:18px/21px var(--vt);color:var(--muted);text-shadow:none}
+.span2{grid-column:span 2}@media (max-width:1000px){.span2{grid-column:auto}}
+.full{grid-column:1/-1}
+table{width:100%;border-collapse:collapse}
+td,th{padding:2px 6px;border-bottom:2px solid #0006;text-align:left;vertical-align:top}
+th{font:9px var(--px);color:var(--gold);cursor:pointer;white-space:nowrap}
+td.k{color:var(--muted);width:44%}td.v{word-break:break-word}
+.kv td{font-size:20px}
+/* one line per row, long values are cut with an ellipsis (full text in the tooltip): a value that sometimes wraps
+   would change the row height and shift everything below it once per second */
+.kv{table-layout:fixed}
+.kv td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* inventory slot grid */
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.slot{background:#8b8b8b;border:3px solid;border-color:#373737 #fff #fff #373737;padding:4px;color:#fff;font-size:17px}
+.slot img{width:100%;display:block;image-rendering:auto;border:2px solid #222}
+.slot .cap{padding:4px 2px 0;text-shadow:1px 1px 0 #333;line-height:1.05}
+.slots>.note{grid-column:1/-1;margin:0}             /* the "nothing here yet" line uses the full width */
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.tile{background:#000a;border:3px solid #000;box-shadow:inset 2px 2px #444,inset -2px -2px #0a0a0a;padding:8px}
+.tile{min-height:92px;overflow:hidden}
+.tile .l,.tile .n,.tile .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .l{font:8px/1.4 var(--px);color:var(--muted);text-shadow:none;min-height:1.4em}
+.tile .n{font-size:30px;color:var(--aqua);line-height:1.1;min-height:1.1em}
+.tile .s{font-size:16px;color:var(--muted);min-height:1.1em}
+/* bars (XP style) */
+.bar{height:14px;background:#000;border:2px solid #000;position:relative;margin:4px 0 8px}
+.bar>i{position:absolute;inset:0;width:0;background:linear-gradient(#a6f05a,#5bbd1c);box-shadow:inset 0 -3px #3e8a10}
+.bar.hot>i{background:linear-gradient(#ffb15a,#e05a1c);box-shadow:inset 0 -3px #9a3410}
+/* video */
+.vwrap{position:relative;background:#000;border:4px solid #000;box-shadow:inset 0 0 0 3px #555;aspect-ratio:16/9}
+.vwrap img{width:100%;height:100%;object-fit:contain;display:block}
+.vwrap canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+/* the last frame stays in the <img> when the stream stops: dim it so the message is readable and it is obvious the picture is not live */
+.vwrap .nosig{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:12px var(--px);color:#fff;
+  text-align:center;padding:20px;line-height:1.8;background:rgba(0,0,0,.78);z-index:2}
+/* hotbar: opaque, so whatever scrolls underneath does not show through the buttons */
+.hotbar{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:0;z-index:1000;
+  background:#1b1b1d;border:3px solid #000;box-shadow:inset 3px 3px #777,inset -3px -3px #222,0 0 0 3px #0008;padding:4px}
+.hotbar button{width:58px;height:58px;min-height:0;padding:2px;font:7px/1.2 var(--px);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;background:#4a4a4c;box-shadow:inset 2px 2px #ccc6,inset -2px -2px #2226}
+.hotbar button:hover{background-color:#7d86c8}
+button:disabled{opacity:.55;cursor:progress}
+.hotbar button b{font:20px/1 var(--vt);color:#fff}
+.hotbar button.rec b{color:var(--red)}
+/* chat log */
+.chat{font-size:19px;height:300px;overflow:auto;overflow-anchor:none;background:#0008;padding:6px 8px;line-height:1.15}
+.chat div{white-space:pre-wrap;word-break:break-word}
+/* map */
+.map{height:460px;border:4px solid #000;box-shadow:inset 0 0 0 3px #555}
+.minimap{height:260px}
+.leaflet-container{font:16px var(--vt)}
+.leaflet-control-layers{font:16px var(--vt)}
+/* Chart.js (responsive, maintainAspectRatio:false) needs a fixed-height, position:relative parent: with the canvas
+   directly in a flowing panel every resize makes the container taller and the page grows forever */
+.chartbox{position:relative;height:230px;overflow:hidden}
+.chartbox canvas{position:absolute;inset:0}
+/* A panel that is stretched by its grid row lets its chart / log use the extra height instead of leaving it empty.
+   Safe against the growth loop: the canvas is absolutely positioned, so it never contributes to the panel's size. */
+.panel.fill{display:flex;flex-direction:column}
+.panel.fill>.chartbox{flex:1 1 230px;height:auto;min-height:230px}
+.panel.fill>.chat{flex:1 1 220px;height:auto;min-height:220px}
+.stack{display:grid;gap:12px;align-content:start;min-width:0}
+.stack.even{grid-template-rows:1fr 1fr;align-content:stretch}
+.stack.tail{grid-template-rows:auto 1fr;align-content:stretch}
+/* telemetry: the map takes whatever height the right-hand column (fix, receiver, sky plot) needs beyond the two charts */
+.stack.mapstack{grid-template-rows:1fr auto auto;align-content:stretch}
+.panel.fill>.map{flex:1 1 460px;height:auto;min-height:460px}
+/* explicit column layouts: no half-empty rows and no panel stretched around a small chart */
+#v-security{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1fr)}
+#v-data{grid-template-columns:minmax(260px,.8fr) minmax(0,1.7fr) minmax(300px,1fr)}
+@media (max-width:1000px){#v-security,#v-data{grid-template-columns:1fr}}
+#sky{width:100%;max-width:340px;aspect-ratio:1;display:block;margin:auto}
+#voxel{width:100%;height:380px;display:block;border:4px solid #000;background:#87ceeb}
+/* warnings float over the header instead of pushing the page down: a link that drops and comes back must not
+   make everything jump twice */
+.banner{display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:2000;width:min(900px,92vw);
+  padding:10px 14px;font:10px/1.8 var(--px);border:4px solid #000;text-align:center;
+  background:#5a1010f2;box-shadow:inset 3px 3px #a33,inset -3px -3px #300,0 6px 0 #0006}
+.banner.show{display:block}
+#bUav.show{top:8px}#bServer.show~#bUav.show{top:64px}
+.note{font-size:17px;line-height:20px;color:var(--muted);margin:6px 0 0;text-shadow:none}
+/* status lines whose text changes while the page is open have a FIXED height (1-3 lines, the rest is cut and shown
+   in the tooltip): a line that sometimes wraps would move everything below it */
+.l1,.l2,.l3{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical}
+.l1{height:20px;-webkit-line-clamp:1}.l2{height:40px;-webkit-line-clamp:2}.l3{height:60px;-webkit-line-clamp:3}
+.scroll{max-height:420px;overflow:auto}
+#msg{color:var(--aqua);font-size:18px;line-height:21px;height:42px;-webkit-line-clamp:2;margin-top:4px;word-break:break-word}
+/* stable layout: fixed heights and aspect ratios so nothing can push the page around */
+.strip{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;min-height:176px;padding-bottom:4px}
+.strip .slot{flex:0 0 172px}
+.strip .note{align-self:center}
+.thumb{display:block;aspect-ratio:16/9;background:#000;border:2px solid #222;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.slot .cap{min-height:1.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.detlist{height:220px;overflow:auto;background:#0006;border:2px solid #000;overflow-anchor:none}
+.detlist table{margin:0}
+.detlist th{position:sticky;top:0;background:#1d1d1f;z-index:1}
+#tblWrap{overflow-anchor:none}
+.chips{display:flex;flex-wrap:nowrap;gap:6px;height:38px;align-items:center;margin-bottom:6px;overflow-x:auto;overflow-y:hidden}
+.chip{font:18px var(--vt);background:#000a;border:2px solid #555;padding:2px 4px 2px 8px;display:inline-flex;align-items:center;gap:6px;
+  flex:0 0 auto;white-space:nowrap}
+.chip button{min-height:0;padding:1px 6px;font-size:8px}
+#detStatus{margin:4px 0 0}
+#overlay.teaching{pointer-events:auto;cursor:crosshair;touch-action:none}
+#teachHint{bottom:12px;left:12px;font-size:10px;line-height:1.6;background:#000b;padding:6px 8px;border:3px solid #ffff55;color:var(--yellow);max-width:80%}
+.teachrow{display:flex;gap:6px;margin-bottom:6px}
+.teachrow input{flex:1;min-width:0}
+.teachrow input[type=number]{flex:0 0 74px}
+.teachrow select{flex:0 0 auto;max-width:150px}
+.teachrow{flex-wrap:wrap}
+#finderWords,#teachName{min-width:150px}
+/* camcorder-style recording indicator */
+@keyframes blink{50%{opacity:0}}
+.osd{position:absolute;z-index:3;font:14px/1 var(--px);color:#fff;text-shadow:2px 2px 0 #000;pointer-events:none;display:none}
+.osd.show{display:block}
+#recOsd{top:12px;left:12px;background:#000a;padding:8px 10px;border:3px solid #000}
+#recOsd i{display:inline-block;width:14px;height:14px;border-radius:50%;background:#ff2a2a;margin-right:8px;vertical-align:-1px;
+  box-shadow:0 0 8px #ff2a2a;animation:blink 1s steps(1) infinite}
+#recOsd small{display:block;font:16px var(--vt);color:#ffb0b0;margin-top:5px}
+/* bottom right: box labels are drawn above their boxes, so the top edge belongs to them */
+#liveOsd{bottom:12px;right:12px;font-size:10px;background:#000a;padding:6px 8px;border:3px solid #000;color:var(--green)}
+#motionOsd{top:12px;right:12px;font-size:10px;background:#000a;padding:6px 8px;border:3px solid #ffaa00;color:#ffaa00}
+/* hidden, not removed: its place in the header is kept, so starting a recording cannot re-wrap the header */
+.pill.rec{color:#fff;background:#8b0000cc;visibility:hidden}.pill.rec.show{visibility:visible}
+.toolarge{color:var(--gold);cursor:help}
+.pill.rec i,.hotbar button.recording b{animation:blink 1s steps(1) infinite}
+.hotbar button.recording{background:#8b000099;outline:3px solid var(--red);outline-offset:-6px}
+.legend span{display:inline-block;margin-right:12px}
+.sw{display:inline-block;width:12px;height:12px;border:2px solid #000;margin-right:4px;vertical-align:-1px}
+</style>
+</head>
+<body>
+<header>
+  <h1>KYBER-6G GROUND STATION</h1>
+  <div class="sub">PQC session (ML-KEM-1024 + X25519, ML-DSA-87) → AES-256-GCM for every byte of telemetry, video, images and control</div>
+  <div class="pills">
+    <span class="pill rec" id="pRec"><i>●</i> REC 00:00:00</span>
+    <span class="pill" id="pLink">LINK …</span>
+    <span class="pill" id="pGnss">GNSS …</span>
+    <span class="pill" id="pDet">AI …</span>
+    <span class="pill" id="pDb">DB …</span>
+  </div>
+</header>
+<div class="banner" id="bServer">GROUND STATION NOT REACHABLE — start it with Kyber6G.bat (or run/kyber6g.sh start). Retrying…</div>
+<div class="banner" id="bUav">UAV NOT CONNECTED — the Pi service starts at boot. Check the Pi is powered and on Wi-Fi (run/kyber6g.sh uav-status).</div>
+<nav>
+  <button data-tab="mission" class="active">MISSION</button>
+  <button data-tab="telemetry">TELEMETRY</button>
+  <button data-tab="security">SECURITY</button>
+  <button data-tab="media">MEDIA</button>
+  <button data-tab="data">DATA</button>
+</nav>
+<main>
+<!-- ============================ MISSION ============================ -->
+<section class="view active cols" id="v-mission">
+  <div style="display:grid;gap:12px;align-content:start;min-width:0">
+  <div class="panel">
+    <h2>LIVE VIDEO <span class="r" id="vInfo"></span></h2>
+    <div class="vwrap"><img id="video" alt="live video"><canvas id="overlay"></canvas>
+      <div class="nosig" id="nosig">NO SIGNAL<br>press ▶ LIVE on the hotbar</div>
+      <div class="osd" id="recOsd"><i></i>REC <span id="recTime">00:00:00</span><small id="recSub"></small></div>
+      <div class="osd" id="liveOsd">LIVE · AES-256-GCM</div>
+      <div class="osd" id="motionOsd">MOTION</div>
+      <div class="osd" id="teachHint"></div></div>
+    <div class="row" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+      <button id="btnOverlay" class="on">BOXES: ON</button>
+      <button id="btnAnn">SERVER-DRAWN</button>
+      <select id="res"><option value="1280x720">1280×720</option><option value="1920x1080">1920×1080</option><option value="640x480">640×480</option></select>
+      <select id="fps"><option>30</option><option>25</option><option>15</option></select>
+      <select id="br"><option value="3000000">3 Mbit/s</option><option value="6000000">6 Mbit/s</option><option value="1500000">1.5 Mbit/s</option></select>
+      <button id="apply">APPLY</button>
+      <label>conf <input id="conf" type="number" min="0.05" max="0.95" step="0.05" value="0.35" style="width:70px"></label>
+    </div>
+    <div class="row" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+      <button id="btnMotion" title="motion watch on the UAV: finds what moves in the picture (dashed boxes), also while its camera moves">MOTION: —</button>
+      <select id="motionSens" title="how small or faint a movement is reported (higher finds more, and more that is nothing)">
+        <option value="low">LOW</option><option value="medium">MEDIUM</option><option value="high">HIGH</option></select>
+      <button id="btnMotionPhoto" title="take a photo (sealed on the UAV's card and sent) when a movement begins, at most one in 15 s">PHOTO ON MOTION: —</button>
+      <button id="btnSentry" title="keep the UAV's camera watching when no video is sent and nothing is recorded: only the reports go out">SENTRY: —</button>
+    </div>
+    <div class="note l1" id="motionStatus" style="margin:4px 0 0"></div>
+    <div id="msg" class="l2"></div>
+    <div class="tiles" id="vTiles" style="margin-top:8px"></div>
+  </div>
+  <div class="panel"><h2>RECENTLY SPOTTED</h2><div class="strip" id="trackSlots"></div></div>
+  <div class="panel"><h2>CHAT / EVENT LOG</h2><div class="chat" id="chat"></div></div>
+  </div>
+  <div style="display:grid;gap:12px;align-content:start;min-width:0">
+    <div class="panel"><h2>OBJECT DETECTION &amp; RECOGNITION <span class="r" id="detInfo"></span></h2>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        <select id="detProfile" title="detection model"></select>
+        <select id="detSize" title="inference size (bigger finds smaller objects, slower)">
+          <option value="480">480 px</option><option value="640">640 px</option><option value="800">800 px</option></select>
+        <button id="detEnh" title="CLAHE contrast boost before inference">LOW-LIGHT: OFF</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <input id="vocab" placeholder="find anything: pencil, red pen, coffee mug" style="flex:1;min-width:0">
+        <button id="vocabGo">FIND</button></div>
+      <div class="teachrow"><input id="teachName" placeholder="teach it a new object: pencil" maxlength="40">
+        <button id="btnTeach" title="freeze the picture, drag a box around the object">TEACH</button></div>
+      <div class="chips" id="taughtList"></div>
+      <div class="teachrow"><button id="btnFinder" title="slower, accurate search for the words on the right (OWLv2 / Grounding DINO)">FINDER: ON</button>
+        <input id="finderWords" placeholder="finder words: pencil, screwdriver, pen" maxlength="200">
+        <input id="finderThr" type="number" min="0.12" max="0.9" step="0.02" value="0.35" style="width:72px" title="minimum score (0.12-0.9): lower finds more, but also more false hits">
+        <select id="finderSpeed" title="how often the finder looks (it takes ~2 s of CPU per look, which slows the live detector)">
+          <option value="10">ECO 10 s</option><option value="4">BALANCED 4 s</option><option value="0">CONTINUOUS</option></select>
+        <button id="finderSet">SET</button></div>
+      <div class="note l2" id="finderStatus" style="margin:0 0 4px"></div>
+      <div class="note l1" id="detStatus"></div>
+      <div class="tiles" id="detTiles" style="min-height:96px;margin-top:6px"></div>
+      <div class="detlist" style="margin-top:8px"><table id="detNow"></table></div>
+      <p class="note" id="detNote"><b>Two detectors run together.</b> The real-time one boxes ~120 everyday things (or your own words with FIND).
+        The <b>FINDER</b> (OWLv2, one look every few seconds) searches the words you give it.
+        <b>If a thin object such as a pencil is not boxed, press TEACH once</b>: type its name, press TEACH, drag a box around it on the frozen picture.</p>
+    </div>
+    <div class="panel"><h2>POSITION <span class="r" id="posInfo"></span></h2>
+      <div id="minimap" class="map minimap"></div>
+      <table class="kv" id="posKv" style="margin-top:6px"></table></div>
+  </div>
+</section>
+<!-- ============================ TELEMETRY ============================ -->
+<section class="view cols" id="v-telemetry">
+  <!-- left column: map and the two time charts; right column: fix, receiver, sky. Both columns are about as tall,
+       so no panel is stretched around empty space. -->
+  <div class="stack mapstack">
+  <div class="panel fill"><h2>GIS MAP <span class="r">satellite / street · track · heatmap · range rings · detections</span></h2>
+    <div id="map" class="map"></div>
+    <div class="row" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+      <button id="btnHome">SET HOME = UAV FIX</button>
+      <button id="btnPick">PICK REFERENCE ON MAP</button>
+      <button id="btnFit">ZOOM TO TRACK</button>
+      <span class="legend note" id="speedLegend"></span>
+    </div>
+    <p class="note l2" id="mapNote"></p>
+  </div>
+  <div class="panel"><h2>ALTITUDE &amp; SPEED</h2><div class="chartbox"><canvas id="cAlt"></canvas></div></div>
+  <div class="panel"><h2>SATELLITES &amp; DOP</h2><div class="chartbox"><canvas id="cSats"></canvas></div></div>
+  </div>
+  <div class="stack">
+    <div class="panel"><h2>FIX &amp; ACCURACY</h2><div class="tiles" id="fixTiles"></div></div>
+    <div class="panel"><h2>GNSS RECEIVER <span class="r" id="rxInfo"></span></h2><table class="kv" id="rxKv"></table>
+      <div class="note l3" id="rxDiag"></div></div>
+    <div class="panel"><h2>SKY PLOT <span class="r" id="skyInfo"></span></h2><canvas id="sky" width="680" height="680"></canvas>
+      <div class="legend note" id="skyLegend"></div><div class="note l2" id="skyNoPos"></div></div>
+  </div>
+  <div class="panel"><h2>SIGNAL STRENGTH (C/N0 dB-Hz)</h2><div class="chartbox"><canvas id="cSnr"></canvas></div></div>
+  <div class="panel"><h2>CONSTELLATIONS</h2><div class="chartbox"><canvas id="cCons"></canvas></div></div>
+  <div class="panel full"><h2>3D BLOCK DENSITY MAP <span class="r">where the UAV spent time · drag to orbit</span></h2>
+    <canvas id="voxel"></canvas><p class="note l2" id="voxNote"></p></div>
+  <div class="panel full"><h2>DATAVIEW — TELEMETRY (latest 300) <span class="r" id="tblInfo"></span></h2>
+    <div class="row" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+      <a href="/api/export/telemetry.csv"><button>CSV</button></a>
+      <a href="/api/export/telemetry.geojson"><button>GEOJSON</button></a>
+      <a href="/api/export/telemetry.kml"><button>KML</button></a>
+      <a href="/api/export/satellites.csv"><button>SATELLITES CSV</button></a></div>
+    <div class="scroll" id="tblWrap"><table id="tbl"></table></div></div>
+</section>
+<!-- ============================ SECURITY ============================ -->
+<section class="view" id="v-security">
+  <div class="panel"><h2>SESSION</h2><table class="kv" id="secKv"></table>
+    <p class="note l3 bad" id="clockNote"></p>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><button id="btnCached">1-RTT CACHED RAPIDREKEY</button><button id="btnPq">PQ RATCHET</button></div>
+    <p class="note">Cached RapidRekey: one-way update from the cached resumption secret, no post-compromise security. PQ ratchet: fresh ML-KEM-1024 + X25519 mixed in (forward secrecy + post-compromise security).</p></div>
+  <div class="stack tail">
+    <div class="panel"><h2>REJECTED PACKETS</h2><div class="tiles" id="rejTiles"></div>
+      <p class="note">Every forged, tampered, replayed, stale or wrong-session packet is counted here — never silently accepted.</p></div>
+    <div class="panel fill"><h2>ROUND-TRIP TIME</h2><div class="chartbox"><canvas id="cRtt"></canvas></div></div>
+  </div>
+  <div class="stack tail">
+    <div class="panel"><h2>KEY EPOCHS (per stream)</h2><table class="kv" id="epochKv"></table></div>
+    <div class="panel fill"><h2>UAV LINK EVENTS</h2><div class="chat" id="linkEv"></div></div>
+  </div>
+</section>
+<!-- ============================ MEDIA ============================ -->
+<section class="view cols3" id="v-media">
+  <div class="panel full"><h2>IMAGES (captured on the UAV · AES-256-GCM chunks · SHA-256 verified) <span class="r" id="imgInfo"></span></h2>
+    <button id="btnImgAll">SHOW ALL</button> <span class="note" id="imgAllNote"></span>
+    <div class="slots" id="imgSlots" style="margin-top:8px"></div></div>
+  <div class="panel full"><h2>PHOTOS STORED ON THE PI <span class="r" id="photoInfo"></span></h2>
+    <p class="note" style="margin:0 0 8px">Every capture is also saved on the Pi's SD card as <b>.k6gimg</b> (AES-256-GCM, key wrapped with ML-KEM-1024 to the ground station) —
+      kept if the link drops, but the Pi itself cannot decrypt it.</p>
+    <button id="btnPhotos">LIST ON UAV</button><table id="photoList" style="margin-top:8px"></table></div>
+  <div class="panel full"><h2>DETECTION SNAPSHOTS</h2><div class="strip" id="detSlots"></div></div>
+  <div class="panel full"><h2>ENCRYPTED RECORDINGS (.k6grec · ML-KEM-1024 wrapped key · decrypt on GCS only) <span class="r" id="recInfo"></span></h2>
+    <p class="note" style="margin:0 0 8px" id="recNote">◼ SAVE seals the recording on the Pi's SD card; it is then fetched and decrypted here by itself. The list shows every recording on the card,
+      newest first: one that is not here yet has its FETCH &amp; DECRYPT button.</p>
+    <button id="btnList">LIST ON UAV</button> <button id="btnRecAll">SHOW ALL</button> <span class="note" id="recAllNote"></span>
+    <table id="recList" style="margin-top:8px"></table><div id="recRx" class="slots" style="margin-top:8px"></div></div>
+  <div class="panel full"><h2>SEALED AUDIO (.k6gaud · ML-KEM-1024 + X25519 wrap · ML-DSA-87 signed · a key per block) <span class="r" id="audInfo"></span></h2>
+    <p class="note" style="margin:0 0 8px">No microphone is attached to the Pi: a file in its inbox stands in for one (<b>kyber6g.sh audio-put FILE</b>). It is cut into its frames and sealed block by block;
+      the same sealed blocks go to the SD card and, with LIVE, onto the link. Blocks lost on the air are fetched again from the card and checked against the root the UAV signed. The Pi cannot open its own clips.</p>
+    <button id="btnAudList">LIST ON UAV</button> <button id="btnAudRec">● SEAL SOURCE</button> <button id="btnAudLive">● SEAL + SEND LIVE</button>
+    <audio id="audLivePlayer" controls preload="none" style="height:32px;width:300px;vertical-align:middle"></audio>
+    <p class="note l1" id="audLive"></p>
+    <table id="audList" style="margin-top:8px"></table>
+    <div id="audRx" class="slots" style="margin-top:8px;grid-template-columns:repeat(auto-fill,minmax(310px,1fr))"></div>
+    <p class="note l2" id="audEx"></p></div>
+</section>
+<!-- ============================ DATA ============================ -->
+<section class="view" id="v-data">
+  <div class="panel"><h2>DATABASE</h2><table class="kv" id="dbKv"></table>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+      <a href="/api/export/db"><button>DOWNLOAD DB</button></a><a href="/api/export/detections.csv"><button>DETECTIONS CSV</button></a></div></div>
+  <div class="stack even">
+    <div class="panel fill"><h2>VIDEO &amp; AI PERFORMANCE</h2><div class="chartbox"><canvas id="cVid"></canvas></div></div>
+    <div class="panel fill"><h2>UAV SYSTEM</h2><div class="chartbox"><canvas id="cSys"></canvas></div></div>
+  </div>
+  <div class="stack tail">
+    <div class="panel"><h2>RASPBERRY PI 4B</h2><table class="kv" id="sysKv"></table></div>
+    <div class="panel fill"><h2>DETECTIONS BY CLASS (30 min)</h2><div class="chartbox"><canvas id="cDet"></canvas></div></div>
+  </div>
+  <div class="panel full"><h2>STORED EVENTS</h2><div class="chat" id="dbEvents"></div></div>
+</section>
+</main>
+<div class="hotbar" id="hotbar">
+  <button data-cmd="start_live"><b>▶</b>LIVE</button>
+  <button data-cmd="stop_live"><b>■</b>STOP</button>
+  <button class="rec" data-cmd="start_rec"><b>●</b>REC</button>
+  <button data-cmd="stop_rec"><b>◼</b>SAVE</button>
+  <button data-cmd="capture_image"><b>◘</b>PHOTO</button>
+  <button data-cmd="set_mode" data-args='{"mode":"NORMAL"}'><b>☼</b>DAY</button>
+  <button data-cmd="set_mode" data-args='{"mode":"NIGHT"}'><b>☾</b>NIGHT</button>
+  <button data-cmd="focus"><b>◎</b>FOCUS</button>
+  <button id="hbDet"><b>◈</b>AI</button>
+</div>
+<script type="importmap">{"imports":{"three":"/static/vendor/three.module.js","three/addons/controls/OrbitControls.js":"/static/vendor/OrbitControls.js"}}</script>
+<script src="/static/vendor/leaflet.js"></script>
+<script src="/static/vendor/leaflet-heat.js"></script>
+<script src="/static/vendor/chart.umd.js"></script>
+<script src="/static/boxtracker.js"></script>
+<script src="/static/app.js"></script>
+<script type="module" src="/static/voxel.js"></script>
+</body>
+</html>

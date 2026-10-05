@@ -35,6 +35,21 @@ __pycache__/
 *.pyc
 scripts/__pycache__/
 
+# Kyber-6G secure link: never commit keys, recordings or received media
+.kyber6g/
+*.sk
+*.dk
+*.k6grec
+*.k6gimg
+*.k6gaud
+*.k6gax
+kyber6g_ground/
+kyber6g_recordings/
+kyber6g_photos/
+kyber6g_audio/
+*.pt
+*.onnx
+
 # Website Dependencies & Build Outputs
 kyber6g-website/node_modules/
 kyber6g-website/dist/
@@ -50,6 +65,10 @@ pnpm-debug.log*
 lerna-debug.log*
 .env
 
+# Published papers used as references (their publishers' copyright: read them, do not redistribute them)
+audio encryption/audio encryption papers/
+*:Zone.Identifier
+
 # Editor & OS Artifacts
 .vscode/
 !.vscode/extensions.json
@@ -62,7 +81,6 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Hardware test outputs
-hitl/received_images/
-hitl/received_video/
-hitl/results/
+# Simulation: per-run logs and debugging output (the raw results, manifest and summary ARE kept)
+simulation/results/logs/
+simulation/results/debug/

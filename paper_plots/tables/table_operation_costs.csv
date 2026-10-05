@@ -1,0 +1,4 @@
+operation,bytes_on_the_wire,uav_computing_ms_in_a_benchmark_loop,uav_computing_ms_in_the_running_system,time_over_the_link_median_ms
+Full handshake,13106,2.308,8.23,23.23
+Cached rekey,324,0.155,2.27,9.04
+PQ ratchet,4757,0.928,4.19,14.09

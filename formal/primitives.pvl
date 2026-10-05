@@ -1,0 +1,56 @@
+(* Kyber-6G: the cryptographic primitives as ProVerif sees them (symbolic, "perfect" cryptography).
+
+   Every model in this directory is run with this file first and then ONE attacker file:
+     attacker_classical.pvl   nothing can be broken
+     attacker_shor.pvl        X25519 is broken (a quantum computer: discrete logarithms)
+     attacker_mlkem.pvl       ML-KEM is broken (the secret key follows from the public key)
+     attacker_both.pvl        both are broken: every secrecy claim must then FAIL (it shows the model can fail)
+
+   What "perfect" leaves out: side channels, faults, bad randomness, the sizes of things, the concrete bounds, and
+   every property of a primitive that is not written below (for example what ML-KEM does with a damaged ciphertext). *)
+
+type key.                      (* a 32-byte secret: HKDF and HMAC outputs, AEAD keys *)
+type sskey.  type spkey.       (* ML-DSA-87 secret / public key *)
+type kemsk.  type kempk.  type kemseed.          (* ML-KEM-1024 keys and the encapsulator's coins *)
+type scalar. type point.       (* X25519 *)
+type nonce.
+
+free c: channel.               (* the network: the attacker reads, drops, replays, changes and injects everything *)
+
+(* ML-DSA-87. A signature verifies only under the public key of the secret key that made it, for the message that was
+   signed. The message cannot be read out of the signature (it never needs to be: every signed message is public). *)
+fun spk(sskey): spkey.
+fun sign(bitstring, sskey): bitstring.
+reduc forall m: bitstring, k: sskey; verify(m, sign(m, k), spk(k)) = true.
+
+(* ML-KEM-1024 as an ideal KEM. Whoever has the public key and chooses the coins has ciphertext and shared secret;
+   from the ciphertext, only the secret key gives the shared secret. *)
+fun kempub(kemsk): kempk.
+fun kemct(kempk, kemseed): bitstring.
+fun kemss(kempk, kemseed): bitstring.
+reduc forall k: kemsk, r: kemseed; decap(kemct(kempub(k), r), k) = kemss(kempub(k), r).
+
+(* X25519 *)
+const g: point.
+fun exp(point, scalar): point.
+equation forall x: scalar, y: scalar; exp(exp(g, x), y) = exp(exp(g, y), x).
+
+(* SHA-256, HMAC-SHA-256 and HKDF: functions nobody can invert, with unrelated outputs for different inputs *)
+fun h(bitstring): bitstring.
+fun hkdf_extract(bitstring, bitstring): key.     (* salt, input keying material *)
+fun hkdf_expand(key, bitstring): key.            (* pseudorandom key, info *)
+fun mac(key, bitstring): bitstring.
+fun k2b(key): bitstring [data, typeConverter].   (* a key used as input of a hash or as a plaintext *)
+
+(* AES-256-GCM: key, nonce, plaintext, associated data. Opens only with the same key, nonce and associated data. *)
+fun aead(key, bitstring, bitstring, bitstring): bitstring.
+reduc forall k: key, n: bitstring, m: bitstring, a: bitstring; aead_open(k, n, aead(k, n, m, a), a) = m.
+
+(* labels (public constants): each derived key, each signed message and each hash has its own *)
+const suite: bitstring.
+const LBL_CH, LBL_TH, LBL_SS, LBL_RK_REQ, LBL_RK_TH, LBL_PQR: bitstring.
+const L_MASTER, L_FIN_S, L_FIN_C, L_RESUMPTION, L_RK_AUTH, L_TRAFFIC, L_CONTROL: bitstring.
+const LBL_FILE_SIG, LBL_FILE_KEK, KIND_FILE, MAGIC_FILE: bitstring.
+const RATCHET_REQ, RATCHET_RESP: bitstring.
+const DIR_U2G, DIR_G2U: bitstring.
+const n0, empty: bitstring.

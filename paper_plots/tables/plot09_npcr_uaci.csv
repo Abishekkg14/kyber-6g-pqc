@@ -1,0 +1,6 @@
+compared,npcr_pct,uaci_pct,values_that_differ,values
+"the same picture stored twice (a new key each time, as the system does)",99.6149,33.4473,1762658,1769472
+"the picture with one pixel value changed by one, stored again (a new key, as the system does)",99.6099,33.4747,1762569,1769472
+"one pixel value changed, SAME key and nonce (never done by the system): only that value differs",0.0001,0.0,1,1769472
+"a key wrong in one bit, tag not checked, against the picture",99.613,27.5804,,
+ideal: two unrelated uniform byte strings,99.6094,33.4635,,

@@ -1,0 +1,22 @@
+operation,nominal_loss_pct,uplink_loss_pct,ran_on_the_uav,succeeded,timed_out,median_ms,min_ms,max_ms,mean_transmissions_of_the_request,max_transmissions
+Full handshake (1.5-RTT),0.0,0.0,10,10,0,24.36,20.4,33.03,1.0,1
+Full handshake (1.5-RTT),0.5,0.548,10,10,0,22.84,16.68,1230.47,1.1,2
+Full handshake (1.5-RTT),1.0,1.015,10,10,0,20.67,17.33,24.73,1.0,1
+Full handshake (1.5-RTT),2.0,2.074,9,9,0,20.2,19.43,1221.15,1.11,2
+Full handshake (1.5-RTT),5.0,4.759,9,9,0,22.36,19.91,2427.09,1.56,3
+Full handshake (1.5-RTT),10.0,10.37,10,10,0,1224.16,19.99,3621.21,2.1,4
+Full handshake (1.5-RTT),20.0,19.9,8,7,1,2423.82,1221.91,4822.34,3.14,5
+1-RTT Cached RapidRekey,0.0,0.0,10,10,0,8.46,6.99,12.69,1.0,1
+1-RTT Cached RapidRekey,0.5,0.548,10,10,0,9.09,7.3,13.68,1.0,1
+1-RTT Cached RapidRekey,1.0,1.015,10,10,0,7.86,6.11,10.1,1.0,1
+1-RTT Cached RapidRekey,2.0,2.074,10,10,0,8.23,6.84,14.8,1.0,1
+1-RTT Cached RapidRekey,5.0,4.759,9,9,0,9.02,6.8,713.3,1.22,2
+1-RTT Cached RapidRekey,10.0,10.37,10,10,0,7.63,6.28,709.73,1.1,2
+1-RTT Cached RapidRekey,20.0,19.9,6,4,2,359.61,7.19,714.26,1.5,2
+PQ ratchet,0.0,0.0,10,10,0,13.93,11.04,17.02,1.0,1
+PQ ratchet,0.5,0.548,10,10,0,12.9,11.32,20.43,1.0,1
+PQ ratchet,1.0,1.015,10,10,0,12.52,9.94,439.68,1.1,2
+PQ ratchet,2.0,2.074,10,10,0,12.76,10.64,370.95,1.1,2
+PQ ratchet,5.0,4.759,10,10,0,11.92,10.73,12.79,1.0,1
+PQ ratchet,10.0,10.37,8,8,0,210.07,10.49,1123.33,1.75,4
+PQ ratchet,20.0,19.9,7,7,0,791.74,10.58,1447.37,3.0,5

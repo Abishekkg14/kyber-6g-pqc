@@ -1,0 +1,15 @@
+test,what,vectors,passed_pi,passed_laptop
+ML-KEM-1024 keyGen,"seed (d, z) -> encapsulation and decapsulation key",25,25,25
+ML-KEM-1024 encapsulation,"key, coins m -> ciphertext, shared secret",25,25,25
+ML-KEM-1024 decapsulation,valid and modified ciphertexts -> shared secret (implicit rejection),10,10,10
+ML-KEM-1024 encapsulation key check,FIPS 203 7.2: a key with a coefficient out of range must be refused,10,10,10
+ML-KEM-1024 decapsulation key check,FIPS 203 7.3: a key whose stored hash does not fit must be refused,10,10,10
+ML-DSA-87 keyGen,seed -> public and secret key,25,25,25
+ML-DSA-87 sigGen,"secret key, message, context, rnd -> signature (15 deterministic, 15 hedged)",30,30,30
+ML-DSA-87 sigVer,"valid signatures, and message / commitment / z / hint modified -> accept or refuse",15,15,15
+random generator restored,after the seeded tests liboqs draws from the system again,2,2,2
+X25519,"RFC 7748 section 6.1, both directions",2,2,2
+HKDF-SHA-256 (crypto/keyschedule.py),"RFC 5869 A.1 and A.3 (no salt, no info)",2,2,2
+HMAC-SHA-256 (crypto/keyschedule.py),RFC 4231 test cases 1 and 2,2,2,2
+SHA-256 (crypto/keyschedule.py),"FIPS 180-4 ""abc"", given in two pieces",1,1,1
+AES-256-GCM,"GCM specification (McGrew, Viega) test cases 13, 14 and 16",3,3,3

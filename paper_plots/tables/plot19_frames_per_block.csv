@@ -1,0 +1,13 @@
+machine,frames_per_block,block_ms,block_bytes,blocks,datagrams_per_block,added_pct,seal_ms
+Raspberry Pi 4B (UAV),1,26.1,1100,2304,1,164.68,322.2458
+Raspberry Pi 4B (UAV),2,52.2,1100,1152,1,32.69,177.8241
+Raspberry Pi 4B (UAV),4,104.5,1748,608,2,11.4,118.3107
+Raspberry Pi 4B (UAV),8,209.0,3420,304,4,8.99,87.6262
+Raspberry Pi 4B (UAV),16,418.0,6764,160,7,13.42,73.5565
+Raspberry Pi 4B (UAV),32,835.9,13452,80,13,12.79,65.2153
+Laptop (ground station),1,26.1,1100,2304,1,164.68,76.1052
+Laptop (ground station),2,52.2,1100,1152,1,32.69,43.6559
+Laptop (ground station),4,104.5,1748,608,2,11.4,28.1061
+Laptop (ground station),8,209.0,3420,304,4,8.99,19.5499
+Laptop (ground station),16,418.0,6764,160,7,13.42,15.1544
+Laptop (ground station),32,835.9,13452,80,13,12.79,12.6849

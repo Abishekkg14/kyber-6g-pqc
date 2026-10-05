@@ -1,0 +1,325 @@
+{
+ "generated_utc": "2026-10-04T19:26:08Z",
+ "measurements": {
+  "crypto_pi": "2026-10-04T09:03:29Z",
+  "crypto_laptop": "2026-10-04T09:04:19Z",
+  "link_ops": "2026-10-04T11:37:28Z",
+  "transfer": "2026-10-04T09:16:43Z",
+  "timeline": "2026-10-04T09:17:50Z"
+ },
+ "laptop_clock_rate": {
+  "crypto_laptop": 1.002497,
+  "link_ops": 1.018512
+ },
+ "scalars": {
+  "hs_retx_s": 1.2,
+  "hs_max_tx": 5.0,
+  "rekey_retx_s": 0.7,
+  "rekey_max_tx": 3.0,
+  "ratchet_retx_s": 0.35,
+  "ratchet_max_tx": 5.0,
+  "ratchet_timeout_s": 3.0,
+  "manager_tick_s": 0.1,
+  "manager_backoff_s": 0.5,
+  "manager_backoff_max_s": 8.0,
+  "hello_cache_s": 10.0,
+  "rekey_cache_s": 5.0,
+  "frag_payload": 1180,
+  "hs_hdr": 8,
+  "reassembly_timeout_s": 5.0,
+  "ctrl_chunk": 1100,
+  "ctrl_part_ext": 7,
+  "rec_hdr": 24,
+  "rec_tag": 16,
+  "udp_ip": 28,
+  "video_ext": 9,
+  "video_chunk": 1100.0,
+  "video_frame_hdr": 8,
+  "jitter_ms": 150,
+  "video_fps": 30,
+  "video_gop": 30,
+  "cell_m": 111.2,
+  "cell_margin": 0.3,
+  "ch_fixed": 58,
+  "sh_fixed": 50,
+  "fin_len": 32,
+  "x25519_len": 32,
+  "rekey_req_bytes": 96,
+  "rekey_resp_bytes": 80,
+  "cf_bytes": 40,
+  "host_msg_ms": 0.6023,
+  "uav_tx_us": 153.0,
+  "gcs_rx_us": 10.94
+ },
+ "profiles": {
+  "hybrid5": {
+   "text": "ML-KEM-1024 + X25519, ML-DSA-87 (the implemented suite)",
+   "kem": "ML-KEM-1024",
+   "sig": "ML-DSA-87",
+   "x25519": 1,
+   "ch_bytes": 6287,
+   "sh_bytes": 6311,
+   "ratchet_req_bytes": 2178,
+   "ratchet_resp_bytes": 2204,
+   "scale_full_build": 1.0,
+   "scale_full_process": 1.0,
+   "scale_full_answer": 1.0,
+   "scale_ratchet_build": 1.0,
+   "scale_ratchet_finish": 1.0,
+   "scale_ratchet_answer": 1.0
+  },
+  "pq5": {
+   "text": "ML-KEM-1024 alone, ML-DSA-87 (no classical half)",
+   "kem": "ML-KEM-1024",
+   "sig": "ML-DSA-87",
+   "x25519": 0,
+   "ch_bytes": 6255,
+   "sh_bytes": 6279,
+   "ratchet_req_bytes": 2127,
+   "ratchet_resp_bytes": 2153,
+   "scale_full_build": 0.9092,
+   "scale_full_process": 0.7824,
+   "scale_full_answer": 0.847,
+   "scale_ratchet_build": 0.7247,
+   "scale_ratchet_finish": 0.5356,
+   "scale_ratchet_answer": 0.5858
+  },
+  "hybrid3": {
+   "text": "ML-KEM-768 + X25519, ML-DSA-65",
+   "kem": "ML-KEM-768",
+   "sig": "ML-DSA-65",
+   "x25519": 1,
+   "ch_bytes": 4585,
+   "sh_bytes": 4513,
+   "ratchet_req_bytes": 1666,
+   "ratchet_resp_bytes": 1564,
+   "scale_full_build": 0.7815,
+   "scale_full_process": 0.8273,
+   "scale_full_answer": 0.8336,
+   "scale_ratchet_build": 0.9191,
+   "scale_ratchet_finish": 0.9342,
+   "scale_ratchet_answer": 0.9652
+  },
+  "hybrid1": {
+   "text": "ML-KEM-512 + X25519, ML-DSA-44",
+   "kem": "ML-KEM-512",
+   "sig": "ML-DSA-44",
+   "x25519": 1,
+   "ch_bytes": 3312,
+   "sh_bytes": 3304,
+   "ratchet_req_bytes": 1154,
+   "ratchet_resp_bytes": 1136,
+   "scale_full_build": 0.5606,
+   "scale_full_process": 0.7225,
+   "scale_full_answer": 0.7213,
+   "scale_ratchet_build": 0.852,
+   "scale_ratchet_finish": 0.8828,
+   "scale_ratchet_answer": 0.9331
+  },
+  "classical": {
+   "text": "X25519 alone, Ed25519 (no post-quantum part)",
+   "kem": "-",
+   "sig": "Ed25519",
+   "x25519": 1,
+   "ch_bytes": 156,
+   "sh_bytes": 180,
+   "ratchet_req_bytes": 78,
+   "ratchet_resp_bytes": 104,
+   "scale_full_build": 0.2817,
+   "scale_full_process": 0.7306,
+   "scale_full_answer": 0.7403,
+   "scale_ratchet_build": 0.6839,
+   "scale_ratchet_finish": 0.7673,
+   "scale_ratchet_answer": 0.8492
+  }
+ },
+ "notes": {
+  "uav_slower_in_the_running_system_than_in_process": 2.785,
+  "ratchet_phases": "timed on the UAV in 150 ratchets",
+  "ground_station_time_over_a_probe_median_ms": {
+   "1": 0.194,
+   "2": 0.314,
+   "3": 0.384,
+   "4": 0.435,
+   "5": 0.491,
+   "6": 0.544
+  },
+  "round_trips": "path only: the ground station's time over each probe is taken out",
+  "round_trip_median_ms_by_datagrams": {
+   "1": {
+    "one_probe_per_command_path_only": 6.301,
+    "probes_on_the_uav_timer": 8.71
+   },
+   "2": {
+    "one_probe_per_command_path_only": 10.583,
+    "probes_on_the_uav_timer": 12.852
+   },
+   "3": {
+    "one_probe_per_command_path_only": 11.514,
+    "probes_on_the_uav_timer": 13.292
+   },
+   "4": {
+    "one_probe_per_command_path_only": 11.93,
+    "probes_on_the_uav_timer": 13.895
+   },
+   "5": {
+    "one_probe_per_command_path_only": 12.404,
+    "probes_on_the_uav_timer": 14.341
+   },
+   "6": {
+    "one_probe_per_command_path_only": 12.738,
+    "probes_on_the_uav_timer": 14.901
+   }
+  },
+  "link_rtt_source": [
+   "link_rtt.json (one probe per command)",
+   "link_rtt_after.json (one probe per command)"
+  ],
+  "video_source": "587 frames of the recording in transfer.json",
+  "video_bitrate_kbps": 3010.8,
+  "in_process_step_us": {
+   "full_build": 1110.8,
+   "full_process": 1197.6,
+   "ratchet_build": 366.5,
+   "ratchet_finish": 561.2,
+   "full_answer": 406.7,
+   "ratchet_answer": 150.2
+  },
+  "primitive_share_of_step": {
+   "full_build": 0.887,
+   "full_process": 0.706,
+   "ratchet_build": 0.591,
+   "ratchet_finish": 0.697,
+   "full_answer": 0.715,
+   "ratchet_answer": 0.565
+  }
+ },
+ "samples": {
+  "uav_full_build_ms": {
+   "n": 150,
+   "median": 2.9585,
+   "min": 1.387,
+   "max": 9.198
+  },
+  "uav_full_process_ms": {
+   "n": 150,
+   "median": 3.187,
+   "min": 1.556,
+   "max": 4.939
+  },
+  "uav_cached_build_ms": {
+   "n": 150,
+   "median": 0.132,
+   "min": 0.077,
+   "max": 0.175
+  },
+  "uav_cached_process_ms": {
+   "n": 150,
+   "median": 0.4315,
+   "min": 0.202,
+   "max": 0.557
+  },
+  "gcs_full_ms": {
+   "n": 150,
+   "median": 1.8537,
+   "min": 0.9023,
+   "max": 6.8433
+  },
+  "gcs_cached_ms": {
+   "n": 150,
+   "median": 0.3152,
+   "min": 0.1659,
+   "max": 2.5459
+  },
+  "gcs_ratchet_ms": {
+   "n": 150,
+   "median": 1.8969,
+   "min": 1.0319,
+   "max": 80.1581
+  },
+  "uav_full_finish_ms": {
+   "n": 150,
+   "median": 1.7075,
+   "min": 0.852,
+   "max": 2.777
+  },
+  "uav_cached_finish_ms": {
+   "n": 150,
+   "median": 1.6995,
+   "min": 0.804,
+   "max": 2.871
+  },
+  "uav_ratchet_build_ms": {
+   "n": 150,
+   "median": 1.04,
+   "min": 0.607,
+   "max": 2.739
+  },
+  "uav_ratchet_finish_ms": {
+   "n": 150,
+   "median": 1.695,
+   "min": 0.818,
+   "max": 2.61
+  },
+  "uav_ratchet_install_ms": {
+   "n": 150,
+   "median": 1.4165,
+   "min": 0.672,
+   "max": 1.745
+  },
+  "rtt_k1_ms": {
+   "n": 300,
+   "median": 6.301,
+   "min": 3.6759,
+   "max": 19.7012
+  },
+  "rtt_k2_ms": {
+   "n": 300,
+   "median": 10.5832,
+   "min": 6.4758,
+   "max": 36.0896
+  },
+  "rtt_k3_ms": {
+   "n": 300,
+   "median": 11.5136,
+   "min": 8.0388,
+   "max": 23.4858
+  },
+  "rtt_k4_ms": {
+   "n": 300,
+   "median": 11.9296,
+   "min": 8.328,
+   "max": 34.5519
+  },
+  "rtt_k5_ms": {
+   "n": 300,
+   "median": 12.4039,
+   "min": 8.7624,
+   "max": 45.9175
+  },
+  "rtt_k6_ms": {
+   "n": 300,
+   "median": 12.7376,
+   "min": 9.6657,
+   "max": 82.1547
+  },
+  "icmp_rtt_ms": {
+   "n": 300,
+   "median": 7.505,
+   "min": 3.52,
+   "max": 20.2
+  },
+  "video_i_bytes": {
+   "n": 20,
+   "median": 58240.0,
+   "min": 56128,
+   "max": 62048
+  },
+  "video_p_bytes": {
+   "n": 567,
+   "median": 11273,
+   "min": 3336,
+   "max": 29659
+  }
+ }
+}

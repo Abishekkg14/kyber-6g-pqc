@@ -1,0 +1,11 @@
+machine,kbit_s,source_bytes,sealed_bytes,block_bytes,added_pct
+Raspberry Pi 4B (UAV),64,480026,538073,1748,12.09
+Raspberry Pi 4B (UAV),128,960052,1046361,3420,8.99
+Raspberry Pi 4B (UAV),256,1920104,2062937,6764,7.44
+Raspberry Pi 4B (UAV),320,2400130,2571225,8436,7.13
+Laptop (ground station),64,480026,538073,1748,12.09
+Laptop (ground station),128,960052,1046361,3420,8.99
+Laptop (ground station),256,1920104,2062937,6764,7.44
+Laptop (ground station),320,2400130,2571225,8436,7.13
+Raspberry Pi 4B (UAV),PCM 16 kHz mono,1920044,2001945,5196,4.27
+Laptop (ground station),PCM 16 kHz mono,1920044,2001945,5196,4.27

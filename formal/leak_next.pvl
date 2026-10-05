@@ -1,0 +1,4 @@
+(* after everything has run (phase 1), the secret the new session would use for its NEXT rekey leaks: the state of
+   both ends as it is afterwards. The epoch that is over must stay secret (the chain cannot be walked backwards). *)
+let LeakBefore(k: key) = 0.
+let LeakNext(k: key) = phase 1; out(c, k).

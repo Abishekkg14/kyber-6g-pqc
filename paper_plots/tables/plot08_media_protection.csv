@@ -1,0 +1,19 @@
+machine_or_file,operation,format,photo_kB,n,median_ms_or_bytes_added,p5_ms,p95_ms,kB_per_ms
+Raspberry Pi 4B (UAV),seal,format 1,50,100,1.556,1.538,1.696,32.1
+Raspberry Pi 4B (UAV),seal,format 1,200,100,5.251,5.222,5.391,38.1
+Raspberry Pi 4B (UAV),seal,format 1,1000,25,24.593,24.511,24.645,40.7
+Raspberry Pi 4B (UAV),seal,format 1,3000,25,71.244,71.107,71.358,42.1
+Raspberry Pi 4B (UAV),seal,format 2,50,100,3.381,3.139,4.197,14.8
+Raspberry Pi 4B (UAV),seal,format 2,200,100,8.078,7.855,8.883,24.8
+Raspberry Pi 4B (UAV),seal,format 2,1000,25,32.219,32.047,32.877,31.0
+Raspberry Pi 4B (UAV),seal,format 2,3000,25,92.072,91.668,93.142,32.6
+Laptop (ground station),open,format 1,50,100,0.114,0.112,0.136,438.9
+Laptop (ground station),open,format 1,200,100,0.223,0.219,0.242,898.5
+Laptop (ground station),open,format 1,1000,25,0.857,0.84,0.889,1167.4
+Laptop (ground station),open,format 1,3000,25,2.425,2.365,2.553,1237.0
+Laptop (ground station),open,format 2,50,100,0.312,0.306,0.344,160.0
+Laptop (ground station),open,format 2,200,100,0.5,0.49,0.542,400.3
+Laptop (ground station),open,format 2,1000,25,1.85,1.779,1.913,540.5
+Laptop (ground station),open,format 2,3000,25,4.906,4.757,5.165,611.5
+file,bytes added,format 2,200,,6761,4637,1568,96,460
+file,bytes added,format 1,200,,1947,0,1568,64,315

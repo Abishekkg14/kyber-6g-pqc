@@ -1,68 +1,73 @@
-export default function Conclusions() {
-    const findings = [
-        {
-            indicator: 'positive',
-            text: 'CRYSTALS-Kyber maintains exponential quantum resistance while ECC security degrades to polynomial complexity under Shor\'s algorithm, validating the hybrid KEM approach.'
-        },
-        {
-            indicator: 'caution',
-            text: 'Kyber-768 handshake latency is approximately 4× higher than ECC-only (1.25ms vs 0.31ms at 10 nodes), creating measurable control-plane overhead in dense deployments.'
-        },
-        {
-            indicator: 'positive',
-            text: 'AES-256-GCM data-plane encryption performance is identical regardless of key exchange mechanism, with encrypt/decrypt latency consistently at ~2μs per packet.'
-        },
-        {
-            indicator: 'caution',
-            text: 'RRC Connection Request size increases 10.25× (128B → 1312B) with Kyber, increasing RLC segmentation requirements and MAC queueing pressure under high load.'
-        },
-        {
-            indicator: 'positive',
-            text: 'PSK caching optimization reduces Kyber handshake latency by 73.8% (from 1.45ms to 0.38ms) at 56 nodes, bringing it near ECC baseline performance levels.'
-        },
-        {
-            indicator: 'neutral',
-            text: 'Gateway queueing delay scales superlinearly with swarm size for both schemes, following M/M/1 predictions. Kyber amplifies this by 35% due to larger control messages.'
-        },
-        {
-            indicator: 'positive',
-            text: 'The adaptive key manager successfully extends rekeying intervals during high-speed mobility, preventing cryptographic congestion-induced denial of service.'
-        },
-        {
-            indicator: 'neutral',
-            text: 'Multi-gNB deployment (7 base stations) distributes UE load to ~8 drones per cell, enabling 56-drone swarms within NR scheduling capacity constraints.'
-        },
-    ]
+import ScrollReveal from '../components/ScrollReveal'
+import { rows, fmt } from '../data'
 
-    return (
-        <section id="conclusions" className="section" aria-label="Conclusions">
-            <div className="section-inner">
-                <span className="section-label">Conclusions</span>
-                <h2>Key Findings</h2>
-                <p className="section-desc">
-                    The evaluation demonstrates that post-quantum security is achievable for military drone
-                    swarm communication with acceptable performance trade-offs, provided adaptive optimization
-                    mechanisms are employed for high-mobility scenarios.
-                </p>
+export default function Conclusions({ data }) {
+  const lat = rows(data, 'plot02_handshake_latency')
+  const op = name => lat.find(r => r.operation.toLowerCase().includes(name)) || {}
+  const full = op('full'), cached = op('cached')
+  const a = data ? data.attacks : null
+  const f = data ? data.formal : null
 
-                <ul className="finding-list">
-                    {findings.map((f, i) => (
-                        <li key={i}>
-                            <div className={`indicator ${f.indicator}`} />
-                            <p style={{ fontSize: '0.9rem', color: 'var(--c-text-secondary)', maxWidth: 'none' }}>{f.text}</p>
-                        </li>
-                    ))}
-                </ul>
+  const holds = [
+    data && full.median_ms
+      ? `A hybrid post-quantum handshake at the highest parameter sets (ML-KEM-1024, ML-DSA-87) completes in ${fmt(full.median_ms)} ms on a Raspberry Pi 4B over Wi-Fi, and the 1-RTT Cached RapidRekey in ${fmt(cached.median_ms)} ms (medians, with live video running).`
+      : 'A hybrid post-quantum handshake at the highest parameter sets runs on a Raspberry Pi 4B with live video running.',
+    'Every kind of data the node produces is covered: live video, recordings, photos, audio, and text (telemetry, status, motion reports, commands). Stored files are sealed to the ground station and signed by the UAV.',
+    a
+      ? `${fmt(a.link_and_files.attempts + a.audio.attempts)} false inputs were offered to the running implementation on both machines; ${fmt(a.link_and_files.accepted + a.audio.accepted)} were accepted.`
+      : 'False inputs offered to the running implementation on both machines were refused.',
+    f
+      ? `ProVerif proves all ${fmt(f.claims)} secrecy and authentication claims made across its ${fmt(f.runs)} runs (nothing broken, X25519 broken, ML-KEM broken) and finds the attack in each of the ${fmt(f.attacks_expected)} cases built to have one.`
+      : 'The protocols are modelled and checked with ProVerif under four attackers.',
+    'The node notices movement on board, with the camera still or moving, and reports it inside the secure link.',
+  ]
+  const limits = [
+    'Wi-Fi, one UAV, on a desk. No 5G or 6G radio was used; more UAVs, a cellular cell, movement and range exist in the simulation only.',
+    'The UAV has not flown. Nothing was measured in the air: no vibration, no real camera movement, no energy.',
+    'No microphone: a file stands in for one. In flight a plain microphone would record the rotors.',
+    'Live video does not survive packet loss well: a damaged frame blanks the picture until the next keyframe.',
+    'The motion watch was tested with drawn targets and imitated camera movement, not in a field trial.',
+    'The proofs are symbolic, with reductions for the components. There is no computational proof of the whole protocol, no side-channel or fault analysis and no independent penetration test.',
+    'A captured UAV can be impersonated until its pinned key is removed at the ground station; what is stored on its card stays unreadable.',
+    'A flood of forged handshakes delays a connection; jamming and dropped packets cannot be stopped by a protocol.',
+  ]
+  const wording = [
+    ['"1-RTT Cached RapidRekey"', 'not "0-RTT"'],
+    ['"session established with ML-KEM-1024 and X25519, data encrypted with AES-256-GCM"', 'not "post-quantum encrypted video" or "post-quantum encrypted audio"'],
+    ['"prototype over Wi-Fi; an NR cell was simulated"', 'not "5G" or "6G link"'],
+    ['"encoded audio from a file that stands in for a microphone"', 'not "audio recorded by the UAV"'],
+    ['"proved in the symbolic model"', 'not "proven secure" or "unbreakable"'],
+  ]
 
-                <div style={{ marginTop: '48px', padding: '24px', background: 'var(--c-surface-alt)', borderRadius: '12px' }}>
-                    <h3>Future Work</h3>
-                    <p style={{ fontSize: '0.9rem', marginTop: '8px' }}>
-                        Extensions include evaluating Kyber-512 and Kyber-1024 variants, introducing ML-DSA mutual
-                        authentication overhead analysis, testing with realistic urban channel models including fading
-                        and NLOS propagation, and scaling to 200+ drone swarms with hierarchical multi-cell deployments.
-                    </p>
-                </div>
-            </div>
-        </section>
-    )
+  return (
+    <section id="limits" className="section alt" aria-label="What holds and the limits">
+      <div className="section-inner">
+        <ScrollReveal>
+          <span className="section-label">Limits</span>
+          <h2>What holds, and what does not follow from it</h2>
+        </ScrollReveal>
+        <ScrollReveal>
+          <h3 className="sub">What the evidence supports</h3>
+          <ul className="finding-list">
+            {holds.map((t, i) => <li key={i}><span className="indicator positive" aria-hidden="true" /><span>{t}</span></li>)}
+          </ul>
+        </ScrollReveal>
+        <ScrollReveal>
+          <h3 className="sub">Limits, stated plainly</h3>
+          <ul className="finding-list">
+            {limits.map((t, i) => <li key={i}><span className="indicator caution" aria-hidden="true" /><span>{t}</span></li>)}
+          </ul>
+        </ScrollReveal>
+        <ScrollReveal>
+          <h3 className="sub">Wording</h3>
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead><tr><th>Say</th><th>Do not say</th></tr></thead>
+              <tbody>{wording.map((w, i) => <tr key={i}><td>{w[0]}</td><td>{w[1]}</td></tr>)}</tbody>
+            </table>
+          </div>
+        </ScrollReveal>
+      </div>
+    </section>
+  )
 }

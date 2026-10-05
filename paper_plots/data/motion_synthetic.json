@@ -1,0 +1,1964 @@
+{
+ "what": "motion watch: generated scenes",
+ "when": "2026-10-05 21:30:47 IST",
+ "host": "Abishek14",
+ "tool": "kyber6g.tools.motion_bench",
+ "seeds": 10,
+ "looks_per_run_scored": "looks - 10",
+ "picture": [
+  320,
+  180
+ ],
+ "looks_per_second": 8,
+ "noise_models": {
+  "day": [
+   1.0,
+   0.01
+  ],
+  "night": [
+   9.0,
+   0.08
+  ],
+  "meaning": "variance = a + b x brightness, grey levels squared"
+ },
+ "rows": [
+  {
+   "series": "contrast, day noise",
+   "x": 3,
+   "label": "contrast 3, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 3,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise",
+   "x": 4,
+   "label": "contrast 4, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 4,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 14,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise",
+   "x": 6,
+   "label": "contrast 6, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 6,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 283,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise",
+   "x": 8,
+   "label": "contrast 8, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 8,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise",
+   "x": 12,
+   "label": "contrast 12, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 12,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise",
+   "x": 16,
+   "label": "contrast 16, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 16,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise",
+   "x": 25,
+   "label": "contrast 25, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 25,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise",
+   "x": 40,
+   "label": "contrast 40, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 40,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, day noise",
+   "x": 3,
+   "label": "3 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 3,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, day noise",
+   "x": 4,
+   "label": "4 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 4,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, day noise",
+   "x": 6,
+   "label": "6 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 6,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, day noise",
+   "x": 8,
+   "label": "8 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 8,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, day noise",
+   "x": 12,
+   "label": "12 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 12,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, day noise",
+   "x": 16,
+   "label": "16 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 16,
+    "noise": [
+     1.0,
+     0.01
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, night noise",
+   "x": 3,
+   "label": "contrast 3, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 3,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, night noise",
+   "x": 4,
+   "label": "contrast 4, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 4,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, night noise",
+   "x": 6,
+   "label": "contrast 6, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 6,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, night noise",
+   "x": 8,
+   "label": "contrast 8, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 8,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, night noise",
+   "x": 12,
+   "label": "contrast 12, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 12,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 99,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, night noise",
+   "x": 16,
+   "label": "contrast 16, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 16,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, night noise",
+   "x": 25,
+   "label": "contrast 25, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 25,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, night noise",
+   "x": 40,
+   "label": "contrast 40, 8 px, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "contrast": 40,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, night noise",
+   "x": 3,
+   "label": "3 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 3,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 176,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, night noise",
+   "x": 4,
+   "label": "4 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 4,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 304,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, night noise",
+   "x": 6,
+   "label": "6 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 6,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, night noise",
+   "x": 8,
+   "label": "8 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 8,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, night noise",
+   "x": 12,
+   "label": "12 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 12,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "size, night noise",
+   "x": 16,
+   "label": "16 px, contrast 25, 2 px/look",
+   "runs": 10,
+   "settings": {
+    "size": 16,
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, low",
+   "x": 3,
+   "label": "contrast 3, sensitivity low",
+   "runs": 10,
+   "settings": {
+    "contrast": 3,
+    "sensitivity": "low"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, low",
+   "x": 4,
+   "label": "contrast 4, sensitivity low",
+   "runs": 10,
+   "settings": {
+    "contrast": 4,
+    "sensitivity": "low"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, low",
+   "x": 6,
+   "label": "contrast 6, sensitivity low",
+   "runs": 10,
+   "settings": {
+    "contrast": 6,
+    "sensitivity": "low"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 8,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, low",
+   "x": 8,
+   "label": "contrast 8, sensitivity low",
+   "runs": 10,
+   "settings": {
+    "contrast": 8,
+    "sensitivity": "low"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 86,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, low",
+   "x": 12,
+   "label": "contrast 12, sensitivity low",
+   "runs": 10,
+   "settings": {
+    "contrast": 12,
+    "sensitivity": "low"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 302,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, low",
+   "x": 16,
+   "label": "contrast 16, sensitivity low",
+   "runs": 10,
+   "settings": {
+    "contrast": 16,
+    "sensitivity": "low"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 318,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, low",
+   "x": 25,
+   "label": "contrast 25, sensitivity low",
+   "runs": 10,
+   "settings": {
+    "contrast": 25,
+    "sensitivity": "low"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, low",
+   "x": 40,
+   "label": "contrast 40, sensitivity low",
+   "runs": 10,
+   "settings": {
+    "contrast": 40,
+    "sensitivity": "low"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, high",
+   "x": 3,
+   "label": "contrast 3, sensitivity high",
+   "runs": 10,
+   "settings": {
+    "contrast": 3,
+    "sensitivity": "high"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 9,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, high",
+   "x": 4,
+   "label": "contrast 4, sensitivity high",
+   "runs": 10,
+   "settings": {
+    "contrast": 4,
+    "sensitivity": "high"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 148,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, high",
+   "x": 6,
+   "label": "contrast 6, sensitivity high",
+   "runs": 10,
+   "settings": {
+    "contrast": 6,
+    "sensitivity": "high"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, high",
+   "x": 8,
+   "label": "contrast 8, sensitivity high",
+   "runs": 10,
+   "settings": {
+    "contrast": 8,
+    "sensitivity": "high"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, high",
+   "x": 12,
+   "label": "contrast 12, sensitivity high",
+   "runs": 10,
+   "settings": {
+    "contrast": 12,
+    "sensitivity": "high"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, high",
+   "x": 16,
+   "label": "contrast 16, sensitivity high",
+   "runs": 10,
+   "settings": {
+    "contrast": 16,
+    "sensitivity": "high"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, high",
+   "x": 25,
+   "label": "contrast 25, sensitivity high",
+   "runs": 10,
+   "settings": {
+    "contrast": 25,
+    "sensitivity": "high"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "contrast, day noise, high",
+   "x": 40,
+   "label": "contrast 40, sensitivity high",
+   "runs": 10,
+   "settings": {
+    "contrast": 40,
+    "sensitivity": "high"
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "speed",
+   "x": 0.1,
+   "label": "0.1 px/look, 8 px, contrast 25",
+   "runs": 10,
+   "settings": {
+    "speed": 0.1,
+    "looks": 50
+   },
+   "looks": 400,
+   "looks_with_target": 400,
+   "hits": 249,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 400,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "speed",
+   "x": 0.2,
+   "label": "0.2 px/look, 8 px, contrast 25",
+   "runs": 10,
+   "settings": {
+    "speed": 0.2,
+    "looks": 50
+   },
+   "looks": 400,
+   "looks_with_target": 400,
+   "hits": 400,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 400,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "speed",
+   "x": 0.4,
+   "label": "0.4 px/look, 8 px, contrast 25",
+   "runs": 10,
+   "settings": {
+    "speed": 0.4,
+    "looks": 50
+   },
+   "looks": 400,
+   "looks_with_target": 400,
+   "hits": 400,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 400,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "speed",
+   "x": 0.8,
+   "label": "0.8 px/look, 8 px, contrast 25",
+   "runs": 10,
+   "settings": {
+    "speed": 0.8,
+    "looks": 50
+   },
+   "looks": 400,
+   "looks_with_target": 400,
+   "hits": 400,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 400,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "speed",
+   "x": 1.5,
+   "label": "1.5 px/look, 8 px, contrast 25",
+   "runs": 10,
+   "settings": {
+    "speed": 1.5,
+    "looks": 50
+   },
+   "looks": 400,
+   "looks_with_target": 400,
+   "hits": 400,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 400,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "speed",
+   "x": 3,
+   "label": "3 px/look, 8 px, contrast 25",
+   "runs": 10,
+   "settings": {
+    "speed": 3,
+    "looks": 50
+   },
+   "looks": 400,
+   "looks_with_target": 400,
+   "hits": 400,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 400,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "speed",
+   "x": 6,
+   "label": "6 px/look, 8 px, contrast 25",
+   "runs": 10,
+   "settings": {
+    "speed": 6,
+    "looks": 50
+   },
+   "looks": 400,
+   "looks_with_target": 400,
+   "hits": 400,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 400,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "speed",
+   "x": 10,
+   "label": "10 px/look, 8 px, contrast 25",
+   "runs": 10,
+   "settings": {
+    "speed": 10,
+    "looks": 50
+   },
+   "looks": 400,
+   "looks_with_target": 400,
+   "hits": 270,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 400,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "pan",
+   "x": 0,
+   "label": "camera 0 px/look, target +4",
+   "runs": 10,
+   "settings": {
+    "pan": 0,
+    "jitter": 0,
+    "contrast": 30,
+    "speed": 4
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "pan + turn",
+   "x": 0,
+   "label": "camera 0 px/look and 0.3 deg",
+   "runs": 10,
+   "settings": {
+    "pan": 0,
+    "rot": 0.3,
+    "contrast": 30,
+    "speed": 4
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 7.33
+  },
+  {
+   "series": "pan, no target",
+   "x": 0,
+   "label": "camera 0 px/look, nothing moves",
+   "runs": 10,
+   "settings": {
+    "pan": 0,
+    "jitter": 0,
+    "target": false
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "pan",
+   "x": 0.5,
+   "label": "camera 0.5 px/look, target +4",
+   "runs": 10,
+   "settings": {
+    "pan": 0.5,
+    "jitter": 0.2,
+    "contrast": 30,
+    "speed": 4.5
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 313,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 178.7
+  },
+  {
+   "series": "pan + turn",
+   "x": 0.5,
+   "label": "camera 0.5 px/look and 0.3 deg",
+   "runs": 10,
+   "settings": {
+    "pan": 0.5,
+    "rot": 0.3,
+    "contrast": 30,
+    "speed": 4.5
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 158.60000000000002
+  },
+  {
+   "series": "pan, no target",
+   "x": 0.5,
+   "label": "camera 0.5 px/look, nothing moves",
+   "runs": 10,
+   "settings": {
+    "pan": 0.5,
+    "jitter": 0.2,
+    "target": false
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 313,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 178.67
+  },
+  {
+   "series": "pan",
+   "x": 1,
+   "label": "camera 1 px/look, target +4",
+   "runs": 10,
+   "settings": {
+    "pan": 1,
+    "jitter": 0.2,
+    "contrast": 30,
+    "speed": 5
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 326.65
+  },
+  {
+   "series": "pan + turn",
+   "x": 1,
+   "label": "camera 1 px/look and 0.3 deg",
+   "runs": 10,
+   "settings": {
+    "pan": 1,
+    "rot": 0.3,
+    "contrast": 30,
+    "speed": 5
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 318.03000000000003
+  },
+  {
+   "series": "pan, no target",
+   "x": 1,
+   "label": "camera 1 px/look, nothing moves",
+   "runs": 10,
+   "settings": {
+    "pan": 1,
+    "jitter": 0.2,
+    "target": false
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 326.52
+  },
+  {
+   "series": "pan",
+   "x": 2,
+   "label": "camera 2 px/look, target +4",
+   "runs": 10,
+   "settings": {
+    "pan": 2,
+    "jitter": 0.2,
+    "contrast": 30,
+    "speed": 6
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 320,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 633.93
+  },
+  {
+   "series": "pan + turn",
+   "x": 2,
+   "label": "camera 2 px/look and 0.3 deg",
+   "runs": 10,
+   "settings": {
+    "pan": 2,
+    "rot": 0.3,
+    "contrast": 30,
+    "speed": 6
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 315,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 635.3599999999999
+  },
+  {
+   "series": "pan, no target",
+   "x": 2,
+   "label": "camera 2 px/look, nothing moves",
+   "runs": 10,
+   "settings": {
+    "pan": 2,
+    "jitter": 0.2,
+    "target": false
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 633.8399999999999
+  },
+  {
+   "series": "pan",
+   "x": 4,
+   "label": "camera 4 px/look, target +4",
+   "runs": 10,
+   "settings": {
+    "pan": 4,
+    "jitter": 0.2,
+    "contrast": 30,
+    "speed": 8
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 305,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 1274.1400000000003
+  },
+  {
+   "series": "pan + turn",
+   "x": 4,
+   "label": "camera 4 px/look and 0.3 deg",
+   "runs": 10,
+   "settings": {
+    "pan": 4,
+    "rot": 0.3,
+    "contrast": 30,
+    "speed": 8
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 298,
+   "false_regions": 4,
+   "looks_with_false_region": 4,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 1270.7900000000002
+  },
+  {
+   "series": "pan, no target",
+   "x": 4,
+   "label": "camera 4 px/look, nothing moves",
+   "runs": 10,
+   "settings": {
+    "pan": 4,
+    "jitter": 0.2,
+    "target": false
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 1273.83
+  },
+  {
+   "series": "pan",
+   "x": 8,
+   "label": "camera 8 px/look, target +4",
+   "runs": 10,
+   "settings": {
+    "pan": 8,
+    "jitter": 0.2,
+    "contrast": 30,
+    "speed": 12
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 213,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 2541.14
+  },
+  {
+   "series": "pan + turn",
+   "x": 8,
+   "label": "camera 8 px/look and 0.3 deg",
+   "runs": 10,
+   "settings": {
+    "pan": 8,
+    "rot": 0.3,
+    "contrast": 30,
+    "speed": 12
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 192,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 2543.4800000000005
+  },
+  {
+   "series": "pan, no target",
+   "x": 8,
+   "label": "camera 8 px/look, nothing moves",
+   "runs": 10,
+   "settings": {
+    "pan": 8,
+    "jitter": 0.2,
+    "target": false
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 2541.38
+  },
+  {
+   "series": "pan",
+   "x": 12,
+   "label": "camera 12 px/look, target +4",
+   "runs": 10,
+   "settings": {
+    "pan": 12,
+    "jitter": 0.2,
+    "contrast": 30,
+    "speed": 16
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 133,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 3826.52
+  },
+  {
+   "series": "pan + turn",
+   "x": 12,
+   "label": "camera 12 px/look and 0.3 deg",
+   "runs": 10,
+   "settings": {
+    "pan": 12,
+    "rot": 0.3,
+    "contrast": 30,
+    "speed": 16
+   },
+   "looks": 320,
+   "looks_with_target": 320,
+   "hits": 128,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 3824.66
+  },
+  {
+   "series": "pan, no target",
+   "x": 12,
+   "label": "camera 12 px/look, nothing moves",
+   "runs": 10,
+   "settings": {
+    "pan": 12,
+    "jitter": 0.2,
+    "target": false
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 3826.2200000000003
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "still, day noise",
+   "label": "still, day noise",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium"
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "still, day noise",
+   "label": "still, day noise",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high"
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "still, night noise",
+   "label": "still, night noise",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium",
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "still, night noise",
+   "label": "still, night noise",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high",
+    "noise": [
+     9.0,
+     0.08
+    ]
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "lamp flicker 5 %",
+   "label": "lamp flicker 5 %",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium",
+    "flicker": 0.05
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "lamp flicker 5 %",
+   "label": "lamp flicker 5 %",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high",
+    "flicker": 0.05
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "exposure wanders 2 % a look",
+   "label": "exposure wanders 2 % a look",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium",
+    "exposure": 0.02
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "exposure wanders 2 % a look",
+   "label": "exposure wanders 2 % a look",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high",
+    "exposure": 0.02
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 3,
+   "looks_with_false_region": 3,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "pan 2.3 px/look",
+   "label": "pan 2.3 px/look",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium",
+    "pan": 2.3
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 730.7099999999999
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "pan 2.3 px/look",
+   "label": "pan 2.3 px/look",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high",
+    "pan": 2.3
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 730.7099999999999
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "pan 6.5 px + shake 0.5 px",
+   "label": "pan 6.5 px + shake 0.5 px",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium",
+    "pan": 6.5,
+    "jitter": 0.5
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 2064.83
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "pan 6.5 px + shake 0.5 px",
+   "label": "pan 6.5 px + shake 0.5 px",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high",
+    "pan": 6.5,
+    "jitter": 0.5
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 2064.83
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "pan + turn 0.3 deg/look",
+   "label": "pan + turn 0.3 deg/look",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium",
+    "pan": 2.3,
+    "rot": 0.3
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 730.88
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "pan + turn 0.3 deg/look",
+   "label": "pan + turn 0.3 deg/look",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high",
+    "pan": 2.3,
+    "rot": 0.3
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 2,
+   "looks_with_false_region": 2,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 730.88
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "pan + zoom 0.5 %/look",
+   "label": "pan + zoom 0.5 %/look",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium",
+    "pan": 1.0,
+    "zoom": 0.005
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 360.4100000000001
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "pan + zoom 0.5 %/look",
+   "label": "pan + zoom 0.5 %/look",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high",
+    "pan": 1.0,
+    "zoom": 0.005
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 5,
+   "looks_with_false_region": 5,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 360.4100000000001
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "dim flat scene, night, row noise",
+   "label": "dim flat scene, night, row noise",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium",
+    "flat": 0.12,
+    "noise": [
+     9.0,
+     0.08
+    ],
+    "row_noise": 1.5
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 6,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.6499999999999999
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "dim flat scene, night, row noise",
+   "label": "dim flat scene, night, row noise",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high",
+    "flat": 0.12,
+    "noise": [
+     9.0,
+     0.08
+    ],
+    "row_noise": 1.5
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 6,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 0.6499999999999999
+  },
+  {
+   "series": "nothing moves, medium",
+   "x": "dim flat scene, pan 2.3",
+   "label": "dim flat scene, pan 2.3",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "medium",
+    "flat": 0.12,
+    "noise": [
+     9.0,
+     0.08
+    ],
+    "row_noise": 1.5,
+    "pan": 2.3
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 728.91
+  },
+  {
+   "series": "nothing moves, high",
+   "x": "dim flat scene, pan 2.3",
+   "label": "dim flat scene, pan 2.3",
+   "runs": 10,
+   "settings": {
+    "target": false,
+    "sensitivity": "high",
+    "flat": 0.12,
+    "noise": [
+     9.0,
+     0.08
+    ],
+    "row_noise": 1.5,
+    "pan": 2.3
+   },
+   "looks": 320,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 320,
+   "looks_camera_known": 320,
+   "camera_shift_sum": 728.91
+  }
+ ]
+}

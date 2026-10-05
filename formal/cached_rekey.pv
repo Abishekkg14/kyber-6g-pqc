@@ -1,0 +1,75 @@
+(* Kyber-6G 1-RTT Cached RapidRekey (kyber6g/crypto/handshake.py: build_rekey_request, server_process_rekey,
+   client_process_rekey_resp).
+
+     UAV -> GCS   RekeyRequest    uav id, old session id, mobility cell, nonce, time, MAC(auth key, all of that)
+     GCS -> UAV   RekeyResponse   old session id, new session id, nonce, Finished
+     UAV -> GCS   ClientFinished  new session id, Finished
+
+     auth key = HKDF-Expand(resumption, label | suite | old session id)
+     TH       = H(label, request, GCS nonce, new session id)
+     PRK      = HKDF-Extract(salt = TH, resumption)          no new key exchange: this is why it is cheap
+
+   Both ends hold the resumption secret `res0` of the session before (handshake.pv: that session's secrets are
+   secret and agreed). The ground station keeps it for ONE rekey and deletes it when it answers (one process, not
+   replicated); the UAV may ask any number of times.
+
+   The file is run with one "what leaks" library:
+     leak_none.pvl          nothing
+     leak_next.pvl          phase 1: the NEXT resumption secret (the state of both ends after this rekey)
+     leak_before.pvl        phase 0: res0 itself, before the rekey  ->  secrecy must FAIL: a cached rekey does not
+                            heal a compromised session (that is what the PQ ratchet is for) *)
+
+const idU, sid0, mob0: bitstring.
+free secretU1: bitstring [private].
+free secretG1: bitstring [private].
+
+event UavRekeyed(bitstring, bitstring, key).        (* old session id, new session id, new master secret *)
+event GcsRunning(bitstring, bitstring, key).
+event GcsRekeyed(bitstring, bitstring, key).
+
+(* 1  what is sent under the new keys stays secret *)
+query attacker(secretU1).
+query attacker(secretG1).
+(* 2  the ground station completes the rekey only if the UAV completed the same one - once *)
+query s: bitstring, k: key; inj-event(GcsRekeyed(sid0, s, k)) ==> inj-event(UavRekeyed(sid0, s, k)).
+(* 3  the UAV completes it only if the ground station is running the same one *)
+query s: bitstring, k: key; event(UavRekeyed(sid0, s, k)) ==> event(GcsRunning(sid0, s, k)).
+(* 4  not empty: must be FALSE *)
+query s: bitstring, k: key; event(GcsRekeyed(sid0, s, k)).
+
+let UAV(res: key) =
+  new nc: nonce;
+  in(c, ts: bitstring);
+  let fixed = (idU, sid0, mob0, nc, ts) in
+  let req = (fixed, mac(hkdf_expand(res, (L_RK_AUTH, suite, sid0)), (LBL_RK_REQ, fixed))) in
+  out(c, req);
+  in(c, (=sid0, sid1: bitstring, ns: nonce, fin_s: bitstring));
+  let th = h((LBL_RK_TH, req, ns, sid1)) in
+  let prk = hkdf_extract(th, k2b(res)) in
+  let master = hkdf_expand(prk, (L_MASTER, suite, sid1)) in
+  if fin_s = mac(hkdf_expand(prk, (L_FIN_S, suite, sid1)), th) then
+  event UavRekeyed(sid0, sid1, master);
+  out(c, (sid1, mac(hkdf_expand(prk, (L_FIN_C, suite, sid1)), h((th, fin_s)))));
+  out(c, aead(hkdf_expand(master, (L_TRAFFIC, DIR_U2G, suite, sid1)), n0, secretU1, empty));
+  LeakNext(hkdf_expand(master, (L_RESUMPTION, suite, sid1))).
+
+let GCS(res: key) =
+  in(c, (fixed: bitstring, m: bitstring));
+  let (=idU, =sid0, =mob0, nc: nonce, ts: bitstring) = fixed in
+  if m = mac(hkdf_expand(res, (L_RK_AUTH, suite, sid0)), (LBL_RK_REQ, fixed)) then
+  new sid1: bitstring; new ns: nonce;
+  let th = h((LBL_RK_TH, (fixed, m), ns, sid1)) in
+  let prk = hkdf_extract(th, k2b(res)) in
+  let master = hkdf_expand(prk, (L_MASTER, suite, sid1)) in
+  let fin_s = mac(hkdf_expand(prk, (L_FIN_S, suite, sid1)), th) in
+  event GcsRunning(sid0, sid1, master);
+  out(c, (sid0, sid1, ns, fin_s));
+  in(c, (=sid1, fin_c: bitstring));
+  if fin_c = mac(hkdf_expand(prk, (L_FIN_C, suite, sid1)), h((th, fin_s))) then
+  event GcsRekeyed(sid0, sid1, master);
+  out(c, aead(hkdf_expand(master, (L_TRAFFIC, DIR_G2U, suite, sid1)), n0, secretG1, empty));
+  LeakNext(hkdf_expand(master, (L_RESUMPTION, suite, sid1))).
+
+process
+  new res0: key;
+  ( !UAV(res0) | GCS(res0) | LeakBefore(res0) )

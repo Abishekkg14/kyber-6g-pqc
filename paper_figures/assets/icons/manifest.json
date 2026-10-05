@@ -1,0 +1,734 @@
+{
+ "family": "Tabler Icons",
+ "version": "3.48.0",
+ "licence": "MIT",
+ "homepage": "https://tabler.io/icons",
+ "style": "outline, 24 x 24 grid, stroke 2 (= 1.5 pt at 18 pt), round caps and joins, no fills",
+ "icons": {
+  "camera": {
+   "icon": "camera",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/camera.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "video",
+    "photo",
+    "aperture",
+    "camera",
+    "content",
+    "entertainment"
+   ],
+   "sha256": "7c89f200c421869266e690a095ce2ac101c29558bf8317d56f3c4b2929deeae4"
+  },
+  "video": {
+   "icon": "video",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/video.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "film",
+    "shoot",
+    "recording",
+    "taping",
+    "camera",
+    "video"
+   ],
+   "sha256": "9c2818f2bba58f48d54645f654f1b69bb3bb52f58cc552b5dc975828b7da27be"
+  },
+  "frame_buffer": {
+   "icon": "stack-2",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/stack-2.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "pile",
+    "elements",
+    "layout",
+    "wrap",
+    "stack",
+    "creative"
+   ],
+   "sha256": "02e91fa891d140ec017f40002b633ed1a3f771c4a57e34221422b1602e65f615"
+  },
+  "image": {
+   "icon": "photo",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/photo.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "picture",
+    "landscape",
+    "camera",
+    "photo",
+    "content",
+    "entertainment"
+   ],
+   "sha256": "1b70214ddb0cad868defd65e9b50c1ed04c0a6af6ad77457fa1bb9f580a4f8ac"
+  },
+  "cpu": {
+   "icon": "cpu",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/cpu.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "processor",
+    "computer",
+    "chip",
+    "hardware",
+    "technology",
+    "electronic"
+   ],
+   "sha256": "a758d4191ea0e6e8c76ec98d3eb69023e9b18d154723b4f4c27fb3c67f2f0c39"
+  },
+  "uav": {
+   "icon": "drone",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/drone.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "device",
+    "fly",
+    "aircraft",
+    "surveillance",
+    "control",
+    "autonomous"
+   ],
+   "sha256": "677a8259821b5ff1fca57d5cbd6bc832a0f57974d7da78e287601e2a94614196"
+  },
+  "ground_station": {
+   "icon": "device-laptop",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/device-laptop.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "workstation",
+    "mac",
+    "notebook",
+    "portable",
+    "screen",
+    "computer"
+   ],
+   "sha256": "a7f44689d0f26de1a254b13f839ba3b5c4adaf1dd1fe2b20c7de9b7bf1f17942"
+  },
+  "server": {
+   "icon": "server",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/server.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "storage",
+    "hosting",
+    "www",
+    "server",
+    "hardware",
+    "technology"
+   ],
+   "sha256": "12b015c961ce91f1329ed6635248807839b413cbaec78e80a51ace11cd9df2f4"
+  },
+  "cloud": {
+   "icon": "cloud",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/cloud.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "weather",
+    "online",
+    "cloud",
+    "storage",
+    "climate",
+    "forecast"
+   ],
+   "sha256": "e66a9354a02c8e23051c8dc39757c26069214711ad9b6b14f9945d1f00ab6673"
+  },
+  "database": {
+   "icon": "database",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/database.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "storage",
+    "data",
+    "memory",
+    "database",
+    "repository",
+    "records"
+   ],
+   "sha256": "5ee7d56a7d8023fd6a03094a1c5b50e2f0f576176b4a925eb7d23c8c165d480f"
+  },
+  "dashboard": {
+   "icon": "layout-dashboard",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/layout-dashboard.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "grid",
+    "view",
+    "display",
+    "page",
+    "masonry",
+    "layout"
+   ],
+   "sha256": "66510133ccddfba231a3fc8803cf937777008f49019005b4f3d4c8daabeaffb8"
+  },
+  "key": {
+   "icon": "key",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/key.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "password",
+    "login",
+    "authentication",
+    "secure",
+    "key"
+   ],
+   "sha256": "b20ddfccac5ab4756f2ef4700a5da6606aeaa7c3333b4d6f73955927abc407dd"
+  },
+  "lock": {
+   "icon": "lock",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/lock.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "security",
+    "password",
+    "secure",
+    "lock",
+    "private",
+    "control"
+   ],
+   "sha256": "767d287c57611534b81ac8cc25adef43bef0859d1b10b39caf55b16f795b9830"
+  },
+  "lock_open": {
+   "icon": "lock-open",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/lock-open.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "security",
+    "password",
+    "secure",
+    "unprotected",
+    "lock",
+    "open"
+   ],
+   "sha256": "42dd50a65e2d2e8398c1c26da61d08654ba2d613336adbc5d09181ab2f5e5a9d"
+  },
+  "shield": {
+   "icon": "shield-lock",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/shield-lock.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "secure",
+    "security",
+    "closed",
+    "key",
+    "safety",
+    "shield"
+   ],
+   "sha256": "91e93b1f636a87e56fced227d1e89ddc8c19c98a5b25b76f8ebc191160259beb"
+  },
+  "shield_check": {
+   "icon": "shield-check",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/shield-check.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "safety",
+    "protect",
+    "protection",
+    "yes",
+    "add",
+    "shield"
+   ],
+   "sha256": "78862f0f938c496341e3bfe8f7ce514450cdf1ee2e003062ea999777df39ee0f"
+  },
+  "signature": {
+   "icon": "writing-sign",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/writing-sign.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "name",
+    "certficate",
+    "sign",
+    "edit",
+    "write",
+    "document"
+   ],
+   "sha256": "cfa3585fe15f51397a0df14c05689952e25f5cd3d213b66046de96b8ca843765"
+  },
+  "certificate": {
+   "icon": "certificate",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/certificate.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "document",
+    "official",
+    "attest",
+    "signature",
+    "birth",
+    "death"
+   ],
+   "sha256": "c5a6db8f8ab3e863b4cfddd33ec4e5fd5635dec308cd39cb14712c4c4971f36b"
+  },
+  "rng": {
+   "icon": "arrows-shuffle",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/arrows-shuffle.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "direction",
+    "random",
+    "cross",
+    "mix",
+    "music",
+    "arrows"
+   ],
+   "sha256": "b1016f3ad508a19c6e981543d90fd43c6e4963b7739c34e75b89e3c65376a0c7"
+  },
+  "kdf": {
+   "icon": "arrows-split-2",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/arrows-split-2.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "direction",
+    "navigation",
+    "east",
+    "arrows",
+    "split",
+    "flow"
+   ],
+   "sha256": "4b1cab462864b2875918ad0e2ad78a58cc174091bb1407490bbe2c68d86f90d5"
+  },
+  "hash": {
+   "icon": "hash",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/hash.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "hashtag",
+    "#",
+    "instagram",
+    "hash"
+   ],
+   "sha256": "3bef171af662a4c4c96d3bfc2b7104aa6394604679ee539b9cc982ac6e6e0d0d"
+  },
+  "rekey": {
+   "icon": "refresh",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/refresh.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "synchronization",
+    "reload",
+    "restart",
+    "spinner",
+    "loader",
+    "ajax"
+   ],
+   "sha256": "b03fc1b9c4d0da381d975ff26074959ee3dda5a577929b2b6e122c592aa8e897"
+  },
+  "ratchet": {
+   "icon": "rotate-clockwise-2",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/rotate-clockwise-2.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "refresh",
+    "synchronization",
+    "reload",
+    "restart",
+    "spinner",
+    "loader"
+   ],
+   "sha256": "5f585b68aa2c7a6765b9f4da42b37aa6fcaf0c51c38d93f793fc59e757beac64"
+  },
+  "antenna": {
+   "icon": "antenna",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/antenna.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "reach",
+    "tv",
+    "network",
+    "connetion",
+    "signal",
+    "communication"
+   ],
+   "sha256": "315fb755b82aff6fcc3211e70cff70be718410487a4a44aa4f8bc3edbb3172a4"
+  },
+  "wifi": {
+   "icon": "wifi",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/wifi.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "online",
+    "connection",
+    "signal",
+    "wireless",
+    "wifi",
+    "internet"
+   ],
+   "sha256": "c818aecc6e1992085f79ea8a2c6a44989bf144ed6618f810ad91586f640b23df"
+  },
+  "broadcast": {
+   "icon": "broadcast",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/broadcast.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "communication",
+    "tv",
+    "signal",
+    "media",
+    "sound",
+    "connection"
+   ],
+   "sha256": "aa34b841bdaeb5fae39639a29a258a233cf7954d3be2215966aa95ebb53f483d"
+  },
+  "gnss": {
+   "icon": "satellite",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/satellite.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "orbit",
+    "space",
+    "moon",
+    "earth",
+    "planet",
+    "communication"
+   ],
+   "sha256": "f77be5ac38908571f865e5c7885d00453e605c98f6c8af1ecb617aedae8e2d7c"
+  },
+  "position": {
+   "icon": "map-pin",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/map-pin.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "navigation",
+    "location",
+    "travel",
+    "pin",
+    "position",
+    "marker"
+   ],
+   "sha256": "f935728ab1ff308da008306b4466c03a2d3c96954ad62f9fcd54ccbaab5adca5"
+  },
+  "telemetry": {
+   "icon": "activity",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/activity.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "pulse",
+    "motion",
+    "health",
+    "action",
+    "activity",
+    "movement"
+   ],
+   "sha256": "b88cb4c672810c5932b8bbb217e0dce15ac66a73db21d73c4f3c9a917e16fe82"
+  },
+  "imu": {
+   "icon": "compass",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/compass.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "navigation",
+    "safari",
+    "travel",
+    "direction",
+    "discover",
+    "compass"
+   ],
+   "sha256": "50901ef5bb94d8e47455945de271201d6b9645125aa2ddb73d13429ca698d566"
+  },
+  "plaintext": {
+   "icon": "file-text",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/file-text.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "data",
+    "pdf",
+    "txt",
+    "file",
+    "text",
+    "document"
+   ],
+   "sha256": "97c52bb8406ec928b1a3ff2ee8b8f11870607b1f8e55ab567a2a8f193135806a"
+  },
+  "ciphertext": {
+   "icon": "file-digit",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/file-digit.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "boolean",
+    "binary",
+    "exe",
+    "file",
+    "digit",
+    "document"
+   ],
+   "sha256": "62a90abf7dc9991f4354985b3ee1d9fc8fed249b6c78526464de259bf36146f5"
+  },
+  "bitstream": {
+   "icon": "binary",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/binary.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "binary",
+    "code",
+    "digital",
+    "computer",
+    "programming",
+    "data"
+   ],
+   "sha256": "ef10e9bd0066dd004eed8cf98cc516cbd27fa50d5f207e3ee3ff97aeef7496bf"
+  },
+  "packet": {
+   "icon": "package",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/package.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "npm",
+    "box",
+    "container",
+    "package",
+    "store",
+    "purchase"
+   ],
+   "sha256": "18a5ce8817a92e23284874ad209d7f1313e185cc914aaa0f298d626c046f488a"
+  },
+  "sd_card": {
+   "icon": "device-sd-card",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/device-sd-card.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "memory",
+    "storage",
+    "technology",
+    "data",
+    "device",
+    "card"
+   ],
+   "sha256": "599c634a56a6cb69ea6ab7f536a552b665dc28c4d1bd44245729798a0014d591"
+  },
+  "recording": {
+   "icon": "player-record",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/player-record.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "music",
+    "song",
+    "playlist",
+    "melody",
+    "device",
+    "voice"
+   ],
+   "sha256": "80ed25df2c17f4c0d8ef675cb95c78e55087cccc2c8f7352092d0def4c2f03d1"
+  },
+  "movie": {
+   "icon": "movie",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/movie.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "film",
+    "video",
+    "cinema",
+    "movie",
+    "content",
+    "entertainment"
+   ],
+   "sha256": "b74d3b980c28d5dea53ee6f7c1c6db21a053439858cbfc5a93447f2ee663b236"
+  },
+  "detector": {
+   "icon": "object-scan",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/object-scan.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "barcode",
+    "reader",
+    "scanner",
+    "inventory",
+    "retail",
+    "identification"
+   ],
+   "sha256": "08fe98151f7e053e1a1dda17fd870149bab293fbfc59f9730879fec62dac83d9"
+  },
+  "finder": {
+   "icon": "search",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/search.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "find",
+    "magnifier",
+    "magnifying glass",
+    "search",
+    "look",
+    "seek"
+   ],
+   "sha256": "4541b47171867b9643a29326da52088c0e18c3e1791162c6cad5b87b97290011"
+  },
+  "teach": {
+   "icon": "school",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/school.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "students",
+    "class",
+    "teachers",
+    "professors",
+    "doctors",
+    "hall"
+   ],
+   "sha256": "f02ca316ae982214178a56eca82ded7dc169d1b333bb98cd49a607ba72465851"
+  },
+  "model": {
+   "icon": "brain",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/brain.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "mind",
+    "human",
+    "iq",
+    "inteligence",
+    "organ",
+    "brain"
+   ],
+   "sha256": "cbac828894dcefd82ec4596d4d296623f9c53f6ccd5affc0772d770e1d8ce50d"
+  },
+  "operator": {
+   "icon": "user",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/user.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "person",
+    "account",
+    "user",
+    "control",
+    "operation",
+    "profile"
+   ],
+   "sha256": "7902b2df6c98de74e92550d7c74c8571f0b1881b883c27b96253c416384f3451"
+  },
+  "eye": {
+   "icon": "eye",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/eye.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "view",
+    "watch",
+    "eye",
+    "control",
+    "operation",
+    "function"
+   ],
+   "sha256": "f8180c0d3fae5dcf6084f9f11030bb2884c69f2929e16e4f12704998038cd3c4"
+  },
+  "command": {
+   "icon": "hand-click",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/hand-click.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "gesture",
+    "touch",
+    "press",
+    "phone",
+    "finger",
+    "index"
+   ],
+   "sha256": "d9469fd2ee0a2b2e5abbb467a598e38ac274f561376ee8d1d2a0823f88e6ed68"
+  },
+  "adversary": {
+   "icon": "spy",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/spy.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "security",
+    "incognito",
+    "privacy",
+    "browser",
+    "web",
+    "spy"
+   ],
+   "sha256": "eae6e3f5ddc01dadedea012aa8298a008af91f225dbab52c4ce58ab3044f3131"
+  },
+  "warning": {
+   "icon": "alert-triangle",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/alert-triangle.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "warning",
+    "danger",
+    "caution",
+    "risk",
+    "alert",
+    "triangle"
+   ],
+   "sha256": "435e55aa0b30ea0efcf3b186ffbec9e4102f10de9a949d15b4c2a3b4ad7c3944"
+  },
+  "clock": {
+   "icon": "clock",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/clock.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "time",
+    "watch",
+    "alarm",
+    "clock",
+    "control",
+    "operation"
+   ],
+   "sha256": "7fbfc6579bf1371dae61d63eb700de5acd920fdcb1231b162b125edde3bcefff"
+  },
+  "chart": {
+   "icon": "chart-line",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/chart-line.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "statistics",
+    "diagram",
+    "graph",
+    "rhythm",
+    "data",
+    "analysis"
+   ],
+   "sha256": "0aa166fc378501b4e3ab0d3fc666a76b797746daef21c5e1ed922aa053abcdc6"
+  },
+  "calibrate": {
+   "icon": "adjustments-horizontal",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/adjustments-horizontal.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "equalizer",
+    "sliders",
+    "controls",
+    "settings",
+    "filter",
+    "adjustments"
+   ],
+   "sha256": "d11dea381d105dbf37bb37ca192d550eec78da1a3c0226acb4c7aa685948f3ee"
+  },
+  "swarm": {
+   "icon": "topology-star-3",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/topology-star-3.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "hierarchy",
+    "network",
+    "structure",
+    "connection",
+    "topology",
+    "star"
+   ],
+   "sha256": "d953c19db42cebd19934d22aa8b3b92eadd0707ed34e5e3e10029aed6e1e13eb"
+  },
+  "simulation": {
+   "icon": "cpu-2",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/cpu-2.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "processor",
+    "computer",
+    "chip",
+    "hardware",
+    "technology",
+    "electronic"
+   ],
+   "sha256": "97f193208d4a3b64032650d80a711e513353c96161850e6d4940b8c9da969544"
+  },
+  "display": {
+   "icon": "device-desktop",
+   "source": "https://cdn.jsdelivr.net/npm/@tabler/icons@3.48.0/icons/outline/device-desktop.svg",
+   "selected_by": "preferred",
+   "tags": [
+    "monitor",
+    "computer",
+    "imac",
+    "device",
+    "desktop",
+    "hardware"
+   ],
+   "sha256": "01673294fbc4157f1a9eb3b875bfefa4cc9b84cdc2e401c23fe6cdc30050ea77"
+  }
+ }
+}

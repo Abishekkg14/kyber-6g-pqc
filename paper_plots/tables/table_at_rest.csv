@@ -1,0 +1,43 @@
+machine,operation,n,median_ms,megabytes_per_s,note
+Raspberry Pi 4B (UAV),recording segment seal 4 MiB (AES-256-GCM),30,72.012,58.2,
+Raspberry Pi 4B (UAV),recording segment open 4 MiB (AES-256-GCM),30,71.881,58.4,
+Raspberry Pi 4B (UAV),SHA-256 of 4 MiB (the digest the UAV signs),30,24.439,171.6,
+Raspberry Pi 4B (UAV),"recording segment seal 375 kB, one second of 3 Mbit/s video (AES-256-GCM)",100,6.393,58.7,
+Raspberry Pi 4B (UAV),"recording segment open 375 kB, one second of 3 Mbit/s video (AES-256-GCM)",100,6.38,58.8,
+Raspberry Pi 4B (UAV),"photo seal 50 kB, format 1 (ML-KEM-1024, AES-256-GCM)",100,1.556,32.1,
+Raspberry Pi 4B (UAV),"photo open 50 kB, format 1 (ML-KEM-1024, AES-256-GCM)",100,1.517,33.0,
+Raspberry Pi 4B (UAV),"photo seal 50 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",100,3.381,14.8,file: 56761 B for 50000 B of JPEG (format 1: 51945 B)
+Raspberry Pi 4B (UAV),"photo open 50 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",100,2.946,17.0,
+Raspberry Pi 4B (UAV),"photo seal 200 kB, format 1 (ML-KEM-1024, AES-256-GCM)",100,5.251,38.1,
+Raspberry Pi 4B (UAV),"photo open 200 kB, format 1 (ML-KEM-1024, AES-256-GCM)",100,5.22,38.3,
+Raspberry Pi 4B (UAV),"photo seal 200 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",100,8.078,24.8,file: 206761 B for 200000 B of JPEG (format 1: 201947 B)
+Raspberry Pi 4B (UAV),"photo open 200 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",100,7.625,26.2,
+Raspberry Pi 4B (UAV),"photo seal 1 MB, format 1 (ML-KEM-1024, AES-256-GCM)",25,24.593,40.7,
+Raspberry Pi 4B (UAV),"photo open 1 MB, format 1 (ML-KEM-1024, AES-256-GCM)",25,24.194,41.3,
+Raspberry Pi 4B (UAV),"photo seal 1 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",25,32.219,31.0,file: 1006763 B for 1000000 B of JPEG (format 1: 1001947 B)
+Raspberry Pi 4B (UAV),"photo open 1 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",25,31.73,31.5,
+Raspberry Pi 4B (UAV),"photo seal 3 MB, format 1 (ML-KEM-1024, AES-256-GCM)",25,71.244,42.1,
+Raspberry Pi 4B (UAV),"photo open 3 MB, format 1 (ML-KEM-1024, AES-256-GCM)",25,71.431,42.0,
+Raspberry Pi 4B (UAV),"photo seal 3 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",25,92.072,32.6,file: 3006763 B for 3000000 B of JPEG (format 1: 3001948 B)
+Raspberry Pi 4B (UAV),"photo open 3 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",25,91.292,32.9,
+Laptop (ground station),recording segment seal 4 MiB (AES-256-GCM),30,1.01,4154.7,
+Laptop (ground station),recording segment open 4 MiB (AES-256-GCM),30,1.037,4044.2,
+Laptop (ground station),SHA-256 of 4 MiB (the digest the UAV signs),30,2.002,2094.6,
+Laptop (ground station),"recording segment seal 375 kB, one second of 3 Mbit/s video (AES-256-GCM)",100,0.078,4781.1,
+Laptop (ground station),"recording segment open 375 kB, one second of 3 Mbit/s video (AES-256-GCM)",100,0.08,4660.0,
+Laptop (ground station),"photo seal 50 kB, format 1 (ML-KEM-1024, AES-256-GCM)",100,0.141,354.0,
+Laptop (ground station),"photo open 50 kB, format 1 (ML-KEM-1024, AES-256-GCM)",100,0.114,438.9,
+Laptop (ground station),"photo seal 50 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",100,0.359,139.4,file: 56761 B for 50000 B of JPEG (format 1: 51946 B)
+Laptop (ground station),"photo open 50 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",100,0.312,160.0,
+Laptop (ground station),"photo seal 200 kB, format 1 (ML-KEM-1024, AES-256-GCM)",100,0.228,875.3,
+Laptop (ground station),"photo open 200 kB, format 1 (ML-KEM-1024, AES-256-GCM)",100,0.223,898.5,
+Laptop (ground station),"photo seal 200 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",100,0.564,354.5,file: 206762 B for 200000 B of JPEG (format 1: 201947 B)
+Laptop (ground station),"photo open 200 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",100,0.5,400.3,
+Laptop (ground station),"photo seal 1 MB, format 1 (ML-KEM-1024, AES-256-GCM)",25,0.834,1198.7,
+Laptop (ground station),"photo open 1 MB, format 1 (ML-KEM-1024, AES-256-GCM)",25,0.857,1167.4,
+Laptop (ground station),"photo seal 1 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",25,1.756,569.5,file: 1006763 B for 1000000 B of JPEG (format 1: 1001948 B)
+Laptop (ground station),"photo open 1 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",25,1.85,540.5,
+Laptop (ground station),"photo seal 3 MB, format 1 (ML-KEM-1024, AES-256-GCM)",25,2.411,1244.1,
+Laptop (ground station),"photo open 3 MB, format 1 (ML-KEM-1024, AES-256-GCM)",25,2.425,1237.0,
+Laptop (ground station),"photo seal 3 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",25,4.413,679.8,file: 3006763 B for 3000000 B of JPEG (format 1: 3001948 B)
+Laptop (ground station),"photo open 3 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",25,4.906,611.5,

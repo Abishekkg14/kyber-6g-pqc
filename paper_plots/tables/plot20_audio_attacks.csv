@@ -1,0 +1,105 @@
+group,experiment,machine,expected,attempts,accepted,crashes,verdict,reasons_given_or_result
+stored clip,one bit changed anywhere in the file,Raspberry Pi 4B (UAV),refused,600,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 529; signature invalid: not written by the pinned UAV key, or changed afterwards: 69; malformed header: JSONDecodeError: 2"
+stored clip,one bit changed in: magic and header length,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,not a K6GAUD clip: 29; malformed header: UnicodeDecodeError: 7; malformed header: JSONDecodeError: 4
+stored clip,one bit changed in: public header,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 22; malformed header: JSONDecodeError: 13; unsupported or malformed header: 2; malformed header: UnicodeDecodeError: 1"
+stored clip,one bit changed in: ML-KEM-1024 ciphertext,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,one bit changed in: X25519 share,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,one bit changed in: wrapped clip key,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,one bit changed in: key commitment of a block,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 40"
+stored clip,one bit changed in: ciphertext of a block,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 40"
+stored clip,one bit changed in: tag of a block,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 40"
+stored clip,one bit changed in: root record: magic,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,no root record (clip cut short or not closed): 40
+stored clip,one bit changed in: root record: closed-by-sealer flag,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,one bit changed in: root record: number of blocks,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,number of blocks does not match the root record: 40
+stored clip,one bit changed in: root record: Merkle root,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 40"
+stored clip,one bit changed in: signature trailer: magic and length,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,signature missing or cut short: 40
+stored clip,one bit changed in: ML-DSA-87 signature,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,two blocks exchanged,Raspberry Pi 4B (UAV),refused,120,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 120"
+stored clip,a block repeated in place of another,Raspberry Pi 4B (UAV),refused,120,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 120"
+stored clip,a block removed,Raspberry Pi 4B (UAV),refused,120,0,0,PASS,"number of blocks does not match the root record: 60; blocks do not match the signed root (a block was changed, moved, added or removed): 60"
+stored clip,a block added,Raspberry Pi 4B (UAV),refused,120,0,0,PASS,"number of blocks does not match the root record: 60; blocks do not match the signed root (a block was changed, moved, added or removed): 60"
+stored clip,the clip cut short,Raspberry Pi 4B (UAV),refused,450,0,0,PASS,"number of blocks does not match the root record: 150; blocks do not match the signed root (a block was changed, moved, added or removed): 150; no root record (clip cut short or not closed): 134; truncated clip: 16"
+stored clip,a block borrowed from another clip,Raspberry Pi 4B (UAV),refused,120,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 120"
+stored clip,root record and signature of another clip,Raspberry Pi 4B (UAV),refused,4,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 4"
+stored clip,signed again by another key,Raspberry Pi 4B (UAV),refused,36,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 36"
+stored clip,a clip made by the attacker,Raspberry Pi 4B (UAV),refused,16,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 8; the UAV's public key is needed: a clip is not opened unverified: 8"
+stored clip,control: the pin decides,Raspberry Pi 4B (UAV),accepted,8,8,0,PASS,ACCEPTED: 8
+stored clip,opened with other recipient keys,Raspberry Pi 4B (UAV),refused,18,0,0,PASS,"content key unwrap failed (wrong ground-station key, or header changed): 18"
+stored clip,header rewritten (downgrade),Raspberry Pi 4B (UAV),refused,16,0,0,PASS,"unsupported or malformed header: 7; signature invalid: not written by the pinned UAV key, or changed afterwards: 6; number of blocks does not match the root record: 2; blocks do not match the signed root (a block was changed, moved, added or removed): 1"
+stored clip,a cut-off clip passed as complete,Raspberry Pi 4B (UAV),refused,1,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 1"
+stored clip,"control: a cut-off clip opens, and says so",Raspberry Pi 4B (UAV),accepted,1,1,0,PASS,ACCEPTED: 1
+stored clip,control: genuine clips open byte for byte,Raspberry Pi 4B (UAV),accepted,30,30,0,PASS,ACCEPTED: 30
+excerpt,control: genuine excerpts verify with the public key alone,Raspberry Pi 4B (UAV),accepted,60,60,0,PASS,ACCEPTED: 60
+excerpt,one bit changed anywhere in the bundle,Raspberry Pi 4B (UAV),refused,500,0,0,PASS,"these are not blocks of the clip the UAV signed: 425; signature invalid: not written by the pinned UAV key, or changed afterwards: 69; malformed header: JSONDecodeError: 2; malformed header: UnicodeDecodeError: 1"
+excerpt,the excerpt said to be other blocks,Raspberry Pi 4B (UAV),refused,17,0,0,PASS,"malformed excerpt: 10; proof of the wrong shape: 4; signature invalid: not written by the pinned UAV key, or changed afterwards: 3"
+excerpt,a block exchanged inside an excerpt,Raspberry Pi 4B (UAV),refused,240,0,0,PASS,these are not blocks of the clip the UAV signed: 240
+excerpt,another key passed off for a block,Raspberry Pi 4B (UAV),refused,240,0,0,PASS,block N: this key is not the one the block was sealed under: 240
+excerpt,the proof of one clip with the blocks of another,Raspberry Pi 4B (UAV),refused,17,0,0,PASS,these are not blocks of the clip the UAV signed: 17
+excerpt,an excerpt cut short or extended,Raspberry Pi 4B (UAV),refused,241,0,0,PASS,malformed excerpt: 133; truncated excerpt: 101; malformed excerpt: error: 7
+excerpt,an excerpt of a recording the UAV never made,Raspberry Pi 4B (UAV),refused,8,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 8"
+excerpt,the released keys tried on every other block,Raspberry Pi 4B (UAV),refused,2562,0,0,PASS,authentication failed: 2135; this key does not reach that block: 427
+live clip,blocks changed on the air: random bytes,Raspberry Pi 4B (UAV),refused,34,0,0,PASS,not played; fetched again from the card and checked against the signed root: 34
+live clip,blocks changed on the air: one bit changed,Raspberry Pi 4B (UAV),refused,34,0,0,PASS,not played; fetched again from the card and checked against the signed root: 34
+live clip,blocks changed on the air: block of another clip,Raspberry Pi 4B (UAV),refused,40,0,0,PASS,not played; fetched again from the card and checked against the signed root: 40
+live clip,blocks changed on the air: sent under another number,Raspberry Pi 4B (UAV),refused,35,0,0,PASS,not played; fetched again from the card and checked against the signed root: 35
+live clip,the repair itself is wrong,Raspberry Pi 4B (UAV),refused,8,0,0,PASS,clip refused: blocks do not match the signed root: 8
+live clip,the signature of another clip after the live blocks,Raspberry Pi 4B (UAV),refused,6,0,0,PASS,clip refused: 6
+live clip,control: blocks lost on the air are fetched again,Raspberry Pi 4B (UAV),accepted,8,8,0,PASS,ACCEPTED: 8
+chain of clips,a clip deleted from the card,Raspberry Pi 4B (UAV),refused,10,0,0,PASS,reported: clip N not fetched: cannot be checked: 10
+chain of clips,a clip replaced by another with its number,Raspberry Pi 4B (UAV),refused,10,0,0,PASS,CONFLICT: another clip no. N was received before: 10
+chain of clips,a clip from another chain put in between,Raspberry Pi 4B (UAV),refused,10,0,0,PASS,BROKEN: clip N here is not the one this clip follows: 10
+keys,a key used twice,Raspberry Pi 4B (UAV),refused,6,0,0,PASS,tree leaves: all different: 1; block keys: all different: 1; commitments: all different: 1; tags: all different: 1
+shape,three different recordings told apart by their sizes,Raspberry Pi 4B (UAV),refused,4,0,0,PASS,sealed_bytes_with_cap: the same for all three: 1; block_bytes_with_cap: the same for all three: 1; blocks_with_cap: the same for all three: 1; every block of every clip has one size: 1
+shape,control: without the cap the block size follows the largest frame,Raspberry Pi 4B (UAV),accepted,1,1,0,PASS,ACCEPTED: 1
+stored clip,one bit changed anywhere in the file,Laptop (ground station),refused,600,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 529; signature invalid: not written by the pinned UAV key, or changed afterwards: 69; malformed header: JSONDecodeError: 2"
+stored clip,one bit changed in: magic and header length,Laptop (ground station),refused,40,0,0,PASS,not a K6GAUD clip: 29; malformed header: UnicodeDecodeError: 7; malformed header: JSONDecodeError: 4
+stored clip,one bit changed in: public header,Laptop (ground station),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 21; malformed header: JSONDecodeError: 14; unsupported or malformed header: 2; blocks do not match the signed root (a block was changed, moved, added or removed): 2"
+stored clip,one bit changed in: ML-KEM-1024 ciphertext,Laptop (ground station),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,one bit changed in: X25519 share,Laptop (ground station),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,one bit changed in: wrapped clip key,Laptop (ground station),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,one bit changed in: key commitment of a block,Laptop (ground station),refused,40,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 40"
+stored clip,one bit changed in: ciphertext of a block,Laptop (ground station),refused,40,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 40"
+stored clip,one bit changed in: tag of a block,Laptop (ground station),refused,40,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 40"
+stored clip,one bit changed in: root record: magic,Laptop (ground station),refused,40,0,0,PASS,no root record (clip cut short or not closed): 40
+stored clip,one bit changed in: root record: closed-by-sealer flag,Laptop (ground station),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,one bit changed in: root record: number of blocks,Laptop (ground station),refused,40,0,0,PASS,number of blocks does not match the root record: 40
+stored clip,one bit changed in: root record: Merkle root,Laptop (ground station),refused,40,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 40"
+stored clip,one bit changed in: signature trailer: magic and length,Laptop (ground station),refused,40,0,0,PASS,signature missing or cut short: 40
+stored clip,one bit changed in: ML-DSA-87 signature,Laptop (ground station),refused,40,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 40"
+stored clip,two blocks exchanged,Laptop (ground station),refused,120,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 120"
+stored clip,a block repeated in place of another,Laptop (ground station),refused,120,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 120"
+stored clip,a block removed,Laptop (ground station),refused,120,0,0,PASS,"number of blocks does not match the root record: 60; blocks do not match the signed root (a block was changed, moved, added or removed): 60"
+stored clip,a block added,Laptop (ground station),refused,120,0,0,PASS,"number of blocks does not match the root record: 60; blocks do not match the signed root (a block was changed, moved, added or removed): 60"
+stored clip,the clip cut short,Laptop (ground station),refused,450,0,0,PASS,"number of blocks does not match the root record: 150; blocks do not match the signed root (a block was changed, moved, added or removed): 150; no root record (clip cut short or not closed): 134; truncated clip: 16"
+stored clip,a block borrowed from another clip,Laptop (ground station),refused,120,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 120"
+stored clip,root record and signature of another clip,Laptop (ground station),refused,4,0,0,PASS,"blocks do not match the signed root (a block was changed, moved, added or removed): 4"
+stored clip,signed again by another key,Laptop (ground station),refused,36,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 36"
+stored clip,a clip made by the attacker,Laptop (ground station),refused,16,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 8; the UAV's public key is needed: a clip is not opened unverified: 8"
+stored clip,control: the pin decides,Laptop (ground station),accepted,8,8,0,PASS,ACCEPTED: 8
+stored clip,opened with other recipient keys,Laptop (ground station),refused,18,0,0,PASS,"content key unwrap failed (wrong ground-station key, or header changed): 18"
+stored clip,header rewritten (downgrade),Laptop (ground station),refused,16,0,0,PASS,"unsupported or malformed header: 7; signature invalid: not written by the pinned UAV key, or changed afterwards: 6; number of blocks does not match the root record: 2; blocks do not match the signed root (a block was changed, moved, added or removed): 1"
+stored clip,a cut-off clip passed as complete,Laptop (ground station),refused,1,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 1"
+stored clip,"control: a cut-off clip opens, and says so",Laptop (ground station),accepted,1,1,0,PASS,ACCEPTED: 1
+stored clip,control: genuine clips open byte for byte,Laptop (ground station),accepted,30,30,0,PASS,ACCEPTED: 30
+excerpt,control: genuine excerpts verify with the public key alone,Laptop (ground station),accepted,60,60,0,PASS,ACCEPTED: 60
+excerpt,one bit changed anywhere in the bundle,Laptop (ground station),refused,500,0,0,PASS,"these are not blocks of the clip the UAV signed: 425; signature invalid: not written by the pinned UAV key, or changed afterwards: 69; malformed header: JSONDecodeError: 2; malformed header: UnicodeDecodeError: 1"
+excerpt,the excerpt said to be other blocks,Laptop (ground station),refused,17,0,0,PASS,"malformed excerpt: 10; proof of the wrong shape: 4; signature invalid: not written by the pinned UAV key, or changed afterwards: 3"
+excerpt,a block exchanged inside an excerpt,Laptop (ground station),refused,240,0,0,PASS,these are not blocks of the clip the UAV signed: 240
+excerpt,another key passed off for a block,Laptop (ground station),refused,240,0,0,PASS,block N: this key is not the one the block was sealed under: 240
+excerpt,the proof of one clip with the blocks of another,Laptop (ground station),refused,17,0,0,PASS,these are not blocks of the clip the UAV signed: 17
+excerpt,an excerpt cut short or extended,Laptop (ground station),refused,241,0,0,PASS,malformed excerpt: 133; truncated excerpt: 101; malformed excerpt: error: 7
+excerpt,an excerpt of a recording the UAV never made,Laptop (ground station),refused,8,0,0,PASS,"signature invalid: not written by the pinned UAV key, or changed afterwards: 8"
+excerpt,the released keys tried on every other block,Laptop (ground station),refused,2562,0,0,PASS,authentication failed: 2135; this key does not reach that block: 427
+live clip,blocks changed on the air: random bytes,Laptop (ground station),refused,34,0,0,PASS,not played; fetched again from the card and checked against the signed root: 34
+live clip,blocks changed on the air: one bit changed,Laptop (ground station),refused,34,0,0,PASS,not played; fetched again from the card and checked against the signed root: 34
+live clip,blocks changed on the air: block of another clip,Laptop (ground station),refused,40,0,0,PASS,not played; fetched again from the card and checked against the signed root: 40
+live clip,blocks changed on the air: sent under another number,Laptop (ground station),refused,35,0,0,PASS,not played; fetched again from the card and checked against the signed root: 35
+live clip,the repair itself is wrong,Laptop (ground station),refused,8,0,0,PASS,clip refused: blocks do not match the signed root: 8
+live clip,the signature of another clip after the live blocks,Laptop (ground station),refused,6,0,0,PASS,clip refused: 6
+live clip,control: blocks lost on the air are fetched again,Laptop (ground station),accepted,8,8,0,PASS,ACCEPTED: 8
+chain of clips,a clip deleted from the card,Laptop (ground station),refused,10,0,0,PASS,reported: clip N not fetched: cannot be checked: 10
+chain of clips,a clip replaced by another with its number,Laptop (ground station),refused,10,0,0,PASS,CONFLICT: another clip no. N was received before: 10
+chain of clips,a clip from another chain put in between,Laptop (ground station),refused,10,0,0,PASS,BROKEN: clip N here is not the one this clip follows: 10
+keys,a key used twice,Laptop (ground station),refused,6,0,0,PASS,tree leaves: all different: 1; block keys: all different: 1; commitments: all different: 1; tags: all different: 1
+shape,three different recordings told apart by their sizes,Laptop (ground station),refused,4,0,0,PASS,sealed_bytes_with_cap: the same for all three: 1; block_bytes_with_cap: the same for all three: 1; blocks_with_cap: the same for all three: 1; every block of every clip has one size: 1
+shape,control: without the cap the block size follows the largest frame,Laptop (ground station),accepted,1,1,0,PASS,ACCEPTED: 1

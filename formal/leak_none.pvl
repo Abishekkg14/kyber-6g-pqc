@@ -1,0 +1,3 @@
+(* nothing leaks *)
+let LeakBefore(k: key) = 0.
+let LeakNext(k: key) = 0.

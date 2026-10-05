@@ -1,0 +1,18 @@
+quantity,value
+frames of the variable-bit-rate encoding,1436
+different frame sizes,7
+smallest frame (bytes),104
+largest frame (bytes),522
+entropy of the frame size (bits per frame),1.4617
+frame size changes,756
+correlation of frame size with loudness,0.2441
+sealed block (bytes),4252
+sealed blocks,192
+different block sizes,1
+variable-rate source (bytes),279120
+sealed (bytes),823065
+added (%),194.9
+per-frame encryption would take (bytes),302128
+with the frame cap of 320 kbit/s: block (bytes),8436
+with that cap: added (%),482.7
+the sample as it is (constant 256 kbit/s): added (%),8.75

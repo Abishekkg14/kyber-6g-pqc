@@ -1,0 +1,2 @@
+(* nothing is stolen *)
+let FileLeak(sk: sskey, dk: kemsk, x: scalar) = 0.

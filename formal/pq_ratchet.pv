@@ -1,0 +1,63 @@
+(* Kyber-6G PQ ratchet (kyber6g/crypto/handshake.py: PQRatchetInitiator, pq_ratchet_respond, _pq_mix; carried as
+   two control messages in the records of the current session, kyber6g/transport/link.py).
+
+     UAV -> GCS   {ratchet_req,  rid, X25519 share, ML-KEM public key}              AES-256-GCM, control stream
+     GCS -> UAV   {ratchet_resp, rid, X25519 share, ML-KEM ciphertext, new sid}     AES-256-GCM, control stream
+
+     TH   = H(label, old session id, rid, both shares, public key, ciphertext, new session id)
+     PRK  = HKDF-Extract(salt = TH, ML-KEM secret || X25519 secret || old master secret)
+
+   No signatures: the messages are authentic because only the two ends have the keys of the control stream, and the
+   new secret depends on the old one. The attacker has the whole network.
+
+   Run with one "what leaks" library:
+     leak_none.pvl     nothing
+     leak_next.pvl     phase 1 (when everything has run): the OLD master secret  ->  the new epoch must stay secret
+                       (forward secrecy of the old session's later state, and "record now, break the old key later")
+   What a ratchet does for a session whose old master secret leaked BEFORE it is in two files of their own:
+     pq_ratchet_passive.pv   the attacker only listens: the session heals
+     pq_ratchet_active.pv    the attacker is active at that moment: it does not (he can play either end) *)
+
+const sid0: bitstring.
+free secretU2: bitstring [private].
+free secretG2: bitstring [private].
+
+event UavRatcheted(bitstring, bitstring, key).      (* old session id, new session id, new master secret *)
+event GcsRatcheted(bitstring, bitstring, key).
+
+(* 1  what is sent under the new keys stays secret *)
+query attacker(secretU2).
+query attacker(secretG2).
+(* 2  the UAV arrives at new keys only if the ground station arrived at the same ones *)
+query s: bitstring, k: key; event(UavRatcheted(sid0, s, k)) ==> event(GcsRatcheted(sid0, s, k)).
+(* 3  not empty: must be FALSE *)
+query s: bitstring, k: key; event(UavRatcheted(sid0, s, k)).
+
+let UAV(m0: key) =
+  new x: scalar; new dk: kemsk; new rid: bitstring; new n1: bitstring;
+  let ku = hkdf_expand(m0, (L_CONTROL, DIR_U2G, suite, sid0)) in
+  let kg = hkdf_expand(m0, (L_CONTROL, DIR_G2U, suite, sid0)) in
+  out(c, (n1, aead(ku, n1, (RATCHET_REQ, rid, exp(g, x), kempub(dk)), sid0)));
+  in(c, (n2: bitstring, e: bitstring));
+  let (=RATCHET_RESP, =rid, Xs: point, ct: bitstring, sid1: bitstring) = aead_open(kg, n2, e, sid0) in
+  let th = h((LBL_PQR, sid0, rid, exp(g, x), kempub(dk), Xs, ct, sid1)) in
+  let m1 = hkdf_expand(hkdf_extract(th, (decap(ct, dk), exp(Xs, x), m0)), (L_MASTER, suite, sid1)) in
+  event UavRatcheted(sid0, sid1, m1);
+  out(c, aead(hkdf_expand(m1, (L_TRAFFIC, DIR_U2G, suite, sid1)), n0, secretU2, empty)).
+
+let GCS(m0: key) =
+  let ku = hkdf_expand(m0, (L_CONTROL, DIR_U2G, suite, sid0)) in
+  let kg = hkdf_expand(m0, (L_CONTROL, DIR_G2U, suite, sid0)) in
+  in(c, (n1: bitstring, e: bitstring));
+  let (=RATCHET_REQ, rid: bitstring, Xc: point, ek: kempk) = aead_open(ku, n1, e, sid0) in
+  new xs: scalar; new r: kemseed; new sid1: bitstring; new n2: bitstring;
+  let ct = kemct(ek, r) in
+  let th = h((LBL_PQR, sid0, rid, Xc, ek, exp(g, xs), ct, sid1)) in
+  let m1 = hkdf_expand(hkdf_extract(th, (kemss(ek, r), exp(Xc, xs), m0)), (L_MASTER, suite, sid1)) in
+  event GcsRatcheted(sid0, sid1, m1);
+  out(c, (n2, aead(kg, n2, (RATCHET_RESP, rid, exp(g, xs), ct, sid1), sid0)));
+  out(c, aead(hkdf_expand(m1, (L_TRAFFIC, DIR_G2U, suite, sid1)), n0, secretG2, empty)).
+
+process
+  new m0: key;
+  ( !UAV(m0) | !GCS(m0) | LeakBefore(m0) | LeakNext(m0) )

@@ -1,0 +1,154 @@
+{
+ "what": "known-answer tests of the cryptography in use",
+ "when": "2026-10-05 14:04:21 IST",
+ "machine": {
+  "node": "raspberrypi",
+  "arch": "aarch64",
+  "system": "Linux-6.18.34+rpt-rpi-v8-aarch64-with-glibc2.41",
+  "python": "3.13.5"
+ },
+ "liboqs": "0.16.0",
+ "liboqs_python": "0.16.0",
+ "algorithms": {
+  "ML-KEM-1024": {
+   "name": "ML-KEM-1024",
+   "version": "FIPS203",
+   "claimed_nist_level": 5,
+   "is_ind_cca": true,
+   "length_public_key": 1568,
+   "length_secret_key": 3168,
+   "length_ciphertext": 1568,
+   "length_shared_secret": 32,
+   "length_keypair_seed": 64
+  },
+  "ML-DSA-87": {
+   "name": "ML-DSA-87",
+   "version": "FIPS204",
+   "claimed_nist_level": 5,
+   "is_euf_cma": true,
+   "is_suf_cma": false,
+   "supports_context_signing": true,
+   "sig_with_ctx_support": true,
+   "length_public_key": 2592,
+   "length_secret_key": 4896,
+   "length_signature": 4627
+  }
+ },
+ "cryptography": "50.0.1",
+ "openssl": "OpenSSL 4.0.2 25 Aug 2026",
+ "vectors_source": "NIST ACVP-Server (github.com/usnistgov/ACVP-Server), gen-val/json-files/<algorithm>/internalProjection.json for ML-KEM-keyGen-FIPS203, ML-KEM-encapDecap-FIPS203, ML-DSA-keyGen-FIPS204, ML-DSA-sigGen-FIPS204, ML-DSA-sigVer-FIPS204; revision 975de31eb83d of 2026-08-12; fetched 2026-10-05. A work of the US Government (public domain).",
+ "vectors_selection": "parameter sets ML-KEM-1024 and ML-DSA-87 only; of ML-DSA the external interface, pure (no pre-hash), which is the one this system uses; every test case of those groups. Large expected outputs are kept as SHA-256; inputs are whole.",
+ "vectors_sha256": "3759781b37309a896425546195ffc773f61c392b47b3c3b753caa051907e488d",
+ "random_bytes_drawn_by_liboqs": {
+  "keyGen": [
+   32
+  ],
+  "sigGen": [
+   32
+  ]
+ },
+ "groups": [
+  {
+   "name": "ML-KEM-1024 keyGen",
+   "what": "seed (d, z) -> encapsulation and decapsulation key",
+   "vectors": 25,
+   "passed": 25,
+   "failed": []
+  },
+  {
+   "name": "ML-KEM-1024 encapsulation",
+   "what": "key, coins m -> ciphertext, shared secret",
+   "vectors": 25,
+   "passed": 25,
+   "failed": []
+  },
+  {
+   "name": "ML-KEM-1024 decapsulation",
+   "what": "valid and modified ciphertexts -> shared secret (implicit rejection)",
+   "vectors": 10,
+   "passed": 10,
+   "failed": []
+  },
+  {
+   "name": "ML-KEM-1024 encapsulation key check",
+   "what": "FIPS 203 7.2: a key with a coefficient out of range must be refused",
+   "vectors": 10,
+   "passed": 10,
+   "failed": []
+  },
+  {
+   "name": "ML-KEM-1024 decapsulation key check",
+   "what": "FIPS 203 7.3: a key whose stored hash does not fit must be refused",
+   "vectors": 10,
+   "passed": 10,
+   "failed": []
+  },
+  {
+   "name": "ML-DSA-87 keyGen",
+   "what": "seed -> public and secret key",
+   "vectors": 25,
+   "passed": 25,
+   "failed": []
+  },
+  {
+   "name": "ML-DSA-87 sigGen",
+   "what": "secret key, message, context, rnd -> signature (15 deterministic, 15 hedged)",
+   "vectors": 30,
+   "passed": 30,
+   "failed": []
+  },
+  {
+   "name": "ML-DSA-87 sigVer",
+   "what": "valid signatures, and message / commitment / z / hint modified -> accept or refuse",
+   "vectors": 15,
+   "passed": 15,
+   "failed": []
+  },
+  {
+   "name": "random generator restored",
+   "what": "after the seeded tests liboqs draws from the system again",
+   "vectors": 2,
+   "passed": 2,
+   "failed": []
+  },
+  {
+   "name": "X25519",
+   "what": "RFC 7748 section 6.1, both directions",
+   "vectors": 2,
+   "passed": 2,
+   "failed": []
+  },
+  {
+   "name": "HKDF-SHA-256 (crypto/keyschedule.py)",
+   "what": "RFC 5869 A.1 and A.3 (no salt, no info)",
+   "vectors": 2,
+   "passed": 2,
+   "failed": []
+  },
+  {
+   "name": "HMAC-SHA-256 (crypto/keyschedule.py)",
+   "what": "RFC 4231 test cases 1 and 2",
+   "vectors": 2,
+   "passed": 2,
+   "failed": []
+  },
+  {
+   "name": "SHA-256 (crypto/keyschedule.py)",
+   "what": "FIPS 180-4 \"abc\", given in two pieces",
+   "vectors": 1,
+   "passed": 1,
+   "failed": []
+  },
+  {
+   "name": "AES-256-GCM",
+   "what": "GCM specification (McGrew, Viega) test cases 13, 14 and 16",
+   "vectors": 3,
+   "passed": 3,
+   "failed": []
+  }
+ ],
+ "vectors": 162,
+ "passed": 162,
+ "all_passed": true,
+ "seconds": 0.11
+}

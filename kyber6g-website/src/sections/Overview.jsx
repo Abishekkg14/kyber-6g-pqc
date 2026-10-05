@@ -1,76 +1,86 @@
-import { ShieldIcon, DroneIcon, ChartIcon, ZapIcon, LockIcon, AntennaIcon } from '../components/Icons'
+import { ShieldIcon, ChartIcon, TargetIcon, FlaskIcon, LayersIcon, RulerIcon } from '../components/Icons'
 import ScrollReveal from '../components/ScrollReveal'
+import { fmt } from '../data'
 
-export default function Overview() {
-    const cards = [
-        {
-            Icon: ShieldIcon,
-            color: '#7c3aed',
-            bg: '#f5f3ff',
-            title: 'Quantum-Resilient Security',
-            desc: 'Hybrid KEM combining X25519-ECDH with CRYSTALS-Kyber protects against both classical and quantum adversaries using the LWE lattice hardness assumption.'
-        },
-        {
-            Icon: DroneIcon,
-            color: '#0891b2',
-            bg: '#ecfeff',
-            title: 'Drone Swarm Simulation',
-            desc: 'NS-3 simulation of military drone swarms with 3D waypoint mobility, commander-follower topology, and 5G NR base station relays in dense urban scenarios.'
-        },
-        {
-            Icon: ChartIcon,
-            color: '#2563eb',
-            bg: '#eff6ff',
-            title: 'Rigorous Evaluation',
-            desc: 'Comparative analysis across 7 experiment configurations measuring handshake latency, RRC overhead, queueing delay, throughput, and security strength.'
-        },
-        {
-            Icon: ZapIcon,
-            color: '#d97706',
-            bg: '#fef3c7',
-            title: 'Adaptive Optimization',
-            desc: 'PSK caching mechanism reduces Kyber handshake latency by 73% during high-mobility scenarios, restoring queueing stability below saturation threshold.'
-        },
-        {
-            Icon: LockIcon,
-            color: '#db2777',
-            bg: '#fce7f3',
-            title: 'Forward Secrecy',
-            desc: 'Periodic forced rekeying ensures compromised session keys expose only a brief window of traffic, securing past and future mission intelligence.'
-        },
-        {
-            Icon: AntennaIcon,
-            color: '#059669',
-            bg: '#f0fdf4',
-            title: '5G/6G NR Stack',
-            desc: 'Full 5G-LENA NR stack with ideal beamforming, point-to-point EPC backhaul, configurable bandwidth parts, and multi-gNB dense urban deployment.'
-        }
-    ]
+export default function Overview({ data }) {
+  const a = data ? data.attacks : null
+  const f = data ? data.formal : null
+  const ka = data ? Object.values(data.known_answers) : []
+  const kinds = [
+    {
+      Icon: ChartIcon, color: '#2563eb', bg: '#eff6ff', title: 'Measured',
+      desc: 'The prototype on real hardware, over Wi-Fi: every handshake, rekey, frame and file was timed on the machines themselves. Every sample is in the repository.',
+    },
+    {
+      Icon: TargetIcon, color: '#dc2626', bg: '#fef2f2', title: 'Attacked',
+      desc: a
+        ? `${fmt(a.link_and_files.attempts + a.audio.attempts)} forged, replayed, re-ordered, spliced and re-signed inputs were offered to the running implementation on both machines. Accepted: ${fmt(a.link_and_files.accepted + a.audio.accepted)}.`
+        : 'Forged, replayed, re-ordered, spliced and re-signed inputs offered to the running implementation on both machines.',
+    },
+    {
+      Icon: RulerIcon, color: '#059669', bg: '#f0fdf4', title: 'Proved and checked',
+      desc: f
+        ? `ProVerif proves ${f.claims_proved} of the ${f.claims} claims made across its ${f.runs} runs (nothing broken, X25519 broken, ML-KEM broken) and finds the attack in every case built to have one. ${ka.length ? `${ka[0].passed} of ${ka[0].vectors}` : 'NIST\'s'} known-answer vectors pass on each machine.`
+        : 'Symbolic proofs of the protocols under four attackers, and NIST\'s known-answer vectors on both machines.',
+    },
+    {
+      Icon: FlaskIcon, color: '#7c3aed', bg: '#f5f3ff', title: 'Simulated',
+      desc: 'What one UAV on a desk cannot show: many UAVs, a 5G NR cell, movement, range and other algorithms, in ns-3 with 5G-LENA, calibrated with the measurements. A model, and labelled as one.',
+    },
+    {
+      Icon: LayersIcon, color: '#0891b2', bg: '#ecfeff', title: 'Five kinds of data',
+      desc: 'Live video, stored recordings, photos, sealed audio and text (telemetry, status, motion reports, commands): each protected in transit, and each stored file sealed so that only the ground station opens it.',
+    },
+    {
+      Icon: ShieldIcon, color: '#d97706', bg: '#fef3c7', title: 'Hybrid, on purpose',
+      desc: 'Keys come from ML-KEM-1024 and X25519 together: an attacker has to break both. A recording made today stays closed if either one holds.',
+    },
+  ]
+  const not = [
+    'No 5G or 6G radio was used at any point. The prototype runs over Wi-Fi/IP; the NR cell exists in the simulation only.',
+    'ML-KEM and ML-DSA establish, wrap and sign. They do not encrypt the video or the audio: AES-256-GCM does.',
+    'The rekey is a 1-RTT Cached RapidRekey, not 0-RTT.',
+    'The Raspberry Pi has no microphone: a file stands in for one. Nothing here was recorded by the UAV in flight.',
+    'One UAV, on a desk. No flight, no energy measurements, no glass-to-glass latency.',
+    'The proofs are symbolic (ideal primitives) plus reductions for the components; there is no computational proof of the whole protocol.',
+  ]
 
-    return (
-        <section id="overview" className="section" aria-label="Project Overview">
-            <div className="section-inner">
-                <span className="section-label">Overview</span>
-                <h2>Why Post-Quantum Security for Drones?</h2>
-                <p className="section-desc">
-                    Quantum computers running Shor's algorithm will break elliptic curve cryptography.
-                    Military drone swarms transmitting sensitive telemetry over untrusted 5G base stations
-                    face a "store now, decrypt later" threat. This project evaluates hybridizing classical
-                    ECDH with CRYSTALS-Kyber to maintain confidentiality against future quantum adversaries,
-                    while quantifying the performance impact on latency-sensitive swarm coordination.
-                </p>
-                <div className="card-grid">
-                    {cards.map((c, i) => (
-                        <article className="card" key={i}>
-                            <div className="card-icon" style={{ background: c.bg, color: c.color }}>
-                                <c.Icon size={22} />
-                            </div>
-                            <h3>{c.title}</h3>
-                            <p>{c.desc}</p>
-                        </article>
-                    ))}
+  return (
+    <section id="overview" className="section" aria-label="Overview">
+      <div className="section-inner">
+        <span className="section-label">Overview</span>
+        <h2>What it is, and how each claim is backed</h2>
+        <p className="section-desc">
+          Traffic recorded today can be decrypted later by whoever builds a quantum computer that breaks elliptic
+          curves. A UAV's video, pictures, sound and position are exactly the kind of data worth keeping for that
+          day. This project builds a link whose keys do not depend on elliptic curves alone, runs it on a
+          Raspberry Pi and a laptop, and keeps four kinds of evidence strictly apart.
+        </p>
+        <div className="card-grid">
+          {kinds.map((c, i) => (
+            <ScrollReveal key={i} delay={(i % 3) + 1}>
+              <article className="card">
+                <div className="card-icon" style={{ background: c.bg, color: c.color }}>
+                  <c.Icon size={22} />
                 </div>
-            </div>
-        </section>
-    )
+                <h3>{c.title}</h3>
+                <p>{c.desc}</p>
+              </article>
+            </ScrollReveal>
+          ))}
+        </div>
+        <ScrollReveal>
+          <h3 className="sub">What this is not</h3>
+          <ul className="finding-list">
+            {not.map((t, i) => (
+              <li key={i}>
+                <span className="indicator caution" aria-hidden="true" />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </ScrollReveal>
+      </div>
+    </section>
+  )
 }

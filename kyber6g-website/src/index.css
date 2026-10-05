@@ -276,7 +276,7 @@ code,
 .hero-sub {
   font-size: 1.1rem;
   color: var(--c-text-secondary);
-  max-width: 560px;
+  max-width: 640px;
   margin-bottom: var(--s-10);
   line-height: 1.7;
 }
@@ -395,6 +395,7 @@ code,
   font-size: 0.75rem;
   font-weight: 500;
   margin-top: var(--s-1);
+  color: var(--c-text-secondary);
 }
 
 .metric-card .delta.up {
@@ -403,63 +404,6 @@ code,
 
 .metric-card .delta.down {
   color: var(--c-success);
-}
-
-/* ─── Architecture Diagram ─── */
-.arch-diagram {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s-4);
-  margin: var(--s-10) 0;
-  flex-wrap: wrap;
-}
-
-.arch-node {
-  width: 130px;
-  text-align: center;
-  padding: 20px 16px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg);
-  transition: all var(--dur) var(--ease);
-}
-
-.arch-node:hover {
-  border-color: var(--c-accent);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.arch-node .icon {
-  margin-bottom: var(--s-4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  margin: 0 auto 16px auto;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-}
-
-.arch-node .name {
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.arch-node .desc {
-  font-size: 0.7rem;
-  color: var(--c-text-tertiary);
-  margin-top: 4px;
-}
-
-.arch-arrow {
-  display: flex;
-  align-items: center;
-  color: var(--c-text-tertiary);
 }
 
 /* ─── Crypto Workflow ─── */
@@ -523,44 +467,9 @@ code,
   color: var(--c-text-secondary);
 }
 
-/* ─── Equations ─── */
-.equation-block {
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg);
-  padding: var(--s-6);
-  margin: var(--s-4) 0;
-}
-
-.equation-block .eq-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--c-accent);
-  margin-bottom: var(--s-3);
-}
-
-.equation-block .katex-display {
-  margin: var(--s-4) 0;
-}
-
-.equation-block .eq-desc {
-  font-size: 0.875rem;
-  color: var(--c-text-secondary);
-  line-height: 1.6;
-  margin-top: var(--s-3);
-}
-
-.equations-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
-  gap: var(--s-5);
-  margin-top: var(--s-8);
-}
-
 /* ─── Charts ─── */
 .chart-container {
+  min-width: 0;
   background: var(--c-surface);
   border: 1px solid var(--c-border);
   border-radius: var(--radius-lg);
@@ -570,141 +479,27 @@ code,
 
 .chart-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: var(--s-2);
   margin-bottom: var(--s-5);
 }
 
 .chart-header h3 {
   margin-bottom: 0;
-}
-
-.chart-toggle {
-  display: flex;
-  gap: 2px;
-  background: var(--c-surface-alt);
-  border-radius: 8px;
-  padding: 2px;
-}
-
-.chart-toggle button {
-  padding: var(--s-1) var(--s-3);
-  border: none;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  font-family: var(--font-sans);
-  cursor: pointer;
-  background: transparent;
-  color: var(--c-text-secondary);
-  transition: all var(--dur) var(--ease);
-}
-
-.chart-toggle button.active {
-  background: var(--c-surface);
-  color: var(--c-text);
-  box-shadow: var(--shadow-sm);
+  font-size: 1.05rem;
 }
 
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
   gap: var(--s-5);
   margin-top: var(--s-8);
 }
 
-/* ─── Threat Cards ─── */
-.threat-card {
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg);
-  padding: var(--s-6);
-  border-left: 3px solid var(--c-danger);
-}
-
-.threat-card .threat-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--c-danger);
-  margin-bottom: var(--s-2);
-}
-
-.threat-card .mitigation {
-  margin-top: var(--s-4);
-  padding-top: var(--s-4);
-  border-top: 1px solid var(--c-border);
-}
-
-.threat-card .mitigation .mit-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--c-success);
-  margin-bottom: var(--s-2);
-}
-
-/* ─── Scenario Table (freeCodeCamp inspired) ─── */
-.scenario-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: var(--s-6);
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  border: 2px solid #0a0a23;
-  box-shadow: 4px 4px 0px rgba(10, 10, 35, 0.1);
-}
-
-.scenario-table th {
-  background: #0a0a23;
-  color: #fff;
-  padding: 14px var(--s-4);
-  font-weight: 700;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-align: left;
-  border-bottom: 2px solid #0a0a23;
-}
-
-.scenario-table td {
-  padding: 12px var(--s-4);
-  border-bottom: 1px solid var(--c-border);
-  color: var(--c-text);
-  border-right: 1px solid var(--c-border);
-}
-
-.scenario-table td:last-child {
-  border-right: none;
-}
-
-.scenario-table tr:nth-child(even) {
-  background: #f5f6f7;
-}
-
-.scenario-table tr:hover td {
-  background: #eef0f2;
-}
-
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  font-family: var(--font-mono);
-}
-
-.badge.ecc {
-  background: var(--c-ecc-light);
-  color: var(--c-ecc);
-}
-
-.badge.kyber {
-  background: var(--c-kyber-light);
-  color: var(--c-kyber);
+.charts-grid > * {
+  min-width: 0;
 }
 
 /* ─── Findings ─── */
@@ -741,17 +536,201 @@ code,
   background: var(--c-accent);
 }
 
-/* ─── 3D Scene ─── */
-.scene-container {
+/* ─── Sections on the tinted ground, sub-headings, notices ─── */
+.section.alt {
+  background: #f4f6f8;
+}
+
+h3.sub {
+  margin-top: var(--s-12);
+  font-size: 1.25rem;
+}
+
+.notice {
+  max-width: var(--max-w);
+  margin: var(--s-6) auto;
+  padding: var(--s-4) var(--s-5);
+  border: 1px solid #f3c7c7;
+  border-radius: var(--radius);
+  background: #fdf3f3;
+  color: #8f1d1d;
+}
+
+.hero-figure {
   width: 100%;
   max-width: var(--max-w);
-  height: 420px;
+  margin-top: var(--s-10);
+  text-align: left;
+}
+
+.hero-note {
+  margin-top: var(--s-4);
+  font-size: 0.8rem;
+  color: var(--c-text-tertiary);
+}
+
+/* ─── Figures of the paper ─── */
+.fig {
+  margin: var(--s-8) 0 0;
+  padding: var(--s-5);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, .08);
-  margin: 40px auto 0;
-  background: #0f172a;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, .12);
+}
+
+.fig img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fig figcaption {
+  margin-top: var(--s-3);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--c-text-secondary);
+}
+
+/* What kind of evidence a chart, table or figure is. Always a word, never a colour alone. */
+.kind {
+  display: inline-block;
+  margin-right: var(--s-2);
+  padding: 1px 8px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: #e8f1fc;
+  color: #1c5cab;
+}
+
+.kind-simulated {
+  background: #e6e8eb;
+  color: #1f2937;
+}
+
+.kind-attacked {
+  background: #fdecec;
+  color: #a12626;
+}
+
+.kind-proved,
+.kind-checked {
+  background: #e3f4ea;
+  color: #0a6640;
+}
+
+/* ─── Tables of results ─── */
+.table-wrap {
+  margin-top: var(--s-4);
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+}
+
+.data-table caption {
+  caption-side: top;
+  padding: 0 0 var(--s-2);
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--c-text-secondary);
+}
+
+.data-table th {
+  padding: 10px var(--s-4);
+  text-align: left;
+  vertical-align: bottom;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-text-secondary);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.data-table td {
+  padding: 9px var(--s-4);
+  vertical-align: top;
+  color: var(--c-text);
+  border-bottom: 1px solid var(--c-border-subtle);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.data-table th.num {
+  text-align: right;
+}
+
+.data-table tr.group th {
+  padding-top: var(--s-4);
+  font-size: 0.8rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--c-text);
+  background: var(--c-surface-alt);
+}
+
+.data-table .mark {
+  white-space: nowrap;
+  color: var(--c-text-secondary);
+}
+
+.data-table .mark.ok span {
+  color: #1c5cab;
+}
+
+.data-table .mark.no span {
+  color: #c2410c;
+}
+
+.chart-container .table-wrap {
+  margin-top: 0;
+}
+
+.chart-container .data-table {
+  border: none;
+}
+
+.chart-note {
+  max-width: none;
+  margin-top: var(--s-3);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--c-text-secondary);
+}
+
+/* the box that follows the pointer over a chart */
+.tip {
+  padding: 8px 12px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--c-text-secondary);
+}
+
+.tip strong {
+  display: block;
+  color: var(--c-text);
 }
 
 /* ─── Footer ─── */
@@ -785,18 +764,10 @@ code,
     padding: var(--s-16) var(--s-5);
   }
 
-  .equations-grid,
   .charts-grid {
     grid-template-columns: 1fr;
   }
 
-  .arch-diagram {
-    flex-direction: column;
-  }
-
-  .arch-arrow {
-    transform: rotate(90deg);
-  }
 
   .card-grid {
     grid-template-columns: 1fr;

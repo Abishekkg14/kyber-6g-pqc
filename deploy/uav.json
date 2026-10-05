@@ -1,0 +1,6 @@
+{
+  "link": {"gcs_host": "10.88.242.139", "gcs_port": 14600, "suite_id": 1},
+  "camera": {"width": 1280, "height": 720, "fps": 30, "bitrate": 3000000, "rotation": 180},
+  "telemetry_hz": 1.0,
+  "lcd_addr": 39
+}

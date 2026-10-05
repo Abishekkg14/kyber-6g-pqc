@@ -1,0 +1,9 @@
+quantity,watch_off,watch_on
+"Pi CPU, all four cores (%)",9.1,11.8
+Processor clock (MHz)**,800,1800
+Camera frames per second,30.0,30.0
+Video frames lost,"0 of 3,686","0 of 3,617"
+AES-GCM per video chunk (µs),149,94
+Full handshake at the UAV (ms),21.9,21.1
+1-RTT Cached RapidRekey (ms),9.6,8.1
+PQ ratchet (ms),15.1,10.9

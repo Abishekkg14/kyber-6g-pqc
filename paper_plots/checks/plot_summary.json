@@ -1,0 +1,743 @@
+{
+ "crypto_primitives": {
+  "n": 300,
+  "laptop_clock_rate": 1.002497
+ },
+ "handshake_latency": {
+  "ops": 450,
+  "ok": 450,
+  "frames": 4071,
+  "frames_lost": 1,
+  "gaps": 0,
+  "clock_rate": 1.018512
+ },
+ "wire_bytes": {
+  "Full handshake": 13106,
+  "PQ ratchet": 4757,
+  "Cached rekey": 324
+ },
+ "aead_throughput": {
+  "pi_has_aes": false,
+  "laptop_has_aes": true
+ },
+ "timeline": {
+  "seconds": 783.0172319637512,
+  "frames": 23485,
+  "lost": 10,
+  "events": {
+   "1-RTT Cached RapidRekey": 7,
+   "PQ ratchet": 1
+  },
+  "rotations": 19,
+  "clock_rate": 1.000014
+ },
+ "loss": {
+  "levels": [
+   0.0,
+   0.55,
+   1.01,
+   2.07,
+   4.76,
+   10.37,
+   19.9
+  ],
+  "complete": [
+   100.0,
+   93.6,
+   88.6,
+   78.9,
+   59.5,
+   33.3,
+   13.3
+  ],
+  "decoded": [
+   99.9,
+   35.2,
+   19.6,
+   3.0,
+   0.6,
+   0.0,
+   0.0
+  ],
+  "k": 11.87,
+  "photos": "21/21",
+  "clock_rate": 1.000135
+ },
+ "latency": {
+  "control_n": 600,
+  "control_lost": 0,
+  "icmp_n": 150,
+  "chunks_per_frame": 11.91,
+  "budget_ms": 90.9,
+  "estimate_ms": 94.8
+ },
+ "media_protection": {
+  "format2_added_bytes": 6761,
+  "format1_added_bytes": 1947,
+  "records_per_s": 356.0,
+  "seal_us": 154.9,
+  "core_pct": 5.52
+ },
+ "cipher_statistics": {
+  "image": "aerial_usda_naip.jpg",
+  "source": "public-domain aerial photograph (USDA NAIP, 2006, via Wikimedia Commons); not taken by the prototype",
+  "pixels": "768x768",
+  "entropy_cipher": [
+   7.99967,
+   7.99965,
+   7.99972
+  ],
+  "chi_square_cipher": [
+   266.7,
+   285.3,
+   232.4
+  ],
+  "npcr": 99.6149,
+  "uaci": 33.4473,
+  "seal_ms": 3.37,
+  "open_ms": 2.86
+ },
+ "attacks": {
+  "attack_attempts": 339084,
+  "accepted": 0,
+  "kinds_of_attack": 24,
+  "records_sealed_in_the_nonce_race": 192000,
+  "nonce_pairs_used_twice": 0,
+  "machines": [
+   "Raspberry Pi 4B (UAV)",
+   "Laptop (ground station)"
+  ]
+ },
+ "tables": {
+  "resources": [
+   [
+    "idle (link up, camera off)",
+    180,
+    1.0,
+    1.7,
+    11.9,
+    52.1,
+    55.5,
+    "0x0"
+   ],
+   [
+    "live video",
+    1319,
+    8.7,
+    9.9,
+    14.5,
+    53.1,
+    57.5,
+    "0x0"
+   ],
+   [
+    "live video + encrypted recording",
+    241,
+    6.0,
+    10.3,
+    14.6,
+    55.0,
+    56.5,
+    "0x0"
+   ]
+  ],
+  "transfers": [
+   [
+    "recording fetch",
+    7365056,
+    4.061,
+    14.51,
+    "PASS",
+    "PASS",
+    63.6
+   ],
+   [
+    "recording fetch",
+    7365056,
+    3.605,
+    16.35,
+    "PASS",
+    "PASS",
+    42.0
+   ],
+   [
+    "recording fetch",
+    7365056,
+    3.575,
+    16.48,
+    "PASS",
+    "PASS",
+    17.0
+   ],
+   [
+    "recording fetch",
+    7365056,
+    3.56,
+    16.55,
+    "PASS",
+    "PASS",
+    33.3
+   ],
+   [
+    "recording fetch",
+    7365056,
+    3.584,
+    16.44,
+    "PASS",
+    "PASS",
+    30.3
+   ],
+   [
+    "photo",
+    199632,
+    0.03,
+    53.17,
+    "PASS",
+    "",
+    null
+   ],
+   [
+    "photo",
+    201544,
+    0.046,
+    35.01,
+    "PASS",
+    "",
+    null
+   ],
+   [
+    "photo",
+    202978,
+    0.044,
+    36.86,
+    "PASS",
+    "",
+    null
+   ],
+   [
+    "photo",
+    202518,
+    0.095,
+    17.03,
+    "PASS",
+    "",
+    null
+   ],
+   [
+    "photo",
+    201104,
+    0.097,
+    16.56,
+    "PASS",
+    "",
+    null
+   ],
+   [
+    "photo",
+    202282,
+    0.097,
+    16.66,
+    "PASS",
+    "",
+    null
+   ],
+   [
+    "photo",
+    199259,
+    0.095,
+    16.76,
+    "PASS",
+    "",
+    null
+   ],
+   [
+    "photo",
+    201345,
+    0.018,
+    89.37,
+    "PASS",
+    "",
+    null
+   ],
+   [
+    "photo",
+    201017,
+    0.047,
+    34.17,
+    "PASS",
+    "",
+    null
+   ],
+   [
+    "photo",
+    201136,
+    0.022,
+    73.05,
+    "PASS",
+    "",
+    null
+   ]
+  ],
+  "recording": {
+   "name": "rec_20261004_144643_e52f32a0.k6grec",
+   "frames": 587,
+   "skipped_before_first_idr": 17,
+   "segments": 20,
+   "format": 2,
+   "signed": true,
+   "sign_ms": 1.01,
+   "plain_bytes": 7350117,
+   "file_bytes": 7365056,
+   "duration_s": 20.46,
+   "encrypt_ms_total": 168.93,
+   "throughput_MBps": 43.5,
+   "parts": [
+    "rec_20261004_144643_e52f32a0.k6grec"
+   ]
+  },
+  "variant_sizes": {
+   "ML-KEM-512": {
+    "encapsulation_key": 800,
+    "ciphertext": 768
+   },
+   "ML-KEM-768": {
+    "encapsulation_key": 1184,
+    "ciphertext": 1088
+   },
+   "ML-DSA-44": {
+    "public_key": 1312,
+    "signature": 2420
+   },
+   "ML-DSA-65": {
+    "public_key": 1952,
+    "signature": 3309
+   },
+   "Ed25519": {
+    "public_key": 32,
+    "signature": 64
+   }
+  },
+  "at_rest": [
+   [
+    "Raspberry Pi 4B (UAV)",
+    "recording segment seal 4 MiB (AES-256-GCM)",
+    30,
+    72.012,
+    58.2,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "recording segment open 4 MiB (AES-256-GCM)",
+    30,
+    71.881,
+    58.4,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "SHA-256 of 4 MiB (the digest the UAV signs)",
+    30,
+    24.439,
+    171.6,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "recording segment seal 375 kB, one second of 3 Mbit/s video (AES-256-GCM)",
+    100,
+    6.393,
+    58.7,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "recording segment open 375 kB, one second of 3 Mbit/s video (AES-256-GCM)",
+    100,
+    6.38,
+    58.8,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo seal 50 kB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    100,
+    1.556,
+    32.1,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo open 50 kB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    100,
+    1.517,
+    33.0,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo seal 50 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",
+    100,
+    3.381,
+    14.8,
+    "file: 56761 B for 50000 B of JPEG (format 1: 51945 B)"
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo open 50 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",
+    100,
+    2.946,
+    17.0,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo seal 200 kB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    100,
+    5.251,
+    38.1,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo open 200 kB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    100,
+    5.22,
+    38.3,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo seal 200 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",
+    100,
+    8.078,
+    24.8,
+    "file: 206761 B for 200000 B of JPEG (format 1: 201947 B)"
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo open 200 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",
+    100,
+    7.625,
+    26.2,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo seal 1 MB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    25,
+    24.593,
+    40.7,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo open 1 MB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    25,
+    24.194,
+    41.3,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo seal 1 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",
+    25,
+    32.219,
+    31.0,
+    "file: 1006763 B for 1000000 B of JPEG (format 1: 1001947 B)"
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo open 1 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",
+    25,
+    31.73,
+    31.5,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo seal 3 MB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    25,
+    71.244,
+    42.1,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo open 3 MB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    25,
+    71.431,
+    42.0,
+    ""
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo seal 3 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",
+    25,
+    92.072,
+    32.6,
+    "file: 3006763 B for 3000000 B of JPEG (format 1: 3001948 B)"
+   ],
+   [
+    "Raspberry Pi 4B (UAV)",
+    "photo open 3 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",
+    25,
+    91.292,
+    32.9,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "recording segment seal 4 MiB (AES-256-GCM)",
+    30,
+    1.01,
+    4154.7,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "recording segment open 4 MiB (AES-256-GCM)",
+    30,
+    1.037,
+    4044.2,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "SHA-256 of 4 MiB (the digest the UAV signs)",
+    30,
+    2.002,
+    2094.6,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "recording segment seal 375 kB, one second of 3 Mbit/s video (AES-256-GCM)",
+    100,
+    0.078,
+    4781.1,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "recording segment open 375 kB, one second of 3 Mbit/s video (AES-256-GCM)",
+    100,
+    0.08,
+    4660.0,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo seal 50 kB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    100,
+    0.141,
+    354.0,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo open 50 kB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    100,
+    0.114,
+    438.9,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo seal 50 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",
+    100,
+    0.359,
+    139.4,
+    "file: 56761 B for 50000 B of JPEG (format 1: 51946 B)"
+   ],
+   [
+    "Laptop (ground station)",
+    "photo open 50 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",
+    100,
+    0.312,
+    160.0,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo seal 200 kB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    100,
+    0.228,
+    875.3,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo open 200 kB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    100,
+    0.223,
+    898.5,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo seal 200 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",
+    100,
+    0.564,
+    354.5,
+    "file: 206762 B for 200000 B of JPEG (format 1: 201947 B)"
+   ],
+   [
+    "Laptop (ground station)",
+    "photo open 200 kB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",
+    100,
+    0.5,
+    400.3,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo seal 1 MB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    25,
+    0.834,
+    1198.7,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo open 1 MB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    25,
+    0.857,
+    1167.4,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo seal 1 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",
+    25,
+    1.756,
+    569.5,
+    "file: 1006763 B for 1000000 B of JPEG (format 1: 1001948 B)"
+   ],
+   [
+    "Laptop (ground station)",
+    "photo open 1 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",
+    25,
+    1.85,
+    540.5,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo seal 3 MB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    25,
+    2.411,
+    1244.1,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo open 3 MB, format 1 (ML-KEM-1024, AES-256-GCM)",
+    25,
+    2.425,
+    1237.0,
+    ""
+   ],
+   [
+    "Laptop (ground station)",
+    "photo seal 3 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature)",
+    25,
+    4.413,
+    679.8,
+    "file: 3006763 B for 3000000 B of JPEG (format 1: 3001948 B)"
+   ],
+   [
+    "Laptop (ground station)",
+    "photo open 3 MB, format 2 (ML-KEM-1024 + X25519, AES-256-GCM, ML-DSA-87 signature verified)",
+    25,
+    4.906,
+    611.5,
+    ""
+   ]
+  ]
+ },
+ "audio_statistics": {
+  "source": "audio_sample1_test.mp3",
+  "seconds": 37.51,
+  "entropy_cipher": 7.999938,
+  "chi_square_cipher": 283.7,
+  "correlation_plain": 0.985149,
+  "correlation_cipher": -0.001516,
+  "nscr": 99.6138,
+  "uaci": 33.4771,
+  "identical": true
+ },
+ "audio_shape": {
+  "frame_sizes": 7,
+  "block_sizes": 1,
+  "vbr_added_pct": 194.9,
+  "cbr_sample_added_pct": 8.75,
+  "added_pct_by_length": {
+   "1": 92.8,
+   "5": 19.76,
+   "15": 16.83,
+   "60": 8.99,
+   "300": 5.02,
+   "900": 3.41
+  }
+ },
+ "audio_cost": {
+  "machines": [
+   "Raspberry Pi 4B (UAV)",
+   "Laptop (ground station)"
+  ],
+  "seal_ms_60s": {
+   "Raspberry Pi 4B (UAV)": 88.9908,
+   "Laptop (ground station)": 19.644
+  },
+  "open_ms_60s": {
+   "Raspberry Pi 4B (UAV)": 72.2372,
+   "Laptop (ground station)": 12.5849
+  },
+  "pieces_ms": {
+   "Raspberry Pi 4B (UAV)": {
+    "hybrid key wrap (ML-KEM-1024 encapsulation + X25519 + AES-GCM), once per clip": 0.6528,
+    "hybrid key unwrap, once per clip": 0.6198,
+    "ML-DSA-87 signature, once per clip": 0.7594,
+    "ML-DSA-87 verification, once per clip or excerpt": 0.4491
+   },
+   "Laptop (ground station)": {
+    "hybrid key wrap (ML-KEM-1024 encapsulation + X25519 + AES-GCM), once per clip": 0.1466,
+    "hybrid key unwrap, once per clip": 0.136,
+    "ML-DSA-87 signature, once per clip": 0.1323,
+    "ML-DSA-87 verification, once per clip or excerpt": 0.081
+   }
+  }
+ },
+ "audio_attacks": {
+  "attack_attempts": 12646,
+  "accepted": 0,
+  "crashes": 0,
+  "rows": 21,
+  "machines": [
+   "Raspberry Pi 4B (UAV)",
+   "Laptop (ground station)"
+  ],
+  "live_clips": 12,
+  "stored_and_verified": 12,
+  "blocks_fetched_again": 892,
+  "timing": {
+   "Raspberry Pi 4B (UAV)": "PASS",
+   "Laptop (ground station)": "PASS"
+  }
+ },
+ "motion_watch": {
+  "cases": 119,
+  "camera_modes": [
+   "normal",
+   "night"
+  ],
+  "false_regions_camera_pans": 1
+ },
+ "proof_matrix": {
+  "proved": 42,
+  "attacks_found": 16,
+  "runs": 46,
+  "queries": 177
+ }
+}

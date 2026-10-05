@@ -1,0 +1,24 @@
+Palette check, 2026-10-05 22:26; surface white (journal page). Colours: figures4papers (plotlib.PALETTE).
+Required: CVD separation, Normal-vision floor, Contrast vs surface. The validator's other rules are reported, not required.
+
+## all four series colours, neighbours (lines, stacked bars)
+Palette (light, surface #ffffff, categorical): 4 slots
+  [FAIL] Lightness band         outside band: [["#0F4D92",0.424]]
+  [FAIL] Chroma floor           below floor (reads gray): [["#42949E",0.08]]
+  [WARN] CVD separation         worst adjacent #9A4D8E↔#42949E ΔE 7.8 (deutan) · tritan 22.7
+  [PASS] Normal-vision floor    worst adjacent #9A4D8E↔#42949E ΔE 20.9 (normal)
+  [PASS] Contrast vs surface    all 4 >= 3:1
+
+  → FAILED — fix the marked checks  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+  scope: categorical palettes only. For a lone status/text color check WCAG text contrast; for a sequential ramp, lightness monotonicity.
+
+## first three, every pair (dots that can lie anywhere)
+Palette (light, surface #ffffff, categorical): 3 slots
+  [FAIL] Lightness band         outside band: [["#0F4D92",0.424]]
+  [FAIL] Chroma floor           below floor (reads gray): [["#42949E",0.08]]
+  [PASS] CVD separation         worst all-pairs #42949E↔#B64342 ΔE 13.0 (deutan) · tritan 18.4
+  [PASS] Normal-vision floor    worst all-pairs #42949E↔#0F4D92 ΔE 21.9 (normal)
+  [PASS] Contrast vs surface    all 3 >= 3:1
+
+  → FAILED — fix the marked checks  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+  scope: categorical palettes only. For a lone status/text color check WCAG text contrast; for a sequential ramp, lightness monotonicity.

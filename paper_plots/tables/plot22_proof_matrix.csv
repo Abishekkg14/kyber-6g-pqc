@@ -1,0 +1,65 @@
+protocol,claim,attacker,result
+Full handshake,Session data secret (also after both signing keys leak),classical,proved
+Full handshake,Session data secret (also after both signing keys leak),shor,proved
+Full handshake,Session data secret (also after both signing keys leak),mlkem,proved
+Full handshake,Session data secret (also after both signing keys leak),both,attack found
+Full handshake,Ground station knows it talks to the UAV,classical,proved
+Full handshake,Ground station knows it talks to the UAV,shor,proved
+Full handshake,Ground station knows it talks to the UAV,mlkem,proved
+Full handshake,Ground station knows it talks to the UAV,both,attack found
+Full handshake,UAV knows it talks to the ground station,classical,proved
+Full handshake,UAV knows it talks to the ground station,shor,proved
+Full handshake,UAV knows it talks to the ground station,mlkem,proved
+Full handshake,UAV knows it talks to the ground station,both,proved
+1-RTT Cached RapidRekey,New keys secret and agreed,classical,proved
+1-RTT Cached RapidRekey,New keys secret and agreed,shor,proved
+1-RTT Cached RapidRekey,New keys secret and agreed,mlkem,proved
+1-RTT Cached RapidRekey,New keys secret and agreed,both,proved
+1-RTT Cached RapidRekey,... also if the next secret leaks afterwards,classical,proved
+1-RTT Cached RapidRekey,... also if the next secret leaks afterwards,shor,proved
+1-RTT Cached RapidRekey,... also if the next secret leaks afterwards,mlkem,proved
+1-RTT Cached RapidRekey,... also if the next secret leaks afterwards,both,proved
+1-RTT Cached RapidRekey,... if the old secret had leaked before,classical,attack found
+1-RTT Cached RapidRekey,... if the old secret had leaked before,shor,attack found
+1-RTT Cached RapidRekey,... if the old secret had leaked before,mlkem,attack found
+1-RTT Cached RapidRekey,... if the old secret had leaked before,both,attack found
+PQ ratchet,New keys secret and agreed,classical,proved
+PQ ratchet,New keys secret and agreed,shor,proved
+PQ ratchet,New keys secret and agreed,mlkem,proved
+PQ ratchet,New keys secret and agreed,both,proved
+PQ ratchet,... also if the old master secret leaks afterwards,classical,proved
+PQ ratchet,... also if the old master secret leaks afterwards,shor,proved
+PQ ratchet,... also if the old master secret leaks afterwards,mlkem,proved
+PQ ratchet,... also if the old master secret leaks afterwards,both,attack found
+PQ ratchet,"Old secret leaked before, attacker listens: heals",classical,proved
+PQ ratchet,"Old secret leaked before, attacker listens: heals",shor,proved
+PQ ratchet,"Old secret leaked before, attacker listens: heals",mlkem,proved
+PQ ratchet,"Old secret leaked before, attacker listens: heals",both,attack found
+PQ ratchet,"Old secret leaked before, attacker active",classical,attack found
+PQ ratchet,"Old secret leaked before, attacker active",shor,not run (the attack exists with nothing broken)
+PQ ratchet,"Old secret leaked before, attacker active",mlkem,not run (the attack exists with nothing broken)
+PQ ratchet,"Old secret leaked before, attacker active",both,not run (the attack exists with nothing broken)
+"Stored photo, recording, audio",Content secret,classical,proved
+"Stored photo, recording, audio",Content secret,shor,proved
+"Stored photo, recording, audio",Content secret,mlkem,proved
+"Stored photo, recording, audio",Content secret,both,attack found
+"Stored photo, recording, audio",... also if the UAV is captured afterwards,classical,proved
+"Stored photo, recording, audio",... also if the UAV is captured afterwards,shor,proved
+"Stored photo, recording, audio",... also if the UAV is captured afterwards,mlkem,proved
+"Stored photo, recording, audio",... also if the UAV is captured afterwards,both,attack found
+"Stored photo, recording, audio",... also if the ML-KEM recording key is stolen,classical,proved
+"Stored photo, recording, audio",... also if the ML-KEM recording key is stolen,shor,attack found
+"Stored photo, recording, audio",... also if the ML-KEM recording key is stolen,mlkem,proved
+"Stored photo, recording, audio",... also if the ML-KEM recording key is stolen,both,attack found
+"Stored photo, recording, audio",... also if the X25519 recording key is stolen,classical,proved
+"Stored photo, recording, audio",... also if the X25519 recording key is stolen,shor,proved
+"Stored photo, recording, audio",... also if the X25519 recording key is stolen,mlkem,attack found
+"Stored photo, recording, audio",... also if the X25519 recording key is stolen,both,attack found
+"Stored photo, recording, audio",... if both recording keys are stolen,classical,attack found
+"Stored photo, recording, audio",... if both recording keys are stolen,shor,not run (the attack exists with nothing broken)
+"Stored photo, recording, audio",... if both recording keys are stolen,mlkem,not run (the attack exists with nothing broken)
+"Stored photo, recording, audio",... if both recording keys are stolen,both,not run (the attack exists with nothing broken)
+"Stored photo, recording, audio",What is opened was sealed by the pinned UAV,classical,proved
+"Stored photo, recording, audio",What is opened was sealed by the pinned UAV,shor,proved
+"Stored photo, recording, audio",What is opened was sealed by the pinned UAV,mlkem,proved
+"Stored photo, recording, audio",What is opened was sealed by the pinned UAV,both,proved
