@@ -1,0 +1,9 @@
+machine,algorithm,operation,payload_bytes,median_us,mbit_per_s
+Raspberry Pi 4B (UAV),AES-256-GCM,record seal (whole record layer),1100,31.877,276.1
+Raspberry Pi 4B (UAV),AES-256-GCM,record open (whole record layer),1100,38.623,227.8
+Raspberry Pi 4B (UAV),ChaCha20-Poly1305,record seal (whole record layer),1100,16.401,536.6
+Raspberry Pi 4B (UAV),ChaCha20-Poly1305,record open (whole record layer),1100,23.02,382.3
+Laptop (ground station),AES-256-GCM,record seal (whole record layer),1100,4.219,2085.7
+Laptop (ground station),AES-256-GCM,record open (whole record layer),1100,6.493,1355.3
+Laptop (ground station),ChaCha20-Poly1305,record seal (whole record layer),1100,5.059,1739.4
+Laptop (ground station),ChaCha20-Poly1305,record open (whole record layer),1100,7.0,1257.2

@@ -1,0 +1,41 @@
+[Unit]
+Description=Kyber-6G UAV secure link (camera, GNSS, LCD, PQC session)
+After=network-online.target gpsd.service
+Wants=network-online.target gpsd.service
+
+[Service]
+User=abishekkg14
+WorkingDirectory=/home/abishekkg14/kyber6g_app
+ExecStartPre=+/usr/bin/install -d -m 700 -o abishekkg14 -g abishekkg14 /home/abishekkg14/kyber6g_recordings /home/abishekkg14/kyber6g_photos /home/abishekkg14/kyber6g_audio /home/abishekkg14/kyber6g_audio/inbox
+ExecStart=/home/abishekkg14/kyber6g_venv/bin/python -W ignore -m kyber6g.uav.main -c deploy/uav.json
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+
+# --- confinement -------------------------------------------------------------------------------------------------
+# The service parses datagrams from the network. Should a flaw in it ever be used, this limits what the intruder gets:
+# no way to become root (the login user may use sudo without a password; with NoNewPrivileges sudo does nothing here),
+# a file system that is read-only except for the three media directories (not its own code, not the key directory),
+# files created owner-only, no kernel tuning, no new namespaces, only the socket families the link needs.
+# Not used on purpose: PrivateDevices / DeviceAllow / ProtectClock (they would hide the camera, I2C and /dev/vcio),
+# MemoryDenyWriteExecute (libffi, used by liboqs and cryptography, needs it), a system-call filter (libcamera).
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0077
+ProtectSystem=strict
+ReadWritePaths=-/home/abishekkg14/kyber6g_recordings -/home/abishekkg14/kyber6g_photos -/home/abishekkg14/kyber6g_audio
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

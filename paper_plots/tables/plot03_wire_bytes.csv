@@ -1,0 +1,4 @@
+operation,signature_bytes,kem_bytes,other_bytes,header_bytes,total_bytes_on_wire,datagrams
+Full handshake,9254,3136,248,468,13106,13
+PQ ratchet,0,3136,1246,375,4757,5
+Cached rekey,0,0,216,108,324,3

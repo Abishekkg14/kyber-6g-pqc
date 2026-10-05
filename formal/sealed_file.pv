@@ -1,0 +1,63 @@
+(* Kyber-6G sealed files: stored photos, recordings and audio clips (kyber6g/recording/sealing.py: wrap, unwrap,
+   sign_trailer, check_trailer; kyber6g/audio/quaver.py uses the same key wrap).
+
+     file = header | ML-KEM ciphertext | X25519 one-time public key | wrapped content key | body | signature
+
+     KEK      = HKDF(salt = H(header, ML-KEM ciphertext, one-time key), ML-KEM secret || X25519 secret, label | file id)
+     wrapped  = AES-256-GCM(KEK, content key,  associated data: magic, header, ciphertext, one-time key)
+     body     = AES-256-GCM(content key, content,  associated data: header)
+     signature = ML-DSA-87(label | kind | H(everything before it))            by the UAV's identity key
+
+   The UAV has only PUBLIC keys of the ground station (ML-KEM and X25519 "recording" keys) and its own signing key;
+   it seals any number of files - here one with content the attacker chose and one with a secret. The ground station
+   opens whatever arrives, if the pinned UAV key signed it.
+
+   Run with one "what is stolen" library (phase 1 = afterwards):
+     file_leak_none.pvl   nothing
+     file_leak_uav.pvl    everything the UAV holds: its signing key (a UAV captured after it wrote the files)
+     file_leak_kem.pvl    the ground station's ML-KEM recording key alone
+     file_leak_x.pvl      its X25519 recording key alone
+     file_leak_both.pvl   both recording keys: the secret must then be readable (the model can fail) *)
+
+const idU: bitstring.
+free fileSecret: bitstring [private].
+
+event UavSealed(bitstring, bitstring).        (* file id, content *)
+event GcsOpened(bitstring, bitstring).
+
+(* 1  the content of a sealed file stays secret *)
+query attacker(fileSecret).
+(* 2  what the ground station opens was sealed by the UAV, with this file id and this content *)
+query f: bitstring, d: bitstring; event(GcsOpened(f, d)) ==> event(UavSealed(f, d)).
+(* 3  not empty: must be FALSE *)
+query f: bitstring, d: bitstring; event(GcsOpened(f, d)).
+
+let Seal(sk: sskey, ek: kempk, XG: point, content: bitstring) =
+  new fid: bitstring; new r: kemseed; new xe: scalar; new cek: key;
+  let hdr = (fid, idU) in
+  let ct = kemct(ek, r) in
+  let xp = exp(g, xe) in
+  let kek = hkdf_expand(hkdf_extract(h((hdr, ct, xp)), (kemss(ek, r), exp(XG, xe))), (LBL_FILE_KEK, fid)) in
+  let wrapped = aead(kek, n0, k2b(cek), (MAGIC_FILE, hdr, ct, xp)) in
+  let signed = (MAGIC_FILE, hdr, ct, xp, wrapped, aead(cek, n0, content, hdr)) in
+  event UavSealed(fid, content);
+  out(c, (signed, sign((LBL_FILE_SIG, KIND_FILE, h(signed)), sk))).
+
+let UAV(sk: sskey, ek: kempk, XG: point) =
+  in(c, chosen: bitstring);
+  ( Seal(sk, ek, XG, chosen) | Seal(sk, ek, XG, fileSecret) ).
+
+let GCS(pkU: spkey, dk: kemsk, x: scalar) =
+  in(c, (signed: bitstring, sig: bitstring));
+  if verify((LBL_FILE_SIG, KIND_FILE, h(signed)), sig, pkU) = true then
+  let (=MAGIC_FILE, hdr: bitstring, ct: bitstring, xp: point, wrapped: bitstring, body: bitstring) = signed in
+  let (fid: bitstring, =idU) = hdr in
+  let kek = hkdf_expand(hkdf_extract(h((hdr, ct, xp)), (decap(ct, dk), exp(xp, x))), (LBL_FILE_KEK, fid)) in
+  let k2b(cek) = aead_open(kek, n0, wrapped, (MAGIC_FILE, hdr, ct, xp)) in
+  let content = aead_open(cek, n0, body, hdr) in
+  event GcsOpened(fid, content).
+
+process
+  new skU: sskey; new dkG: kemsk; new xG: scalar;
+  out(c, (spk(skU), kempub(dkG), exp(g, xG)));
+  ( !UAV(skU, kempub(dkG), exp(g, xG)) | !GCS(spk(skU), dkG, xG) | FileLeak(skU, dkG, xG) )

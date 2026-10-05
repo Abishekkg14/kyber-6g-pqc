@@ -1,0 +1,57 @@
+experiment,machine,attempts,accepted,verdict,reasons_given_or_result
+record: one bit changed,Raspberry Pi 4B (UAV),40000,0,PASS,auth-fail: 39493; wrong-session: 308; stale-epoch: 112; malformed: 50
+record: one bit changed,Laptop (ground station),40000,0,PASS,auth-fail: 39493; wrong-session: 308; stale-epoch: 112; malformed: 50
+record: forged,Raspberry Pi 4B (UAV),40000,0,PASS,auth-fail: 40000
+record: forged,Laptop (ground station),40000,0,PASS,auth-fail: 40000
+record: second suite (ChaCha20-Poly1305),Raspberry Pi 4B (UAV),30000,0,PASS,auth-fail: 29843; wrong-session: 90; stale-epoch: 36; malformed: 21
+record: second suite (ChaCha20-Poly1305),Laptop (ground station),30000,0,PASS,auth-fail: 29843; wrong-session: 90; stale-epoch: 36; malformed: 21
+record: replayed,Raspberry Pi 4B (UAV),16000,0,PASS,duplicate: 8000; stale: 8000
+record: replayed,Laptop (ground station),16000,0,PASS,duplicate: 8000; stale: 8000
+record: spliced,Raspberry Pi 4B (UAV),24000,0,PASS,auth-fail: 21000; wrong-session: 3000
+record: spliced,Laptop (ground station),24000,0,PASS,auth-fail: 21000; wrong-session: 3000
+handshake: ground station impersonated,Raspberry Pi 4B (UAV),150,0,PASS,SignatureInvalid: GCS signature invalid (pinned key): 150
+handshake: ground station impersonated,Laptop (ground station),150,0,PASS,SignatureInvalid: GCS signature invalid (pinned key): 150
+handshake: UAV impersonated,Raspberry Pi 4B (UAV),150,0,PASS,SignatureInvalid: UAV signature invalid (pinned key): 150
+handshake: UAV impersonated,Laptop (ground station),150,0,PASS,SignatureInvalid: UAV signature invalid (pinned key): 150
+handshake: message modified,Raspberry Pi 4B (UAV),1200,0,PASS,SignatureInvalid: GCS signature invalid (pinned key): 399; SignatureInvalid: UAV signature invalid (pinned key): 398; HandshakeError: client Finished invalid: 312; HandshakeError: unknown session: 88
+handshake: message modified,Laptop (ground station),1200,0,PASS,SignatureInvalid: GCS signature invalid (pinned key): 399; SignatureInvalid: UAV signature invalid (pinned key): 398; HandshakeError: client Finished invalid: 312; HandshakeError: unknown session: 88
+handshake: downgrade,Raspberry Pi 4B (UAV),500,0,PASS,HandshakeError: unsupported suite: 200; HandshakeError: suite mismatch (possible downgrade): 200; SignatureInvalid: UAV signature invalid (pinned key): 100
+handshake: downgrade,Laptop (ground station),500,0,PASS,HandshakeError: unsupported suite: 200; HandshakeError: suite mismatch (possible downgrade): 200; SignatureInvalid: UAV signature invalid (pinned key): 100
+handshake: replay,Raspberry Pi 4B (UAV),300,0,PASS,HandshakeError: ClientHello refused: 300
+handshake: replay,Laptop (ground station),300,0,PASS,HandshakeError: ClientHello refused: 300
+handshake: answers mixed,Raspberry Pi 4B (UAV),150,0,PASS,SignatureInvalid: GCS signature invalid (pinned key): 150
+handshake: answers mixed,Laptop (ground station),150,0,PASS,SignatureInvalid: GCS signature invalid (pinned key): 150
+handshake: key share replaced,Raspberry Pi 4B (UAV),300,0,PASS,SignatureInvalid: GCS signature invalid (pinned key): 300
+handshake: key share replaced,Laptop (ground station),300,0,PASS,SignatureInvalid: GCS signature invalid (pinned key): 300
+handshake: degenerate X25519 key,Raspberry Pi 4B (UAV),60,0,PASS,HandshakeError: X25519 public key rejected: 60
+handshake: degenerate X25519 key,Laptop (ground station),60,0,PASS,HandshakeError: X25519 public key rejected: 60
+handshake: forged fragment injected,Raspberry Pi 4B (UAV),200,0,PASS,no effect: the genuine fragment arrived after the forged one: 100; SignatureInvalid: UAV signature invalid (pinned key): 81; HandshakeError: unsupported suite: 19
+handshake: forged fragment injected,Laptop (ground station),200,0,PASS,no effect: the genuine fragment arrived after the forged one: 100; SignatureInvalid: UAV signature invalid (pinned key): 81; HandshakeError: unsupported suite: 19
+cached rekey: forged or misused request,Raspberry Pi 4B (UAV),750,0,PASS,refused: AUTH_FAIL: 261; refused: CACHE_MISS: 189; refused: STALE_MOBILITY: 150; refused: CACHE_EXPIRED: 150
+cached rekey: forged or misused request,Laptop (ground station),750,0,PASS,refused: AUTH_FAIL: 261; refused: CACHE_MISS: 189; refused: STALE_MOBILITY: 150; refused: CACHE_EXPIRED: 150
+cached rekey: answer modified,Raspberry Pi 4B (UAV),300,0,PASS,HandshakeError: rekey Finished invalid: 273; HandshakeError: rekey response for another session: 27
+cached rekey: answer modified,Laptop (ground station),300,0,PASS,HandshakeError: rekey Finished invalid: 273; HandshakeError: rekey response for another session: 27
+PQ ratchet: key share replaced,Raspberry Pi 4B (UAV),200,0,PASS,keys differ: record auth-fail: 200
+PQ ratchet: key share replaced,Laptop (ground station),200,0,PASS,keys differ: record auth-fail: 200
+stored photo: modified,Raspberry Pi 4B (UAV),6000,0,PASS,"signature invalid: not written by the pinned UAV key, or cha: 5970; malformed header: JSONDecodeError: 21; malformed header: UnicodeDecodeError: 5; not a K6GIMG file: 2"
+stored photo: modified,Laptop (ground station),6000,0,PASS,"signature invalid: not written by the pinned UAV key, or cha: 5976; malformed header: JSONDecodeError: 12; malformed header: UnicodeDecodeError: 5; malformed header: ValueError: 2"
+stored photo: cut or extended,Raspberry Pi 4B (UAV),6000,0,PASS,signature missing or cut short: 5693; truncated file: 293; malformed header: JSONDecodeError: 14
+stored photo: cut or extended,Laptop (ground station),6000,0,PASS,signature missing or cut short: 5693; truncated file: 293; malformed header: JSONDecodeError: 14
+stored photo: forged or re-signed,Raspberry Pi 4B (UAV),160,0,PASS,"signature invalid: not written by the pinned UAV key, or cha: 80; unsigned file where the UAV's signature is required: 40; signature missing or cut short: 40"
+stored photo: forged or re-signed,Laptop (ground station),160,0,PASS,"signature invalid: not written by the pinned UAV key, or cha: 80; unsigned file where the UAV's signature is required: 40; signature missing or cut short: 40"
+stored photo: wrong keys,Raspberry Pi 4B (UAV),180,0,PASS,"content key unwrap failed (wrong ground-station key, or head: 120; a format-2 photo needs the ground station's X25519 recording: 60"
+stored photo: wrong keys,Laptop (ground station),180,0,PASS,"content key unwrap failed (wrong ground-station key, or head: 120; a format-2 photo needs the ground station's X25519 recording: 60"
+stored recording: modified,Raspberry Pi 4B (UAV),2500,0,PASS,segment 2 failed authentication: 567; segment 3 failed authentication: 486; segment 1 failed authentication: 478; segment 0 failed authentication: 455
+stored recording: modified,Laptop (ground station),2500,0,PASS,segment 2 failed authentication: 567; segment 3 failed authentication: 486; segment 1 failed authentication: 478; segment 0 failed authentication: 455
+stored recording: segments rearranged,Raspberry Pi 4B (UAV),420,0,PASS,"signature missing or cut short: 68; TRUNCATED (no FINAL segment): 60; signature invalid: not written by the pinned UAV key, or cha: 60; segment 1 missing/reordered/truncated: 58"
+stored recording: segments rearranged,Laptop (ground station),420,0,PASS,"signature missing or cut short: 68; TRUNCATED (no FINAL segment): 60; signature invalid: not written by the pinned UAV key, or cha: 60; segment 1 missing/reordered/truncated: 58"
+stored recording: forged,Raspberry Pi 4B (UAV),22,0,PASS,"unsigned file where the UAV's signature is required: 11; signature invalid: not written by the pinned UAV key, or cha: 11"
+stored recording: forged,Laptop (ground station),22,0,PASS,"unsigned file where the UAV's signature is required: 11; signature invalid: not written by the pinned UAV key, or cha: 11"
+"record: nonce reuse (stress test of the sender: records sealed, pairs used twice)",Raspberry Pi 4B (UAV),96000,0,PASS,"unique (epoch, sequence) pairs: 96000; pairs used twice: 0; epochs: 97"
+"record: nonce reuse (stress test of the sender: records sealed, pairs used twice)",Laptop (ground station),96000,0,PASS,"unique (epoch, sequence) pairs: 96000; pairs used twice: 0; epochs: 97"
+timing: record: tag wrong in its first byte vs in its last byte,Raspberry Pi 4B (UAV),11395,,"|t| per round: [0.12, 0.54, 0.68, 1.29, 1.67]","mean ns [43928.8, 43927.4], difference -1.47 ns"
+timing: Finished / rekey MAC: wrong in its first byte vs in its last byte,Raspberry Pi 4B (UAV),22795,,"|t| per round: [0.56, 0.56, 1.29, 2.59, 2.67]","mean ns [236.7, 236.6], difference -0.1 ns"
+"timing: control - a comparison that stops at the first wrong byte (not used in the link), same test",Raspberry Pi 4B (UAV),1136,,"|t| per round: [115.85, 121.89, 1535.86, 1587.76, 1706.12]","mean ns [533.0, 4111.4], difference 3578.41 ns"
+timing: record: tag wrong in its first byte vs in its last byte,Laptop (ground station),11395,,"|t| per round: [0.57, 0.57, 0.78, 0.79, 1.33]","mean ns [7163.6, 7165.4], difference 1.83 ns"
+timing: Finished / rekey MAC: wrong in its first byte vs in its last byte,Laptop (ground station),22795,,"|t| per round: [0.5, 1.29, 1.32, 1.69, 2.2]","mean ns [165.5, 165.3], difference -0.15 ns"
+"timing: control - a comparison that stops at the first wrong byte (not used in the link), same test",Laptop (ground station),1136,,"|t| per round: [295.87, 316.75, 379.31, 528.75, 561.78]","mean ns [315.9, 2572.7], difference 2256.81 ns"

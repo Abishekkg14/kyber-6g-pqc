@@ -1,0 +1,4 @@
+signal,samples,entropy_bits_per_byte,chi_square_bytes,correlation_next_sample,correlation_lag_2,spectral_flatness,correlation_with_the_sound,snr_db,psnr_db
+the sound (PCM),1654272,6.833781,18635261.0,0.985149,0.942517,0.0032,,,
+as stored (ciphertext at the place of every sample),1654272,7.999938,283.7,-0.001516,-0.000593,0.56101,-0.00067,-20.336,4.734
+"key wrong in one bit, checks removed",1654272,,,0.000305,0.000434,0.56122,0.000598,-20.335,4.735

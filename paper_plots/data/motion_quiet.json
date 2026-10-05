@@ -1,0 +1,27 @@
+{
+ "what": "motion watch: the real scene as it was (nobody was asked to keep still or to move)",
+ "when": "2026-10-05 22:00:30 IST",
+ "host": "Abishek14",
+ "tool": "kyber6g.tools.motion_bench",
+ "minutes": 5.44,
+ "looks": 2619,
+ "looks_with_motion": 1323,
+ "movements": 12,
+ "scene_changes": 181,
+ "reports_received": 2320,
+ "errors": 0,
+ "camera": {
+  "mode": "NORMAL",
+  "lux": 604.7,
+  "gain": 2.19,
+  "exposure_us": 29986,
+  "fps": 30.02
+ },
+ "watch": {
+  "hz": 8.0,
+  "hz_measured": 8.0,
+  "sensitivity": "medium",
+  "ms": 33.83,
+  "ms_max": 35.74
+ }
+}

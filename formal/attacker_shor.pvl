@@ -1,0 +1,3 @@
+(* A quantum attacker: X25519 is broken outright - the secret scalar follows from the public point.
+   ML-KEM-1024 and ML-DSA-87 stand. *)
+reduc forall x: scalar; dlog(exp(g, x)) = x.

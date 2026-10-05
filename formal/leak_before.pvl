@@ -1,0 +1,3 @@
+(* the secret both ends start from leaks BEFORE the operation (a session whose state was read out) *)
+let LeakBefore(k: key) = out(c, k).
+let LeakNext(k: key) = 0.

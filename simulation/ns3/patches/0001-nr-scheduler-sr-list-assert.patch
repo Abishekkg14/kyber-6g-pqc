@@ -1,0 +1,22 @@
+5G-LENA (NR v3.3), model/nr-mac-scheduler-ns3.cc: the assertion at the end of DoSchedUlSrInfoReq compares the
+merged list of UEs that asked for an uplink grant with the list just received. The list just received can name the
+same UE twice (two scheduling requests of one UE delivered together, which happens when uplink slots are sparse and
+many UEs have data); the merge above the assertion handles that correctly, the assertion does not, and a build with
+assertions enabled aborts. The assertion is made to compare with the number of DISTINCT UEs. No behaviour changes.
+
+Applied by simulation/run_sweep.py (once; `git -C ns-3-dev/contrib/nr apply`).
+
+--- a/model/nr-mac-scheduler-ns3.cc
++++ b/model/nr-mac-scheduler-ns3.cc
+@@ -2581,7 +2581,10 @@ NrMacSchedulerNs3::DoSchedUlSrInfoReq(
+             m_srList.push_back(ue);
+         }
+     }
+-    NS_ASSERT(m_srList.size() >= params.m_srList.size());
++    // Kyber-6G: the received list may name one UE twice; compare with the number of distinct UEs
++    NS_ASSERT(m_srList.size() >=
++              std::unordered_set<uint16_t>(params.m_srList.begin(), params.m_srList.end())
++                  .size());
+ }
+
+ /**

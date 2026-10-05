@@ -1,0 +1,7 @@
+component,ms,source
+Camera and H.264 encoder (Pi),69.42,"camera status on the Pi (sensor time stamp to encoded frame), median over 240 samples of live video"
+Sealing and sending 12 records (Pi),1.774,Pi: mean seal+send time per record x records per frame
+"Radio, one way (half the ICMP round trip)",3.833,half the median ICMP round trip measured on the Pi (assumes a symmetric path)
+Decoder at the ground station (H.264 to picture),15.9,"ground station, corrected for its clock rate"
+sum,90.92,
+ground station's estimate (capture to decoded),94.8,needs both clocks: an estimate while the laptop clock is unsteady

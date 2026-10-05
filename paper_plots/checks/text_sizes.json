@@ -1,0 +1,105 @@
+{
+ "plot01_crypto_primitives": [
+  7.0,
+  8.0
+ ],
+ "plot02_handshake_latency": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot03_wire_bytes": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot04_aead_throughput": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot05_timeline": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot06_loss": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot07_latency": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot08_media_protection": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot09_cipher_statistics": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot10_attacks": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot11_sim_validation": [
+  7.0,
+  8.0
+ ],
+ "plot12_sim_swarm": [
+  7.0,
+  8.0
+ ],
+ "plot13_sim_storm": [
+  7.0,
+  8.0
+ ],
+ "plot14_sim_mobility_range": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot15_ablation_crypto": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot16_ablation_design": [
+  7.0,
+  8.0
+ ],
+ "plot17_audio_statistics": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot18_audio_shape": [
+  7.0,
+  8.0
+ ],
+ "plot19_audio_cost": [
+  7.0,
+  8.0
+ ],
+ "plot20_audio_attacks": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot21_motion_watch": [
+  6.5,
+  7.0,
+  8.0
+ ],
+ "plot22_proof_matrix": [
+  6.5,
+  7.0,
+  8.0
+ ]
+}

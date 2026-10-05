@@ -1,0 +1,1367 @@
+{
+ "summary": {
+  "proverif": "Proverif 2.05. Cryptographic protocol verifier, by Bruno Blanchet, Vincent Cheval, and Marc Sylvestre",
+  "runs": 46,
+  "runs_as_expected": 46,
+  "queries": 177,
+  "claims_proved": 100,
+  "claims": 100,
+  "attacks_found_where_expected": 77,
+  "attacks_expected": 77,
+  "seconds": 29.7,
+  "when": "2026-10-05 14:04:53 IST"
+ },
+ "attackers": {
+  "classical": "breaks nothing",
+  "shor": "X25519 broken",
+  "mlkem": "ML-KEM broken",
+  "both": "X25519 and ML-KEM broken"
+ },
+ "runs": [
+  {
+   "model": "handshake",
+   "leak": null,
+   "about": "full handshake; both signing keys are given to the attacker afterwards (phase 1); a second pinned UAV is the attacker's",
+   "attacker": "classical",
+   "seconds": 5.12,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsAccept(idU,idG,s,k)) ==> inj-event(UavAccept(idU,idG,s,k))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(UavAccept(u,gid_1,s,k)) ==> inj-event(GcsRunning(u,gid_1,s,k))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsAccept(idU,idG,s,k))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "handshake",
+   "leak": null,
+   "about": "full handshake; both signing keys are given to the attacker afterwards (phase 1); a second pinned UAV is the attacker's",
+   "attacker": "shor",
+   "seconds": 4.27,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsAccept(idU,idG,s,k)) ==> inj-event(UavAccept(idU,idG,s,k))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(UavAccept(u,gid_1,s,k)) ==> inj-event(GcsRunning(u,gid_1,s,k))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsAccept(idU,idG,s,k))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "handshake",
+   "leak": null,
+   "about": "full handshake; both signing keys are given to the attacker afterwards (phase 1); a second pinned UAV is the attacker's",
+   "attacker": "mlkem",
+   "seconds": 6.87,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsAccept(idU,idG,s,k)) ==> inj-event(UavAccept(idU,idG,s,k))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(UavAccept(u,gid_1,s,k)) ==> inj-event(GcsRunning(u,gid_1,s,k))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsAccept(idU,idG,s,k))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "handshake",
+   "leak": null,
+   "about": "full handshake; both signing keys are given to the attacker afterwards (phase 1); a second pinned UAV is the attacker's",
+   "attacker": "both",
+   "seconds": 6.03,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not attacker_p1(secretG[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "inj-event(GcsAccept(idU,idG,s,k)) ==> inj-event(UavAccept(idU,idG,s,k))",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "inj-event(UavAccept(u,gid_1,s,k)) ==> inj-event(GcsRunning(u,gid_1,s,k))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsAccept(idU,idG,s,k))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_none",
+   "about": "1-RTT Cached RapidRekey from a secret resumption secret",
+   "attacker": "classical",
+   "seconds": 0.16,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_none",
+   "about": "1-RTT Cached RapidRekey from a secret resumption secret",
+   "attacker": "shor",
+   "seconds": 0.18,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_none",
+   "about": "1-RTT Cached RapidRekey from a secret resumption secret",
+   "attacker": "mlkem",
+   "seconds": 0.17,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_none",
+   "about": "1-RTT Cached RapidRekey from a secret resumption secret",
+   "attacker": "both",
+   "seconds": 0.12,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_next",
+   "about": "... and the next resumption secret leaks afterwards (the chain is one-way)",
+   "attacker": "classical",
+   "seconds": 0.22,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_next",
+   "about": "... and the next resumption secret leaks afterwards (the chain is one-way)",
+   "attacker": "shor",
+   "seconds": 0.18,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_next",
+   "about": "... and the next resumption secret leaks afterwards (the chain is one-way)",
+   "attacker": "mlkem",
+   "seconds": 0.18,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_next",
+   "about": "... and the next resumption secret leaks afterwards (the chain is one-way)",
+   "attacker": "both",
+   "seconds": 0.19,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG1[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_before",
+   "about": "... but the resumption secret had leaked BEFORE: a cached rekey does not heal (expected to fail)",
+   "attacker": "classical",
+   "seconds": 0.1,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU1[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not attacker(secretG1[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_before",
+   "about": "... but the resumption secret had leaked BEFORE: a cached rekey does not heal (expected to fail)",
+   "attacker": "shor",
+   "seconds": 0.1,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU1[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not attacker(secretG1[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_before",
+   "about": "... but the resumption secret had leaked BEFORE: a cached rekey does not heal (expected to fail)",
+   "attacker": "mlkem",
+   "seconds": 0.1,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU1[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not attacker(secretG1[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "cached_rekey",
+   "leak": "leak_before",
+   "about": "... but the resumption secret had leaked BEFORE: a cached rekey does not heal (expected to fail)",
+   "attacker": "both",
+   "seconds": 0.09,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU1[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not attacker(secretG1[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "inj-event(GcsRekeyed(sid0,s,k_3)) ==> inj-event(UavRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(UavRekeyed(sid0,s,k_3)) ==> event(GcsRunning(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not event(GcsRekeyed(sid0,s,k_3))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet",
+   "leak": "leak_none",
+   "about": "PQ ratchet inside a healthy session",
+   "attacker": "classical",
+   "seconds": 0.1,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRatcheted(sid0,s,k_2)) ==> event(GcsRatcheted(sid0,s,k_2))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k_2))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet",
+   "leak": "leak_none",
+   "about": "PQ ratchet inside a healthy session",
+   "attacker": "shor",
+   "seconds": 0.09,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRatcheted(sid0,s,k_2)) ==> event(GcsRatcheted(sid0,s,k_2))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k_2))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet",
+   "leak": "leak_none",
+   "about": "PQ ratchet inside a healthy session",
+   "attacker": "mlkem",
+   "seconds": 0.14,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRatcheted(sid0,s,k_2)) ==> event(GcsRatcheted(sid0,s,k_2))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k_2))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet",
+   "leak": "leak_none",
+   "about": "PQ ratchet inside a healthy session",
+   "attacker": "both",
+   "seconds": 0.16,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRatcheted(sid0,s,k_2)) ==> event(GcsRatcheted(sid0,s,k_2))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k_2))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet",
+   "leak": "leak_next",
+   "about": "... and the OLD master secret leaks afterwards",
+   "attacker": "classical",
+   "seconds": 0.58,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRatcheted(sid0,s,k_2)) ==> event(GcsRatcheted(sid0,s,k_2))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k_2))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet",
+   "leak": "leak_next",
+   "about": "... and the OLD master secret leaks afterwards",
+   "attacker": "shor",
+   "seconds": 0.66,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRatcheted(sid0,s,k_2)) ==> event(GcsRatcheted(sid0,s,k_2))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k_2))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet",
+   "leak": "leak_next",
+   "about": "... and the OLD master secret leaks afterwards",
+   "attacker": "mlkem",
+   "seconds": 0.57,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker_p1(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(UavRatcheted(sid0,s,k_2)) ==> event(GcsRatcheted(sid0,s,k_2))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k_2))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet",
+   "leak": "leak_next",
+   "about": "... and the OLD master secret leaks afterwards",
+   "attacker": "both",
+   "seconds": 0.57,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(secretU2[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not attacker_p1(secretG2[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(UavRatcheted(sid0,s,k_2)) ==> event(GcsRatcheted(sid0,s,k_2))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k_2))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet_active",
+   "leak": null,
+   "about": "... the old master secret leaked before and the attacker is ACTIVE during the ratchet (expected to fail)",
+   "attacker": "classical",
+   "seconds": 0.03,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU2[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(UavRatcheted(sid0,s,k)) ==> event(GcsRatcheted(sid0,s,k))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet_passive",
+   "leak": null,
+   "about": "PQ ratchet after the old master secret leaked, attacker only LISTENS: the session heals",
+   "attacker": "classical",
+   "seconds": 0.07,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet_passive",
+   "leak": null,
+   "about": "PQ ratchet after the old master secret leaked, attacker only LISTENS: the session heals",
+   "attacker": "shor",
+   "seconds": 0.07,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet_passive",
+   "leak": null,
+   "about": "PQ ratchet after the old master secret leaked, attacker only LISTENS: the session heals",
+   "attacker": "mlkem",
+   "seconds": 0.07,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not attacker(secretG2[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "pq_ratchet_passive",
+   "leak": null,
+   "about": "PQ ratchet after the old master secret leaked, attacker only LISTENS: the session heals",
+   "attacker": "both",
+   "seconds": 0.09,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(secretU2[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not attacker(secretG2[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "not event(UavRatcheted(sid0,s,k))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_none",
+   "about": "stored photo / recording / audio clip",
+   "attacker": "classical",
+   "seconds": 0.06,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_none",
+   "about": "stored photo / recording / audio clip",
+   "attacker": "shor",
+   "seconds": 0.06,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_none",
+   "about": "stored photo / recording / audio clip",
+   "attacker": "mlkem",
+   "seconds": 0.06,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_none",
+   "about": "stored photo / recording / audio clip",
+   "attacker": "both",
+   "seconds": 0.07,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker(fileSecret[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_uav",
+   "about": "... the UAV is captured afterwards (all it holds: its signing key)",
+   "attacker": "classical",
+   "seconds": 0.13,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_uav",
+   "about": "... the UAV is captured afterwards (all it holds: its signing key)",
+   "attacker": "shor",
+   "seconds": 0.13,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_uav",
+   "about": "... the UAV is captured afterwards (all it holds: its signing key)",
+   "attacker": "mlkem",
+   "seconds": 0.11,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_uav",
+   "about": "... the UAV is captured afterwards (all it holds: its signing key)",
+   "attacker": "both",
+   "seconds": 0.14,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_kem",
+   "about": "... the ground station's ML-KEM recording key alone is stolen",
+   "attacker": "classical",
+   "seconds": 0.09,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_kem",
+   "about": "... the ground station's ML-KEM recording key alone is stolen",
+   "attacker": "shor",
+   "seconds": 0.12,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_kem",
+   "about": "... the ground station's ML-KEM recording key alone is stolen",
+   "attacker": "mlkem",
+   "seconds": 0.11,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_kem",
+   "about": "... the ground station's ML-KEM recording key alone is stolen",
+   "attacker": "both",
+   "seconds": 0.22,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_x",
+   "about": "... the ground station's X25519 recording key alone is stolen",
+   "attacker": "classical",
+   "seconds": 0.25,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_x",
+   "about": "... the ground station's X25519 recording key alone is stolen",
+   "attacker": "shor",
+   "seconds": 0.21,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_x",
+   "about": "... the ground station's X25519 recording key alone is stolen",
+   "attacker": "mlkem",
+   "seconds": 0.21,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_x",
+   "about": "... the ground station's X25519 recording key alone is stolen",
+   "attacker": "both",
+   "seconds": 0.26,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  },
+  {
+   "model": "sealed_file",
+   "leak": "file_leak_both",
+   "about": "... both recording keys are stolen (expected to fail: nothing at rest is forward secret)",
+   "attacker": "classical",
+   "seconds": 0.2,
+   "ok": true,
+   "queries": [
+    {
+     "query": "not attacker_p1(fileSecret[])",
+     "result": false,
+     "expected": false
+    },
+    {
+     "query": "event(GcsOpened(f,d)) ==> event(UavSealed(f,d))",
+     "result": true,
+     "expected": true
+    },
+    {
+     "query": "not event(GcsOpened(f,d))",
+     "result": false,
+     "expected": false
+    }
+   ]
+  }
+ ]
+}

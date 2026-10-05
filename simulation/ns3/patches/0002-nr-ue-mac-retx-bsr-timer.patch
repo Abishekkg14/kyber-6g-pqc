@@ -1,0 +1,76 @@
+5G-LENA (NR v3.3), model/nr-ue-mac.{cc,h}: the retxBSR-Timer of TS 38.321 (5.4.5), which the library does not have.
+
+A UE tells the gNB how much data it has waiting with a buffer status report, carried inside its uplink transport
+blocks, and asks for a first grant with a scheduling request. The library's UE sends a scheduling request only when
+data arrives while its request state is INACTIVE, and leaves that state only when a grant has emptied its buffer.
+If the transport block that carries the last buffer status report is lost (all HARQ transmissions fail, or the HARQ
+process expires), the gNB believes the buffer is empty and grants nothing, while the UE still has data and is
+waiting for a grant: nothing is sent by that UE for the rest of the simulation. In a real UE the retxBSR-Timer ends
+this: when it expires with data still waiting, the buffer status report is triggered again, and with no grant to
+carry it, a scheduling request is sent.
+
+The change: the UE remembers when it last received an uplink grant (or sent a scheduling request); if it has data
+waiting and that is longer ago than RetxBsrTimer (new attribute of ns3::NrUeMac, default 80 ms, 0 = off), it sends
+the scheduling request again.
+
+Found with the frequency-division scheduler, where transport blocks were lost in numbers; 3 of 80 simulated UAVs at
+8 per cell and 26 of 160 at 16 per cell went silent for good.
+
+Applied by simulation/run_sweep.py (once; `git -C ns-3-dev/contrib/nr apply`).
+
+diff --git a/model/nr-ue-mac.cc b/model/nr-ue-mac.cc
+index db73b268..53872646 100644
+--- a/model/nr-ue-mac.cc
++++ b/model/nr-ue-mac.cc
+@@ -214,6 +214,12 @@ NrUeMac::GetTypeId()
+                 UintegerValue(16),
+                 MakeUintegerAccessor(&NrUeMac::SetNumHarqProcess, &NrUeMac::GetNumHarqProcess),
+                 MakeUintegerChecker<uint8_t>())
++            .AddAttribute("RetxBsrTimer",
++                          "retxBSR-Timer (TS 38.321, 5.4.5): with data waiting and no uplink grant for this "
++                          "long, the scheduling request is sent again. Zero disables it.",
++                          TimeValue(MilliSeconds(80)),
++                          MakeTimeAccessor(&NrUeMac::m_retxBsrTimer),
++                          MakeTimeChecker())
+             .AddTraceSource("UeMacRxedCtrlMsgsTrace",
+                             "Ue MAC Control Messages Traces.",
+                             MakeTraceSourceAccessor(&NrUeMac::m_macRxedCtrlMsgsTrace),
+@@ -552,6 +558,17 @@ NrUeMac::DoSlotIndication(const SfnSf& sfn)
+         NS_LOG_INFO("Sending SR to PHY in slot " << sfn);
+         SendSR();
+         m_srState = ACTIVE;
++        m_lastUlGrant = Simulator::Now();
++    }
++    else if (m_srState == ACTIVE && !m_retxBsrTimer.IsZero() && GetTotalBufSize() > 0 &&
++             Simulator::Now() - m_lastUlGrant >= m_retxBsrTimer)
++    {
++        // Kyber-6G: retxBSR-Timer. Data is waiting, a scheduling request was sent, and no grant has come since.
++        // The gNB believes this UE's buffer is empty (the transport block with the last buffer status report
++        // was lost), and without asking again the UE would wait forever.
++        NS_LOG_INFO("retxBSR-Timer expired with " << GetTotalBufSize() << " bytes waiting: sending SR again");
++        SendSR();
++        m_lastUlGrant = Simulator::Now();
+     }
+ 
+     // Feedback missing
+@@ -671,6 +688,7 @@ NrUeMac::ProcessUlDci(const Ptr<NrUlDciMessage>& dciMsg)
+     m_ulDciSfnsf = dataSfn;
+     m_ulDciTotalUsed = 0;
+     m_ulDci = dciMsg->GetDciInfoElement();
++    m_lastUlGrant = Simulator::Now();
+ 
+     m_macRxedCtrlMsgsTrace(m_currentSlot, GetCellId(), m_rnti, GetBwpId(), dciMsg);
+ 
+diff --git a/model/nr-ue-mac.h b/model/nr-ue-mac.h
+index 16e5a037..e3f3946b 100644
+--- a/model/nr-ue-mac.h
++++ b/model/nr-ue-mac.h
+@@ -417,6 +417,8 @@ class NrUeMac : public Object
+     };
+ 
+     SrBsrMachine m_srState{INACTIVE}; //!< Current state for the SR/BSR machine.
++    Time m_retxBsrTimer{MilliSeconds(80)}; //!< retxBSR-Timer: ask for a grant again after this long without one
++    Time m_lastUlGrant{Seconds(0)};        //!< When the last uplink grant arrived (or the last SR was sent)
+ 
+     Ptr<UniformRandomVariable> m_raPreambleUniformVariable;
+     uint8_t m_raPreambleId{0}; //!< The RA Preamble ID

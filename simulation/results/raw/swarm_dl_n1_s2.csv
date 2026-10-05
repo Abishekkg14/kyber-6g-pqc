@@ -1,0 +1,19 @@
+# k6g-swarm-sim swarm_dl_n1_s2
+# O,uav,op,kind,initial,t0_s,ok,total_ms,build_ms,wait_ms,process_ms,finish_ms,gcs_ms,transmissions,why
+#   initial: 1 = the UAV's first handshake, 2 = handshake after a change of position cell, 0 = planned operation
+# V,uav,frames_sent,frames_complete,frames_decoded,frames_lost,chunks_received,key_requests,distance_m,chunks_sent,last_rx_s,cell_changes
+O,0,1,full,1,2.428203,1,30.9778,3.8040,25.5558,3.7530,1.6180,2.3102,1,
+O,0,2,full,0,3.753212,1,26.0146,2.8860,20.8556,3.0730,2.2730,1.2980,1,
+O,0,3,cached,0,4.179227,1,12.1869,0.1300,10.3569,0.4400,1.7000,0.2769,1,
+O,0,4,ratchet,0,4.591414,1,19.7667,0.9770,18.5447,1.6260,1.2220,1.9499,1,
+O,0,5,full,0,5.012157,1,21.0504,2.8280,16.5064,3.1110,1.7160,1.0525,1,
+O,0,6,cached,0,5.433208,1,12.4049,0.1430,10.3629,0.4400,1.8990,0.3731,1,
+O,0,7,ratchet,0,5.845613,1,22.4147,1.0440,20.9597,1.8070,1.4550,3.1261,1,
+O,0,8,full,0,6.269071,1,25.6164,3.4740,20.4574,4.6220,1.6850,1.2027,1,
+O,0,9,cached,0,6.694688,1,13.4499,0.1370,11.4339,0.4850,1.8790,0.4006,1,
+O,0,10,ratchet,0,7.108138,1,17.9667,0.9300,16.2957,1.5540,1.6710,1.5326,1,
+O,0,11,full,0,7.527034,1,22.3994,2.4490,18.2524,3.8550,1.6980,1.6878,1,
+O,0,12,cached,0,7.949434,1,12.1719,0.1630,10.0739,0.3970,1.9350,0.2877,1,
+O,0,13,ratchet,0,8.361606,1,20.0687,0.9530,18.4847,1.7340,1.5840,1.8340,1,
+V,0,330,326,326,0,3911,0,185.8,3911,13.9787,0
+M,link=nr,profile=hybrid5,nUav=1,run=2,loss=0.0000,speed=0.0000,simTime=14.0000,storm=0,video=1,fecParity=0,kfRequest=0,retxScale=1.0000,adaptiveRetx=0,combine=1,gcsWorkers=1,fragPayload=1180.0000,bw=100000000.0000,radius=400.0000,rMin=30.0000,chUpdateMs=0.0000,videoScale=1.0000,tdd=DL.DL.DL.S.UL.DL.DL.S.UL.UL.,scheduler=tdma,ulPowerControl=0,upSent=3962,upLost=0,upRecv=3962,downSent=46,downLost=0,downRecv=46,upBytes=4467782,downBytes=42815,ulTb=727,ulTbErr=0,ulTbLost=0,dlTb=18,dlTbErr=0,dlTbLost=0,ulSinrMeanDb=40.8013,ulMcsMean=27.9615,gcsBusyMs=60.6764,gcsMaxQueueMs=0.2093,gcsJobs=13,gcsCacheAnswers=0,framesSent=330,framesComplete=326,framesDecoded=326

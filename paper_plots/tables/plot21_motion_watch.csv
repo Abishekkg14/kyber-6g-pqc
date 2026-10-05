@@ -1,0 +1,120 @@
+panel,series,x,looks_with_target,hits,found_pct,false_regions,found_pct_median_of_captures,found_pct_lowest_capture,found_pct_highest_capture
+a,generated scene: day noise,3,320,0,0.0,0,,,
+a,generated scene: day noise,4,320,14,4.4,0,,,
+a,generated scene: day noise,6,320,283,88.4,0,,,
+a,generated scene: day noise,8,320,320,100.0,0,,,
+a,generated scene: day noise,12,320,320,100.0,0,,,
+a,generated scene: day noise,16,320,320,100.0,0,,,
+a,generated scene: day noise,25,320,320,100.0,0,,,
+a,generated scene: day noise,40,320,320,100.0,0,,,
+a,generated scene: night noise,3,320,0,0.0,0,,,
+a,generated scene: night noise,4,320,0,0.0,0,,,
+a,generated scene: night noise,6,320,0,0.0,0,,,
+a,generated scene: night noise,8,320,0,0.0,0,,,
+a,generated scene: night noise,12,320,99,30.9,0,,,
+a,generated scene: night noise,16,320,320,100.0,0,,,
+a,generated scene: night noise,25,320,320,100.0,0,,,
+a,generated scene: night noise,40,320,320,100.0,0,,,
+a,"UAV camera, NORMAL (472 lux)",-25,102,102,100.0,10,100.0,100.0,100.0
+a,"UAV camera, NORMAL (472 lux)",4,102,91,89.2,13,94.1,73.5,100.0
+a,"UAV camera, NORMAL (472 lux)",6,102,102,100.0,13,100.0,100.0,100.0
+a,"UAV camera, NORMAL (472 lux)",8,102,102,100.0,13,100.0,100.0,100.0
+a,"UAV camera, NORMAL (472 lux)",12,102,102,100.0,13,100.0,100.0,100.0
+a,"UAV camera, NORMAL (472 lux)",16,102,102,100.0,13,100.0,100.0,100.0
+a,"UAV camera, NORMAL (472 lux)",25,102,102,100.0,13,100.0,100.0,100.0
+a,"UAV camera, NORMAL (472 lux)",40,102,102,100.0,13,100.0,100.0,100.0
+a,"UAV camera, NIGHT (473 lux)",-25,102,102,100.0,17,100.0,100.0,100.0
+a,"UAV camera, NIGHT (473 lux)",4,102,94,92.2,18,100.0,76.5,100.0
+a,"UAV camera, NIGHT (473 lux)",6,102,102,100.0,17,100.0,100.0,100.0
+a,"UAV camera, NIGHT (473 lux)",8,102,102,100.0,16,100.0,100.0,100.0
+a,"UAV camera, NIGHT (473 lux)",12,102,102,100.0,18,100.0,100.0,100.0
+a,"UAV camera, NIGHT (473 lux)",16,102,102,100.0,14,100.0,100.0,100.0
+a,"UAV camera, NIGHT (473 lux)",25,102,102,100.0,18,100.0,100.0,100.0
+a,"UAV camera, NIGHT (473 lux)",40,102,102,100.0,18,100.0,100.0,100.0
+b,generated scene: day noise,3,320,320,100.0,0,,,
+b,generated scene: day noise,4,320,320,100.0,0,,,
+b,generated scene: day noise,6,320,320,100.0,0,,,
+b,generated scene: day noise,8,320,320,100.0,0,,,
+b,generated scene: day noise,12,320,320,100.0,0,,,
+b,generated scene: day noise,16,320,320,100.0,0,,,
+b,generated scene: night noise,3,320,176,55.0,0,,,
+b,generated scene: night noise,4,320,304,95.0,0,,,
+b,generated scene: night noise,6,320,320,100.0,0,,,
+b,generated scene: night noise,8,320,320,100.0,0,,,
+b,generated scene: night noise,12,320,320,100.0,0,,,
+b,generated scene: night noise,16,320,320,100.0,0,,,
+b,"UAV camera, NORMAL (472 lux)",3,102,102,100.0,13,100.0,100.0,100.0
+b,"UAV camera, NORMAL (472 lux)",4,102,102,100.0,13,100.0,100.0,100.0
+b,"UAV camera, NORMAL (472 lux)",6,102,102,100.0,13,100.0,100.0,100.0
+b,"UAV camera, NORMAL (472 lux)",8,102,102,100.0,13,100.0,100.0,100.0
+b,"UAV camera, NORMAL (472 lux)",12,102,102,100.0,13,100.0,100.0,100.0
+b,"UAV camera, NORMAL (472 lux)",16,102,102,100.0,13,100.0,100.0,100.0
+b,"UAV camera, NIGHT (473 lux)",3,102,102,100.0,18,100.0,100.0,100.0
+b,"UAV camera, NIGHT (473 lux)",4,102,102,100.0,18,100.0,100.0,100.0
+b,"UAV camera, NIGHT (473 lux)",6,102,102,100.0,18,100.0,100.0,100.0
+b,"UAV camera, NIGHT (473 lux)",8,102,102,100.0,18,100.0,100.0,100.0
+b,"UAV camera, NIGHT (473 lux)",12,102,102,100.0,18,100.0,100.0,100.0
+b,"UAV camera, NIGHT (473 lux)",16,102,102,100.0,18,100.0,100.0,100.0
+c,generated scene: day noise,0.1,400,249,62.2,0,,,
+c,generated scene: day noise,0.2,400,400,100.0,0,,,
+c,generated scene: day noise,0.4,400,400,100.0,0,,,
+c,generated scene: day noise,0.8,400,400,100.0,0,,,
+c,generated scene: day noise,1.5,400,400,100.0,0,,,
+c,generated scene: day noise,3,400,400,100.0,0,,,
+c,generated scene: day noise,6,400,400,100.0,0,,,
+c,generated scene: day noise,10,400,270,67.5,0,,,
+c,"UAV camera, NORMAL (472 lux)",0.2,102,102,100.0,13,100.0,100.0,100.0
+c,"UAV camera, NORMAL (472 lux)",0.4,102,102,100.0,13,100.0,100.0,100.0
+c,"UAV camera, NORMAL (472 lux)",0.8,102,102,100.0,13,100.0,100.0,100.0
+c,"UAV camera, NORMAL (472 lux)",2,102,102,100.0,13,100.0,100.0,100.0
+c,"UAV camera, NORMAL (472 lux)",4,102,102,100.0,13,100.0,100.0,100.0
+c,"UAV camera, NORMAL (472 lux)",8,102,93,91.2,13,88.2,85.3,100.0
+c,"UAV camera, NIGHT (473 lux)",0.2,102,102,100.0,18,100.0,100.0,100.0
+c,"UAV camera, NIGHT (473 lux)",0.4,102,102,100.0,18,100.0,100.0,100.0
+c,"UAV camera, NIGHT (473 lux)",0.8,102,102,100.0,18,100.0,100.0,100.0
+c,"UAV camera, NIGHT (473 lux)",2,102,102,100.0,18,100.0,100.0,100.0
+c,"UAV camera, NIGHT (473 lux)",4,102,102,100.0,18,100.0,100.0,100.0
+c,"UAV camera, NIGHT (473 lux)",8,102,93,91.2,17,88.2,85.3,100.0
+d,generated scene: camera pans,0,320,320,100.0,0,,,
+d,generated scene: camera pans,0.5,320,320,100.0,0,,,
+d,generated scene: camera pans,1,320,320,100.0,0,,,
+d,generated scene: camera pans,2,320,320,100.0,1,,,
+d,generated scene: camera pans,4,320,305,95.3,0,,,
+d,generated scene: camera pans,8,320,213,66.6,0,,,
+d,generated scene: camera pans,12,320,133,41.6,0,,,
+d,generated scene: pans and turns 0.3°,0,320,320,100.0,0,,,
+d,generated scene: pans and turns 0.3°,0.5,320,320,100.0,0,,,
+d,generated scene: pans and turns 0.3°,1,320,320,100.0,0,,,
+d,generated scene: pans and turns 0.3°,2,320,315,98.4,0,,,
+d,generated scene: pans and turns 0.3°,4,320,298,93.1,4,,,
+d,generated scene: pans and turns 0.3°,8,320,192,60.0,0,,,
+d,generated scene: pans and turns 0.3°,12,320,128,40.0,0,,,
+d,"generated scene: camera pans, nothing moves",0,0,0,,0,,,
+d,"generated scene: camera pans, nothing moves",0.5,0,0,,0,,,
+d,"generated scene: camera pans, nothing moves",1,0,0,,0,,,
+d,"generated scene: camera pans, nothing moves",2,0,0,,1,,,
+d,"generated scene: camera pans, nothing moves",4,0,0,,0,,,
+d,"generated scene: camera pans, nothing moves",8,0,0,,0,,,
+d,"generated scene: camera pans, nothing moves",12,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity medium: still, day noise",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity high: still, day noise",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity medium: still, night noise",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity high: still, night noise",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity medium: lamp flicker 5 %",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity high: lamp flicker 5 %",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity medium: exposure wanders 2 % a look",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity high: exposure wanders 2 % a look",,0,0,,3,,,
+e,"generated scene, nothing moves, sensitivity medium: pan 2.3 px/look",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity high: pan 2.3 px/look",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity medium: pan 6.5 px + shake 0.5 px",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity high: pan 6.5 px + shake 0.5 px",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity medium: pan + turn 0.3 deg/look",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity high: pan + turn 0.3 deg/look",,0,0,,2,,,
+e,"generated scene, nothing moves, sensitivity medium: pan + zoom 0.5 %/look",,0,0,,1,,,
+e,"generated scene, nothing moves, sensitivity high: pan + zoom 0.5 %/look",,0,0,,5,,,
+e,"generated scene, nothing moves, sensitivity medium: dim flat scene, night, row noise",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity high: dim flat scene, night, row noise",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity medium: dim flat scene, pan 2.3",,0,0,,0,,,
+e,"generated scene, nothing moves, sensitivity high: dim flat scene, pan 2.3",,0,0,,0,,,
+e,"UAV camera, NORMAL mode, no target drawn in (real scene, not controlled)",,0,0,,13,,,
+e,"UAV camera, NIGHT mode, no target drawn in (real scene, not controlled)",,0,0,,18,,,

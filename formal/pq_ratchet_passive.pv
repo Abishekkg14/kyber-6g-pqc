@@ -1,0 +1,51 @@
+(* Kyber-6G PQ ratchet, post-compromise security: the OLD master secret is given to the attacker at the start, and
+   he LISTENS to the ratchet (he reads both messages - with the old secret he can open them - but does not change
+   them: they travel on a channel he cannot write to, and a copy of each goes to him).
+
+   Claim: the new epoch is secret again. A session whose state was read out once heals at the next ratchet, unless
+   the attacker is in the path and active at that very moment (pq_ratchet.pv with leak_before.pvl shows that case).
+
+   The same four attackers apply: with X25519 broken OR ML-KEM broken the claim must hold, with both broken it must
+   FAIL. *)
+
+const sid0: bitstring.
+free secretU2: bitstring [private].
+free secretG2: bitstring [private].
+free wire: channel [private].                      (* what the attacker can read (copies go to c) but not write *)
+
+event UavRatcheted(bitstring, bitstring, key).
+
+query attacker(secretU2).
+query attacker(secretG2).
+query s: bitstring, k: key; event(UavRatcheted(sid0, s, k)).          (* not empty: must be FALSE *)
+
+let UAV(m0: key) =
+  new x: scalar; new dk: kemsk; new rid: bitstring; new n1: bitstring;
+  let ku = hkdf_expand(m0, (L_CONTROL, DIR_U2G, suite, sid0)) in
+  let kg = hkdf_expand(m0, (L_CONTROL, DIR_G2U, suite, sid0)) in
+  let req = (n1, aead(ku, n1, (RATCHET_REQ, rid, exp(g, x), kempub(dk)), sid0)) in
+  out(c, req); out(wire, req);
+  in(wire, (n2: bitstring, e: bitstring));
+  let (=RATCHET_RESP, =rid, Xs: point, ct: bitstring, sid1: bitstring) = aead_open(kg, n2, e, sid0) in
+  let th = h((LBL_PQR, sid0, rid, exp(g, x), kempub(dk), Xs, ct, sid1)) in
+  let m1 = hkdf_expand(hkdf_extract(th, (decap(ct, dk), exp(Xs, x), m0)), (L_MASTER, suite, sid1)) in
+  event UavRatcheted(sid0, sid1, m1);
+  out(c, aead(hkdf_expand(m1, (L_TRAFFIC, DIR_U2G, suite, sid1)), n0, secretU2, empty)).
+
+let GCS(m0: key) =
+  let ku = hkdf_expand(m0, (L_CONTROL, DIR_U2G, suite, sid0)) in
+  let kg = hkdf_expand(m0, (L_CONTROL, DIR_G2U, suite, sid0)) in
+  in(wire, (n1: bitstring, e: bitstring));
+  let (=RATCHET_REQ, rid: bitstring, Xc: point, ek: kempk) = aead_open(ku, n1, e, sid0) in
+  new xs: scalar; new r: kemseed; new sid1: bitstring; new n2: bitstring;
+  let ct = kemct(ek, r) in
+  let th = h((LBL_PQR, sid0, rid, Xc, ek, exp(g, xs), ct, sid1)) in
+  let m1 = hkdf_expand(hkdf_extract(th, (kemss(ek, r), exp(Xc, xs), m0)), (L_MASTER, suite, sid1)) in
+  let resp = (n2, aead(kg, n2, (RATCHET_RESP, rid, exp(g, xs), ct, sid1), sid0)) in
+  out(c, resp); out(wire, resp);
+  out(c, aead(hkdf_expand(m1, (L_TRAFFIC, DIR_G2U, suite, sid1)), n0, secretG2, empty)).
+
+process
+  new m0: key;
+  out(c, m0);                                      (* the state of the old session has been read out *)
+  ( !UAV(m0) | !GCS(m0) )

@@ -1,0 +1,16 @@
+what,bytes,transfer_s,mbit_per_s,sha256_check,decrypt,decrypt_ms
+recording fetch,7365056,4.061,14.51,PASS,PASS,63.6
+recording fetch,7365056,3.605,16.35,PASS,PASS,42.0
+recording fetch,7365056,3.575,16.48,PASS,PASS,17.0
+recording fetch,7365056,3.56,16.55,PASS,PASS,33.3
+recording fetch,7365056,3.584,16.44,PASS,PASS,30.3
+photo,199632,0.03,53.17,PASS,,
+photo,201544,0.046,35.01,PASS,,
+photo,202978,0.044,36.86,PASS,,
+photo,202518,0.095,17.03,PASS,,
+photo,201104,0.097,16.56,PASS,,
+photo,202282,0.097,16.66,PASS,,
+photo,199259,0.095,16.76,PASS,,
+photo,201345,0.018,89.37,PASS,,
+photo,201017,0.047,34.17,PASS,,
+photo,201136,0.022,73.05,PASS,,

@@ -1,0 +1,214 @@
+{
+ "what": "whole NR studies made again with a rebuild of the simulator (the same source for these runs; the ns-3 tree without the earlier study's module contrib/pqc-security, which the sweep's program was still linked with and never called)",
+ "when_utc": "2026-10-04T19:26:07Z",
+ "simulator_sha256": "1e4b663e2fe33d16",
+ "simulator_sha256_of_the_sweep": "77d3aa4654551d88",
+ "studies": [
+  "range_",
+  "storm_"
+ ],
+ "runs": 130,
+ "runs_byte_identical": 57,
+ "failed": [],
+ "largest_difference_of_a_reported_median_pct": 0.87,
+ "rows": [
+  {
+   "quantity": "range: frames given to the decoder, %",
+   "configuration": "d250",
+   "runs": 5,
+   "sweep": 100.0,
+   "rebuilt": 100.0,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 0.0
+  },
+  {
+   "quantity": "range: frames given to the decoder, %",
+   "configuration": "d500",
+   "runs": 5,
+   "sweep": 100.0,
+   "rebuilt": 100.0,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 0.0
+  },
+  {
+   "quantity": "range: frames given to the decoder, %",
+   "configuration": "d1000",
+   "runs": 5,
+   "sweep": 100.0,
+   "rebuilt": 100.0,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 0.0
+  },
+  {
+   "quantity": "range: frames given to the decoder, %",
+   "configuration": "d2000",
+   "runs": 5,
+   "sweep": 100.0,
+   "rebuilt": 100.0,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 0.31
+  },
+  {
+   "quantity": "range: frames given to the decoder, %",
+   "configuration": "d3000",
+   "runs": 5,
+   "sweep": 100.0,
+   "rebuilt": 100.0,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 1.15
+  },
+  {
+   "quantity": "range: frames given to the decoder, %",
+   "configuration": "d4000",
+   "runs": 5,
+   "sweep": 99.577,
+   "rebuilt": 98.848,
+   "difference_pct": 0.73,
+   "largest_difference_of_one_run_pct": 1.54
+  },
+  {
+   "quantity": "range: full handshake, median ms",
+   "configuration": "d250",
+   "runs": 5,
+   "sweep": 23.177,
+   "rebuilt": 23.148,
+   "difference_pct": 0.12,
+   "largest_difference_of_one_run_pct": 5.06
+  },
+  {
+   "quantity": "range: full handshake, median ms",
+   "configuration": "d500",
+   "runs": 5,
+   "sweep": 23.177,
+   "rebuilt": 23.148,
+   "difference_pct": 0.12,
+   "largest_difference_of_one_run_pct": 5.06
+  },
+  {
+   "quantity": "range: full handshake, median ms",
+   "configuration": "d1000",
+   "runs": 5,
+   "sweep": 23.148,
+   "rebuilt": 23.177,
+   "difference_pct": 0.12,
+   "largest_difference_of_one_run_pct": 5.06
+  },
+  {
+   "quantity": "range: full handshake, median ms",
+   "configuration": "d2000",
+   "runs": 5,
+   "sweep": 23.198,
+   "rebuilt": 23.177,
+   "difference_pct": 0.09,
+   "largest_difference_of_one_run_pct": 2.85
+  },
+  {
+   "quantity": "range: full handshake, median ms",
+   "configuration": "d3000",
+   "runs": 5,
+   "sweep": 23.431,
+   "rebuilt": 23.227,
+   "difference_pct": 0.87,
+   "largest_difference_of_one_run_pct": 1.91
+  },
+  {
+   "quantity": "range: full handshake, median ms",
+   "configuration": "d4000",
+   "runs": 5,
+   "sweep": 23.652,
+   "rebuilt": 23.681,
+   "difference_pct": 0.12,
+   "largest_difference_of_one_run_pct": 2.42
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "1 thread(s), 4 UAVs",
+   "runs": 10,
+   "sweep": 31.557,
+   "rebuilt": 31.557,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 0.0
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "1 thread(s), 8 UAVs",
+   "runs": 10,
+   "sweep": 41.035,
+   "rebuilt": 41.035,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 0.0
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "1 thread(s), 16 UAVs",
+   "runs": 10,
+   "sweep": 54.044,
+   "rebuilt": 54.044,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 2.72
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "1 thread(s), 32 UAVs",
+   "runs": 10,
+   "sweep": 90.904,
+   "rebuilt": 90.904,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 2.3
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "1 thread(s), 64 UAVs",
+   "runs": 10,
+   "sweep": 155.734,
+   "rebuilt": 156.407,
+   "difference_pct": 0.43,
+   "largest_difference_of_one_run_pct": 5.48
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "4 thread(s), 4 UAVs",
+   "runs": 10,
+   "sweep": 28.841,
+   "rebuilt": 28.841,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 0.0
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "4 thread(s), 8 UAVs",
+   "runs": 10,
+   "sweep": 30.667,
+   "rebuilt": 30.667,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 0.0
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "4 thread(s), 16 UAVs",
+   "runs": 10,
+   "sweep": 34.413,
+   "rebuilt": 34.305,
+   "difference_pct": 0.31,
+   "largest_difference_of_one_run_pct": 2.28
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "4 thread(s), 32 UAVs",
+   "runs": 10,
+   "sweep": 49.787,
+   "rebuilt": 49.787,
+   "difference_pct": 0.0,
+   "largest_difference_of_one_run_pct": 0.0
+  },
+  {
+   "quantity": "storm: all sessions up, ms",
+   "configuration": "4 thread(s), 64 UAVs",
+   "runs": 10,
+   "sweep": 77.049,
+   "rebuilt": 77.026,
+   "difference_pct": 0.03,
+   "largest_difference_of_one_run_pct": 2.7
+  }
+ ]
+}

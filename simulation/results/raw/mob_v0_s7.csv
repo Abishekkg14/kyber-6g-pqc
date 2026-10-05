@@ -1,0 +1,21 @@
+# k6g-swarm-sim mob_v0_s7
+# O,uav,op,kind,initial,t0_s,ok,total_ms,build_ms,wait_ms,process_ms,finish_ms,gcs_ms,transmissions,why
+#   initial: 1 = the UAV's first handshake, 2 = handshake after a change of position cell, 0 = planned operation
+# V,uav,frames_sent,frames_complete,frames_decoded,frames_lost,chunks_received,key_requests,distance_m,chunks_sent,last_rx_s,cell_changes
+O,6,1,full,1,2.177036,1,26.7633,2.9680,22.1633,3.3220,1.6320,1.9646,1,
+O,1,1,full,1,2.187747,1,30.8316,5.0510,23.8696,3.3220,1.9110,2.5626,1,
+O,5,1,full,1,2.227616,1,27.6152,2.7760,23.2302,4.7770,1.6090,2.1129,1,
+O,2,1,full,1,2.279821,1,26.4976,2.9390,21.6076,3.0220,1.9510,1.2980,1,
+O,4,1,full,1,2.341290,1,24.7090,2.4670,20.6210,3.0330,1.6210,1.4521,1,
+O,3,1,full,1,2.349857,1,26.1931,2.9550,21.6171,3.0840,1.6210,1.6318,1,
+O,0,1,full,1,2.411699,1,27.1450,3.2590,22.0380,3.0440,1.8480,2.3132,1,
+O,7,1,full,1,2.411557,1,27.8119,3.5250,22.5619,3.7990,1.7250,1.7496,1,
+V,0,1260,1255,1255,0,15225,0,370.5,15225,44.9933,0
+V,1,1260,1255,1255,0,14978,0,259.9,14978,44.9955,0
+V,2,1260,1255,1255,0,14944,0,184.8,14944,44.9931,0
+V,3,1260,1255,1255,0,14955,0,204.3,14966,44.9757,0
+V,4,1260,1255,1255,0,15072,0,406.0,15072,44.9957,0
+V,5,1260,1255,1255,0,14821,0,397.2,14821,44.9907,0
+V,6,1260,1255,1255,0,14943,0,200.4,14949,44.9707,0
+V,7,1260,1255,1255,0,15074,0,144.0,15074,44.9938,0
+M,link=nr,profile=hybrid5,nUav=8,run=7,loss=0.0000,speed=0.0000,simTime=45.0000,storm=0,video=1,fecParity=0,kfRequest=0,retxScale=1.0000,adaptiveRetx=0,combine=1,gcsWorkers=1,fragPayload=1180.0000,bw=100000000.0000,radius=400.0000,rMin=30.0000,chUpdateMs=20.0000,videoScale=1.0000,tdd=DL.S.UL.UL.UL.DL.S.UL.UL.UL.,scheduler=tdma,ulPowerControl=0,upSent=120079,upLost=0,upRecv=120068,downSent=48,downLost=0,downRecv=48,upBytes=135583519,downBytes=52216,ulTb=26994,ulTbErr=0,ulTbLost=0,dlTb=32,dlTbErr=0,dlTbLost=0,ulSinrMeanDb=37.9540,ulMcsMean=27.9917,gcsBusyMs=1328.6287,gcsMaxQueueMs=0.4393,gcsJobs=8,gcsCacheAnswers=0,framesSent=10080,framesComplete=10040,framesDecoded=10040

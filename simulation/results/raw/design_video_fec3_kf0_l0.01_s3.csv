@@ -1,0 +1,7 @@
+# k6g-swarm-sim design_video_fec3_kf0_l0.01_s3
+# O,uav,op,kind,initial,t0_s,ok,total_ms,build_ms,wait_ms,process_ms,finish_ms,gcs_ms,transmissions,why
+#   initial: 1 = the UAV's first handshake, 2 = handshake after a change of position cell, 0 = planned operation
+# V,uav,frames_sent,frames_complete,frames_decoded,frames_lost,chunks_received,key_requests,distance_m,chunks_sent,last_rx_s,cell_changes
+O,0,1,full,1,2.151362,1,22.7643,2.9620,18.1973,3.0570,1.6050,2.4997,1,
+V,0,3660,3655,3655,1,54248,0,0.0,54797,124.9857,0
+M,link=testbed,profile=hybrid5,nUav=1,run=3,loss=0.0100,speed=0.0000,simTime=125.0000,storm=0,video=1,fecParity=3,kfRequest=0,retxScale=1.0000,adaptiveRetx=0,combine=1,gcsWorkers=1,fragPayload=1180.0000,bw=100000000.0000,radius=400.0000,rMin=30.0000,chUpdateMs=0.0000,videoScale=1.0000,tdd=DL.DL.DL.S.UL.DL.DL.S.UL.UL.,scheduler=tdma,ulPowerControl=0,upSent=54804,upLost=549,upRecv=0,downSent=6,downLost=0,downRecv=0,upBytes=62436179,downBytes=6527,ulTb=0,ulTbErr=0,ulTbLost=0,dlTb=0,dlTbErr=0,dlTbLost=0,ulSinrMeanDb=0.0000,ulMcsMean=0.0000,gcsBusyMs=596.0494,gcsMaxQueueMs=0.0203,gcsJobs=1,gcsCacheAnswers=0,framesSent=3660,framesComplete=3655,framesDecoded=3655

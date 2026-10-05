@@ -1,0 +1,5 @@
+compared,nscr_bytes_pct,uaci_bytes_pct,nscr_16_bit_pct,uaci_16_bit_pct,values_that_differ,values
+"the same audio sealed twice (a new clip key each time, as the system does)",99.6138,33.4771,99.99843,33.3448,3295765,3308544
+"the audio with ONE sample changed by one step, sealed again (a new clip key)",99.6096,33.4633,99.99867,33.3228,3295628,3308544
+"one sample changed, SAME key and nonce (the system never does this): only that byte differs",0.0,0.0,6e-05,0.0,1,3308544
+ideal: two unrelated uniform byte strings,99.6094,33.4635,99.99847,33.3338,,

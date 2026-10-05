@@ -1,0 +1,5 @@
+clips_of,audio_blocks_from,to,different_lengths,different_padded_lengths,lengths_per_padded_length,padding_pct_worst,padding_pct_mean
+up to 12 s,1,57,57,25,2.3,11.11,2.88
+12 s to 1 min,58,287,230,21,11.0,11.63,3.81
+1 to 10 min,288,2871,2584,53,48.8,6.2,2.3
+10 min to 1 h,2872,17226,14355,43,333.8,6.24,2.23

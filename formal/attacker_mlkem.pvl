@@ -1,0 +1,4 @@
+(* ML-KEM-1024 is broken outright - the secret key follows from the public key. X25519 and ML-DSA-87 stand.
+   (A break of ML-DSA-87 as well is modelled in the protocol files by handing its secret keys to the attacker in a
+   later phase: a signature scheme cannot be attacked backwards in time.) *)
+reduc forall k: kemsk; kem_break(kempub(k)) = k.

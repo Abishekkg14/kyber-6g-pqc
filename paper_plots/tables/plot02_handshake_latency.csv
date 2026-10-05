@@ -1,0 +1,7 @@
+operation,attempted,succeeded,min_ms,p5_ms,median_ms,mean_ms,p95_ms,p99_ms,max_ms
+Full handshake (1.5-RTT),150,150,14.31,19.06,23.23,24.03,30.76,39.68,44.88
+1-RTT Cached RapidRekey,150,150,6.67,7.4,9.04,10.78,17.28,20.73,94.97
+PQ ratchet,150,150,10.59,11.66,14.09,16.64,21.97,63.6,187.13
+breakdown: Full handshake (1.5-RTT),,,,,23.23,,uav_ms=8.226,gcs_ms=1.854,"link_and_wait_ms=13.151 (timed in the operations themselves (video streaming); the same steps alone in a loop: UAV 2.31 ms, ground station 0.41 ms)"
+breakdown: 1-RTT Cached RapidRekey,,,,,9.037,,uav_ms=2.269,gcs_ms=0.315,"link_and_wait_ms=6.453 (timed in the operations themselves (video streaming); the same steps alone in a loop: UAV 0.16 ms, ground station 0.05 ms)"
+breakdown: PQ ratchet,,,,,14.091,,uav_ms=3.116,gcs_ms=1.897,"link_and_wait_ms=9.079 (timed in the operations themselves (video streaming); the same steps alone in a loop: UAV 0.93 ms, ground station 0.15 ms)"

@@ -1,0 +1,25 @@
+machine,algorithm,payload_bytes,median_us,mbit_per_s
+Raspberry Pi 4B (UAV),AES-256-GCM,64,5.193,98.6
+Raspberry Pi 4B (UAV),AES-256-GCM,256,8.595,238.3
+Raspberry Pi 4B (UAV),AES-256-GCM,1100,24.415,360.4
+Raspberry Pi 4B (UAV),AES-256-GCM,4096,75.327,435.0
+Raspberry Pi 4B (UAV),AES-256-GCM,16384,283.514,462.3
+Raspberry Pi 4B (UAV),AES-256-GCM,65536,1118.584,468.7
+Raspberry Pi 4B (UAV),ChaCha20-Poly1305,64,4.223,121.2
+Raspberry Pi 4B (UAV),ChaCha20-Poly1305,256,4.989,410.5
+Raspberry Pi 4B (UAV),ChaCha20-Poly1305,1100,8.699,1011.6
+Raspberry Pi 4B (UAV),ChaCha20-Poly1305,4096,18.605,1761.2
+Raspberry Pi 4B (UAV),ChaCha20-Poly1305,16384,58.098,2256.1
+Raspberry Pi 4B (UAV),ChaCha20-Poly1305,65536,214.812,2440.7
+Laptop (ground station),AES-256-GCM,64,1.928,265.6
+Laptop (ground station),AES-256-GCM,256,2.197,932.3
+Laptop (ground station),AES-256-GCM,1100,2.34,3760.9
+Laptop (ground station),AES-256-GCM,4096,3.054,10728.4
+Laptop (ground station),AES-256-GCM,16384,6.53,20071.1
+Laptop (ground station),AES-256-GCM,65536,15.336,34187.4
+Laptop (ground station),ChaCha20-Poly1305,64,2.076,246.6
+Laptop (ground station),ChaCha20-Poly1305,256,2.308,887.2
+Laptop (ground station),ChaCha20-Poly1305,1100,2.846,3092.1
+Laptop (ground station),ChaCha20-Poly1305,4096,3.913,8373.9
+Laptop (ground station),ChaCha20-Poly1305,16384,9.719,13485.6
+Laptop (ground station),ChaCha20-Poly1305,65536,25.7,20400.1

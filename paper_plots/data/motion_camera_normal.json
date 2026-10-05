@@ -1,0 +1,1538 @@
+{
+ "what": "motion watch: the UAV's camera, targets drawn into its pictures on the UAV",
+ "when": "2026-10-05 22:20:08 IST",
+ "host": "Abishek14",
+ "tool": "kyber6g.tools.motion_bench",
+ "captures": 3,
+ "captures_used": 3,
+ "captures_with_a_still_scene": 0,
+ "other_regions": "regions that touch no drawn target: real movement in the scene or a false alarm (the scene was not controlled)",
+ "looks_per_capture": 44,
+ "conditions": [
+  {
+   "mode": "NORMAL",
+   "lux": 472.1,
+   "gain": 2.69,
+   "exposure_us": 29986,
+   "mean": 119.9,
+   "dt": 0.1256,
+   "size": [
+    320,
+    180
+   ],
+   "scene_was_still": false
+  },
+  {
+   "mode": "NORMAL",
+   "lux": 473.2,
+   "gain": 2.69,
+   "exposure_us": 29986,
+   "mean": 119.9,
+   "dt": 0.1256,
+   "size": [
+    320,
+    180
+   ],
+   "scene_was_still": false
+  },
+  {
+   "mode": "NORMAL",
+   "lux": 472.2,
+   "gain": 2.69,
+   "exposure_us": 29986,
+   "mean": 119.9,
+   "dt": 0.1248,
+   "size": [
+    320,
+    180
+   ],
+   "scene_was_still": false
+  }
+ ],
+ "per_capture": [
+  [
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 17,
+    "looks_with_false_region": 17,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 25,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 17,
+    "looks_with_false_region": 17,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 19,
+    "looks_with_false_region": 17,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 19,
+    "looks_with_false_region": 17,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 17,
+    "looks_with_false_region": 17,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 5,
+    "looks_with_false_region": 5,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 66.87
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 67.05
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 33.71
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 101.1
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 66.92
+   }
+  ],
+  [
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 24,
+    "looks_with_false_region": 23,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 1,
+    "looks_with_false_region": 1,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 24,
+    "looks_with_false_region": 23,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 22,
+    "looks_with_false_region": 21,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 24,
+    "looks_with_false_region": 23,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 22,
+    "looks_with_false_region": 21,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 29,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 1,
+    "looks_with_false_region": 1,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 66.98
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 27,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 66.85
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 33.79
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 101.33
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 66.96
+   }
+  ],
+  [
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 20,
+    "looks_with_false_region": 20,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 32,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 20,
+    "looks_with_false_region": 20,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 20,
+    "looks_with_false_region": 20,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 20,
+    "looks_with_false_region": 20,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 20,
+    "looks_with_false_region": 20,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 30,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 34,
+    "false_regions": 4,
+    "looks_with_false_region": 4,
+    "scene_changes": 0,
+    "looks_camera_moving": 0,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 0.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 67.0
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 34,
+    "hits": 33,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 66.96
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 33.69
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 101.04
+   },
+   {
+    "looks": 34,
+    "looks_with_target": 0,
+    "hits": 0,
+    "false_regions": 0,
+    "looks_with_false_region": 0,
+    "scene_changes": 0,
+    "looks_camera_moving": 34,
+    "looks_camera_known": 34,
+    "camera_shift_sum": 67.0
+   }
+  ]
+ ],
+ "camera": {
+  "sensor": "ov5647",
+  "mode": "NORMAL",
+  "width": 1280,
+  "height": 720,
+  "fps": 30.02,
+  "tuning": "ov5647_noir.json"
+ },
+ "rows": [
+  {
+   "case": {
+    "target": false
+   },
+   "looks": 102,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "target": false,
+    "sensitivity": "high"
+   },
+   "looks": 102,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 61,
+   "looks_with_false_region": 60,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "target": false,
+    "sensitivity": "low"
+   },
+   "looks": 102,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 1,
+   "looks_with_false_region": 1,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 4,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 91,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 6,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 8,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 12,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 16,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 25,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 40,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 4,
+    "speed": 2,
+    "sensitivity": "high"
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 61,
+   "looks_with_false_region": 60,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 6,
+    "speed": 2,
+    "sensitivity": "high"
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 61,
+   "looks_with_false_region": 58,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 8,
+    "speed": 2,
+    "sensitivity": "high"
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 63,
+   "looks_with_false_region": 60,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 12,
+    "speed": 2,
+    "sensitivity": "high"
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 59,
+   "looks_with_false_region": 58,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 3,
+    "contrast": 25,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 4,
+    "contrast": 25,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 6,
+    "contrast": 25,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 12,
+    "contrast": 25,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 16,
+    "contrast": 25,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 25,
+    "speed": 0.2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 25,
+    "speed": 0.4
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 25,
+    "speed": 0.8
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 25,
+    "speed": 4
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 25,
+    "speed": 8
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 93,
+   "false_regions": 13,
+   "looks_with_false_region": 13,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": -25,
+    "speed": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 102,
+   "false_regions": 10,
+   "looks_with_false_region": 10,
+   "scene_changes": 0,
+   "looks_camera_moving": 0,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 0.0
+  },
+  {
+   "case": {
+    "target": false,
+    "pan": 2
+   },
+   "looks": 102,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 102,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 200.85000000000002
+  },
+  {
+   "case": {
+    "size": 8,
+    "contrast": 25,
+    "speed": 6,
+    "pan": 2
+   },
+   "looks": 102,
+   "looks_with_target": 102,
+   "hits": 94,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 102,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 200.85999999999996
+  },
+  {
+   "case": {
+    "target": false,
+    "pan": 1
+   },
+   "looks": 102,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 102,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 101.19
+  },
+  {
+   "case": {
+    "target": false,
+    "pan": 3
+   },
+   "looks": 102,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 102,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 303.47
+  },
+  {
+   "case": {
+    "target": false,
+    "pan": 2,
+    "under_way": true
+   },
+   "looks": 102,
+   "looks_with_target": 0,
+   "hits": 0,
+   "false_regions": 0,
+   "looks_with_false_region": 0,
+   "scene_changes": 0,
+   "looks_camera_moving": 102,
+   "looks_camera_known": 102,
+   "camera_shift_sum": 200.88
+  }
+ ]
+}

@@ -1,0 +1,82 @@
+(* Kyber-6G full handshake (kyber6g/crypto/handshake.py: ClientHandshake, ServerHandshake), any number of sessions.
+
+     UAV -> GCS   ClientHello    suite, uav id, nonce, mobility cell, time, X25519 share, ML-KEM public key, signature
+     GCS -> UAV   ServerHello    suite, session id, nonce, gcs id, X25519 share, ML-KEM ciphertext, signature, Finished
+     UAV -> GCS   ClientFinished session id, Finished
+
+     TH      = H(label, ClientHello, its signature, ServerHello body)
+     PRK     = HKDF-Extract(salt = TH, ML-KEM secret || X25519 secret)
+     master, the two Finished keys = HKDF-Expand(PRK, label | suite | session id)
+
+   The ground station has pinned two UAV keys: the honest UAV "idU" and a second UAV "idB" whose signing key the
+   attacker HAS (a UAV that was captured). The claims are about sessions of the honest one.
+
+   In phase 1, after every session of phase 0 has ended, both long-term signing keys are given to the attacker
+   (forward secrecy; and, read together with attacker_mlkem.pvl, "both lattice schemes broken later"). *)
+
+free skU: sskey [private].         (* the honest UAV's ML-DSA-87 key *)
+free skG: sskey [private].         (* the ground station's *)
+free skB: sskey.                   (* the captured UAV's: public *)
+const idU, idB, idG: bitstring.
+
+free secretU: bitstring [private].  (* what the UAV sends under its session keys *)
+free secretG: bitstring [private].  (* what the ground station sends to the honest UAV *)
+
+event UavAccept(bitstring, bitstring, bitstring, key).    (* uav id, gcs id, session id, master secret *)
+event GcsRunning(bitstring, bitstring, bitstring, key).
+event GcsAccept(bitstring, bitstring, bitstring, key).
+
+(* 1  what either side sends under the session keys stays secret - also after the signing keys leak (phase 1) *)
+query attacker(secretU).
+query attacker(secretG).
+(* 2  the ground station completes a session with the honest UAV only if that UAV completed the same one - once *)
+query s: bitstring, k: key; inj-event(GcsAccept(idU, idG, s, k)) ==> inj-event(UavAccept(idU, idG, s, k)).
+(* 3  the UAV completes a session only if the ground station is running the same one - once *)
+query u: bitstring, gid: bitstring, s: bitstring, k: key; inj-event(UavAccept(u, gid, s, k)) ==> inj-event(GcsRunning(u, gid, s, k)).
+(* 4  the model is not empty: both ends can finish (this query must be FALSE: the event is reachable) *)
+query s: bitstring, k: key; event(GcsAccept(idU, idG, s, k)).
+
+let UAV(sk: sskey, id: bitstring, pkG: spkey) =
+  new x: scalar; new dk: kemsk; new nc: nonce;
+  in(c, (mob: bitstring, ts: bitstring));                  (* position cell and clock: the attacker may choose them *)
+  let ch = (suite, id, nc, mob, ts, exp(g, x), kempub(dk)) in
+  let sigc = sign((LBL_CH, ch), sk) in
+  out(c, (ch, sigc));
+  in(c, (sp: bitstring, sigs: bitstring, fin_s: bitstring));
+  let (=suite, sid: bitstring, ns: nonce, gid: bitstring, Xs: point, ct: bitstring) = sp in
+  let th = h((LBL_TH, ch, sigc, sp)) in
+  if verify((LBL_SS, th), sigs, pkG) = true then
+  let prk = hkdf_extract(th, (decap(ct, dk), exp(Xs, x))) in
+  let master = hkdf_expand(prk, (L_MASTER, suite, sid)) in
+  let th2 = h((th, sigs)) in
+  if fin_s = mac(hkdf_expand(prk, (L_FIN_S, suite, sid)), th2) then
+  event UavAccept(id, gid, sid, master);
+  out(c, (sid, mac(hkdf_expand(prk, (L_FIN_C, suite, sid)), h((th2, fin_s)))));
+  out(c, aead(hkdf_expand(master, (L_TRAFFIC, DIR_U2G, suite, sid)), n0, secretU, empty)).
+
+let GCS(sk: sskey, uid: bitstring, pin: spkey) =
+  in(c, (ch: bitstring, sigc: bitstring));
+  let (=suite, =uid, nc: nonce, mob: bitstring, ts: bitstring, Xc: point, ek: kempk) = ch in
+  if verify((LBL_CH, ch), sigc, pin) = true then
+  new xs: scalar; new r: kemseed; new sid: bitstring; new ns: nonce;
+  let sp = (suite, sid, ns, idG, exp(g, xs), kemct(ek, r)) in
+  let th = h((LBL_TH, ch, sigc, sp)) in
+  let sigs = sign((LBL_SS, th), sk) in
+  let prk = hkdf_extract(th, (kemss(ek, r), exp(Xc, xs))) in
+  let master = hkdf_expand(prk, (L_MASTER, suite, sid)) in
+  let th2 = h((th, sigs)) in
+  let fin_s = mac(hkdf_expand(prk, (L_FIN_S, suite, sid)), th2) in
+  event GcsRunning(uid, idG, sid, master);
+  out(c, (sp, sigs, fin_s));
+  in(c, (=sid, fin_c: bitstring));
+  if fin_c = mac(hkdf_expand(prk, (L_FIN_C, suite, sid)), h((th2, fin_s))) then
+  event GcsAccept(uid, idG, sid, master);
+  if uid = idU then
+  out(c, aead(hkdf_expand(master, (L_TRAFFIC, DIR_G2U, suite, sid)), n0, secretG, empty)).
+
+process
+  out(c, (spk(skU), spk(skG), spk(skB)));
+  ( !UAV(skU, idU, spk(skG))
+  | !GCS(skG, idU, spk(skU))
+  | !GCS(skG, idB, spk(skB))
+  | (phase 1; out(c, (skU, skG))) )

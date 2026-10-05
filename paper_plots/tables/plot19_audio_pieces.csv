@@ -1,0 +1,9 @@
+machine,piece,median_ms
+Raspberry Pi 4B (UAV),"hybrid key wrap (ML-KEM-1024 encapsulation + X25519 + AES-GCM), once per clip",0.6528
+Raspberry Pi 4B (UAV),"hybrid key unwrap, once per clip",0.6198
+Raspberry Pi 4B (UAV),"ML-DSA-87 signature, once per clip",0.7594
+Raspberry Pi 4B (UAV),"ML-DSA-87 verification, once per clip or excerpt",0.4491
+Laptop (ground station),"hybrid key wrap (ML-KEM-1024 encapsulation + X25519 + AES-GCM), once per clip",0.1466
+Laptop (ground station),"hybrid key unwrap, once per clip",0.136
+Laptop (ground station),"ML-DSA-87 signature, once per clip",0.1323
+Laptop (ground station),"ML-DSA-87 verification, once per clip or excerpt",0.081

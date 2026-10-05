@@ -1,0 +1,4 @@
+recording,source_bytes,frame_sizes,frame_bytes_min,frame_bytes_max,sealed_bytes_with_cap,block_bytes_with_cap,blocks_with_cap,block_bytes_without_cap,per_frame_encryption_bytes
+silence (32 kbit/s frames),120163,2,104,105,553881,3420,160,1100,138563
+"speech (variable rate, 32-128 kbit/s)",251768,14,104,418,553881,3420,160,3420,270168
+music (128 kbit/s frames),480653,2,417,418,553881,3420,160,3420,499053

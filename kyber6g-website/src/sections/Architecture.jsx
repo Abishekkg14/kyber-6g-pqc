@@ -1,95 +1,52 @@
-import { DroneIcon, AntennaIcon, KeyIcon, ShieldIcon, ChartIcon, LayersIcon, ArrowRightIcon } from '../components/Icons'
 import ScrollReveal from '../components/ScrollReveal'
+import Figure from '../components/Figure'
+
+/* What protects each kind of data: a statement about the design (kyber6g/crypto, recording, audio), not a measurement. */
+const KINDS = [
+  ['Live video', 'AES-256-GCM records under session keys', 'not stored unless recording', 'authentic to the ground station (session)'],
+  ['Recorded video (.k6grec)', 'the sealed file itself is sent', 'file key wrapped with ML-KEM-1024 + X25519', 'ML-DSA-87 signature of the UAV'],
+  ['Photo (.k6gimg)', 'AES-256-GCM records; SHA-256 checked on arrival', 'file key wrapped with ML-KEM-1024 + X25519', 'ML-DSA-87 signature of the UAV'],
+  ['Audio (.k6gaud)', 'the same sealed blocks that go to the card', 'clip key wrapped with ML-KEM-1024 + X25519; a key per block', 'one ML-DSA-87 signature over all blocks; excerpts verifiable by anyone'],
+  ['Telemetry, status, motion reports', 'AES-256-GCM records under session keys', 'never written to the card (memory only, two hours)', 'authentic to the ground station (session)'],
+  ['Commands (ground to UAV)', 'AES-256-GCM records under session keys', 'not stored', 'authentic to the UAV (session)'],
+]
 
 export default function Architecture() {
-    const nodes = [
-        { Icon: DroneIcon, color: '#7c3aed', name: 'Drone Swarm', desc: 'UE Nodes' },
-        { Icon: AntennaIcon, color: '#0891b2', name: 'gNB Relay', desc: '5G Base Station' },
-        { Icon: KeyIcon, color: '#2563eb', name: 'PQC Engine', desc: 'Kyber + ECDH' },
-        { Icon: ShieldIcon, color: '#059669', name: 'AES-GCM', desc: 'Data Plane' },
-        { Icon: ChartIcon, color: '#d97706', name: 'Metrics', desc: 'Collector' },
-        { Icon: LayersIcon, color: '#dc2626', name: 'Analytics', desc: 'Visualization' },
-    ]
-
-    const layers = [
-        {
-            name: 'Application Layer',
-            color: '#7c3aed',
-            items: ['PqcDroneApp — Commander/Follower telemetry', 'AesGcmCipher — Authenticated encryption', 'PqcSessionKeys — Key material management']
-        },
-        {
-            name: 'Security Control Layer',
-            color: '#2563eb',
-            items: ['PqcRrcExtension — Hybrid KEM handshake', 'PqcAdaptiveKeyManager — Mobility-aware rekeying', 'MlDsaSigner — Digital signature authentication']
-        },
-        {
-            name: 'Cryptographic Primitives',
-            color: '#0891b2',
-            items: ['CrystalsKyberKem — ML-KEM (512/768/1024)', 'X25519Ecdh — Classical key agreement', 'HybridKemCombiner — KDF key fusion']
-        },
-        {
-            name: 'Network Infrastructure',
-            color: '#059669',
-            items: ['5G-LENA NR Stack — gNB + UE radio', 'PqcScenarioHelper — Topology generator', 'PqcPdcpLayer — Encrypted PDCP tunnel']
-        }
-    ]
-
-    return (
-        <section id="architecture" className="section" aria-label="System Architecture">
-            <div className="section-inner">
-                <ScrollReveal>
-                    <span className="section-label">Architecture</span>
-                    <h2>System Architecture</h2>
-                    <p className="section-desc">
-                        The framework layers post-quantum security on top of the NS-3 5G-LENA NR stack.
-                        Drones communicate through untrusted gNB relays with end-to-end AES-GCM encryption,
-                        keyed by CRYSTALS-Kyber hybrid handshakes.
-                    </p>
-                </ScrollReveal>
-
-                <div className="arch-diagram" role="img" aria-label="Data flow: Drone to Analytics">
-                    {nodes.map((n, i) => (
-                        <ScrollReveal key={i} delay={(i % 4) + 1} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div className="arch-node">
-                                <div className="icon" style={{ color: n.color }}><n.Icon size={32} /></div>
-                                <div className="name">{n.name}</div>
-                                <div className="desc">{n.desc}</div>
-                            </div>
-                            {i < nodes.length - 1 && (
-                                <span className="arch-arrow" style={{ color: '#d1d5db' }}>
-                                    <ArrowRightIcon size={20} />
-                                </span>
-                            )}
-                        </ScrollReveal>
-                    ))}
-                </div>
-
-                <ScrollReveal delay={2}>
-                    <h3 style={{ marginTop: '48px' }}>Module Hierarchy</h3>
-                    <div style={{ display: 'grid', gap: '12px', marginTop: '20px' }}>
-                        {layers.map((layer, i) => (
-                            <div key={i} style={{
-                                background: '#fff',
-                                border: '1px solid var(--c-border)',
-                                borderLeft: `3px solid ${layer.color}`,
-                                borderRadius: '8px',
-                                padding: '20px 24px',
-                            }}>
-                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: layer.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
-                                    {layer.name}
-                                </div>
-                                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                                    {layer.items.map((item, j) => (
-                                        <span key={j} style={{ fontSize: '0.825rem', color: 'var(--c-text-secondary)', fontFamily: 'var(--font-mono)' }}>
-                                            {item}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </ScrollReveal>
-            </div>
-        </section>
-    )
+  return (
+    <section id="architecture" className="section alt" aria-label="Architecture">
+      <div className="section-inner">
+        <ScrollReveal>
+          <span className="section-label">Architecture</span>
+          <h2>Two machines, one secure link, five kinds of data</h2>
+          <p className="section-desc">
+            The UAV node captures and seals; the ground station verifies, opens, stores and shows. Session keys come
+            from a handshake in which ML-KEM-1024 and X25519 both contribute and both ends sign with ML-DSA-87 keys
+            that were pinned beforehand. Files written on the UAV are sealed to the ground station: the UAV cannot
+            read back what it stored.
+          </p>
+        </ScrollReveal>
+        <ScrollReveal>
+          <Figure name="fig01_system_overview" caption="The prototype: Raspberry Pi 4B with camera, GNSS receiver and display; ground control station with the dashboard." />
+        </ScrollReveal>
+        <ScrollReveal>
+          <h3 className="sub">What protects each kind of data</h3>
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr><th>Data</th><th>In transit</th><th>At rest on the UAV</th><th>Origin</th></tr>
+              </thead>
+              <tbody>
+                {KINDS.map((r, i) => (
+                  <tr key={i}>{r.map((c, j) => <td key={j}>{j === 0 ? <strong>{c}</strong> : c}</td>)}</tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </ScrollReveal>
+        <ScrollReveal>
+          <Figure name="fig11_media_protection" caption="Where the post-quantum algorithms act on video and on stored files, and where AES-256-GCM does the encrypting." />
+        </ScrollReveal>
+      </div>
+    </section>
+  )
 }

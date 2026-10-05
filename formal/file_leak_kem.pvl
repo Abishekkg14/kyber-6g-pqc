@@ -1,0 +1,2 @@
+(* the ground station's ML-KEM recording key is stolen (its X25519 recording key is not) *)
+let FileLeak(sk: sskey, dk: kemsk, x: scalar) = phase 1; out(c, dk).

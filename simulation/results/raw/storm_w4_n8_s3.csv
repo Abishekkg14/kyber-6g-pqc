@@ -1,0 +1,21 @@
+# k6g-swarm-sim storm_w4_n8_s3
+# O,uav,op,kind,initial,t0_s,ok,total_ms,build_ms,wait_ms,process_ms,finish_ms,gcs_ms,transmissions,why
+#   initial: 1 = the UAV's first handshake, 2 = handshake after a change of position cell, 0 = planned operation
+# V,uav,frames_sent,frames_complete,frames_decoded,frames_lost,chunks_received,key_requests,distance_m,chunks_sent,last_rx_s,cell_changes
+O,3,1,full,1,2.000000,1,24.6677,2.6410,20.3967,4.0140,1.6300,1.1262,1,
+O,1,1,full,1,2.000000,1,24.9276,2.7670,20.2046,3.8050,1.9560,1.8458,1,
+O,5,1,full,1,2.000000,1,27.8252,2.8590,23.5142,3.0280,1.4520,2.1757,1,
+O,7,1,full,1,2.000000,1,27.9727,2.6290,23.7287,3.0840,1.6150,1.2528,1,
+O,6,1,full,1,2.000000,1,28.0974,2.5380,23.5894,2.8180,1.9700,1.9067,1,
+O,0,1,full,1,2.000000,1,28.6290,3.0260,23.9920,3.0300,1.6110,3.7457,1,
+O,2,1,full,1,2.000000,1,29.0994,2.3320,25.2984,4.0710,1.4690,3.5287,1,
+O,4,1,full,1,2.000000,1,29.5272,3.0980,24.7122,3.9650,1.7170,2.1266,1,
+V,0,0,0,0,0,0,0,238.7,0,0.0000,0
+V,1,0,0,0,0,0,0,250.4,0,0.0000,0
+V,2,0,0,0,0,0,0,275.5,0,0.0000,0
+V,3,0,0,0,0,0,0,264.8,0,0.0000,0
+V,4,0,0,0,0,0,0,80.4,0,0.0000,0
+V,5,0,0,0,0,0,0,353.9,0,0.0000,0
+V,6,0,0,0,0,0,0,347.7,0,0.0000,0
+V,7,0,0,0,0,0,0,378.3,0,0.0000,0
+M,link=nr,profile=hybrid5,nUav=8,run=3,loss=0.0000,speed=0.0000,simTime=16.0000,storm=1,video=0,fecParity=0,kfRequest=0,retxScale=1.0000,adaptiveRetx=0,combine=1,gcsWorkers=4,fragPayload=1180.0000,bw=100000000.0000,radius=400.0000,rMin=30.0000,chUpdateMs=0.0000,videoScale=1.0000,tdd=DL.S.UL.UL.UL.DL.S.UL.UL.UL.,scheduler=tdma,ulPowerControl=0,upSent=56,upLost=0,upRecv=56,downSent=48,downLost=0,downRecv=48,upBytes=52632,downBytes=52216,ulTb=29,ulTbErr=0,ulTbLost=0,dlTb=31,dlTbErr=0,dlTbLost=0,ulSinrMeanDb=37.6871,ulMcsMean=20.2759,gcsBusyMs=18.3208,gcsMaxQueueMs=0.4896,gcsJobs=8,gcsCacheAnswers=0,framesSent=0,framesComplete=0,framesDecoded=0

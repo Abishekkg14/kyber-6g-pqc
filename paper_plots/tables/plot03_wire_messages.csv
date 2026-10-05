@@ -1,0 +1,9 @@
+operation,message,body_bytes,datagrams
+full handshake,ClientHello,6287,6
+full handshake,ServerHello,6311,6
+full handshake,ClientFinished,40,1
+cached rekey,RekeyRequest,96,1
+cached rekey,RekeyResponse,80,1
+cached rekey,ClientFinished,40,1
+pq ratchet,request,2178,2
+pq ratchet,response,2204,3

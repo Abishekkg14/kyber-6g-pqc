@@ -1,0 +1,4 @@
+(* Both key-establishment schemes broken. Nothing can stay secret then; the secrecy queries must come out FALSE.
+   This run exists to show that the models are able to find an attack. *)
+reduc forall x: scalar; dlog(exp(g, x)) = x.
+reduc forall k: kemsk; kem_break(kempub(k)) = k.

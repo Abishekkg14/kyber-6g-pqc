@@ -1,0 +1,4 @@
+schedule,operations_per_hour,kilobytes_per_hour_on_the_wire,uav_computing_ms_per_hour_in_a_benchmark_loop,uav_computing_ms_per_hour_in_the_running_system,time_in_operations_ms_per_hour,bytes_saved_against_full_handshakes_pct,uav_computing_saved_pct,time_in_operations_saved_pct
+"as implemented: cached rekey every 120 s, PQ ratchet every 600 s",30.0,36.3,9.3,79.6,301.4,90.8,67.7,56.8
+a full handshake at every one of those instants,30.0,393.2,69.3,246.8,696.9,0.0,0.0,0.0
+a PQ ratchet at every one of those instants,30.0,142.7,27.8,125.6,422.7,63.7,49.1,39.3
