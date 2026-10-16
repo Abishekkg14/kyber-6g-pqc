@@ -1,5 +1,6 @@
 # Kyber-6G: a post-quantum secure link for UAV video, telemetry and control
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23407561.svg)](https://doi.org/10.5281/zenodo.23407561)
 [![NIST FIPS 203](https://img.shields.io/badge/NIST-FIPS%20203%20(ML--KEM)-green.svg)](https://csrc.nist.gov/pubs/fips/203/final)
 [![NIST FIPS 204](https://img.shields.io/badge/NIST-FIPS%20204%20(ML--DSA)-brightgreen.svg)](https://csrc.nist.gov/pubs/fips/204/final)
 [![ns-3 3.42](https://img.shields.io/badge/ns--3-3.42-blue.svg)](https://www.nsnam.org/)
