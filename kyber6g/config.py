@@ -22,6 +22,15 @@ class LinkConfig:
     cached_rekey_interval_s: float = 120.0  # periodic 1-RTT Cached RapidRekey (0 = off)
     pq_ratchet_interval_s: float = 600.0    # periodic PQ ratchet (FS+PCS, 0 = off)
     mobility_cell_deg: float = 0.001        # ~110 m cell for the rekey context
+    # A cached rekey only in the position cell in which the session was made; a change of cell then brings a full
+    # handshake, which replaces the resumption secret and gives the ground station a signed statement of the new cell.
+    # Not access control: the UAV states its cell itself (docs/SECURITY_ARCHITECTURE.md 9b). Each end applies its own.
+    cell_binding: bool = True
+    # Repeat timer of handshake, rekey and ratchet messages that got no answer. "fixed": 1.2 s / 0.7 s / 0.35 s (the
+    # timers of the measurements of October 2026). "rtt": three times the last round trip of the same kind of exchange
+    # that needed no repeat (Karn and Partridge), at least 30 ms, doubled after each repeat up to the fixed timer; an
+    # exchange waits for its answer as long in total as with the fixed timers. Until a round trip is known: fixed.
+    retx_timer: str = "rtt"
 
 
 @dataclass
@@ -88,6 +97,9 @@ class GroundConfig:
     # this many megabytes (0: never; larger ones wait on the MEDIA page for FETCH & DECRYPT). 64 MB is nearly three
     # minutes of video at 3 Mbit/s.
     auto_fetch_mb: int = 64
+    # After a lost video frame the decoder waits for the next keyframe (one a second). With this on, the ground station
+    # asks the UAV for a keyframe at once, at most every 0.25 s, while it waits.
+    video_keyframe_request: bool = True
     # Real-time detector profile at start-up ("general" | "accurate" | "fast" | "open"). Measured (ground/detector.py,
     # docs/TEST_REPORT.md 13.6): ACCURATE labels are a little more trustworthy (79 % vs 75 % correct, 17 % more objects
     # found) but with the FINDER running it analyses 1.7 frames/s against 3.3 for GENERAL, and the boxes follow

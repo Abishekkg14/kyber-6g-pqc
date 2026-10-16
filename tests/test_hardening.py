@@ -870,6 +870,64 @@ class TestDashboardRequestChecks(unittest.TestCase):
         self.assertEqual(list((app.data / "images").iterdir()) + list((app.data / "recordings").iterdir()), [])
 
 
+class TestRecordingWrittenWhole(unittest.TestCase):
+    """A recording can arrive twice (the fetch after stop_rec and one asked for by hand). The second remux used to
+    rewrite the .mp4 in place while a reader had it open (pipeline test of 15 October 2026: 220 of 223 frames)."""
+
+    def run_remux(self, rc):
+        from unittest import mock
+        from kyber6g.ground.main import GroundApp
+        app = GroundApp.__new__(GroundApp)
+        app.data = Path(tempfile.mkdtemp())
+        (app.data / "recordings").mkdir()
+        app.cfg, app.rec_dk, app.rec_xsk, app.uav_pk = SimpleNamespace(ffmpeg="ffmpeg"), b"", b"", b""
+        mp4 = app.data / "recordings" / "rec_1.mp4"
+        mp4.write_bytes(b"old, complete")
+        seen = []
+
+        def ffmpeg(argv, **kw):                   # what a reader of the .mp4 sees while ffmpeg writes
+            Path(argv[-1]).write_bytes(b"half")
+            seen.append(mp4.read_bytes())
+            if rc == 0:
+                Path(argv[-1]).write_bytes(b"new, complete")
+            return SimpleNamespace(returncode=rc, stderr=b"" if rc == 0 else b"broken")
+        report = {"status": "PASS", "frames": 3, "segments": 1}
+        with mock.patch("kyber6g.ground.main.decrypt_recording", return_value=({}, b"h264", report)), \
+                mock.patch("kyber6g.ground.main.frame_rate", return_value=30), \
+                mock.patch("kyber6g.ground.main.subprocess.run", side_effect=ffmpeg):
+            out = GroundApp.decrypt_and_remux(app, app.data / "recordings" / "rec_1.k6grec")
+        return out, mp4, seen, app.data / "recordings"
+
+    def test_a_reader_sees_the_old_or_the_new_file_never_half_of_one(self):
+        out, mp4, seen, d = self.run_remux(0)
+        self.assertEqual(seen, [b"old, complete"])
+        self.assertEqual(mp4.read_bytes(), b"new, complete")
+        self.assertEqual(out["mp4"], "/recordings/rec_1.mp4")
+        self.assertEqual([p.name for p in d.iterdir()], ["rec_1.mp4"])      # no part file left
+
+    def test_a_failed_remux_keeps_the_old_file_and_leaves_no_part(self):
+        out, mp4, seen, d = self.run_remux(1)
+        self.assertIsNone(out["mp4"])
+        self.assertEqual(mp4.read_bytes(), b"old, complete")
+        self.assertEqual([p.name for p in d.iterdir()], ["rec_1.mp4"])
+
+
+class TestEventLogAfterAClockStep(unittest.TestCase):
+    def test_events_dated_before_the_last_one_written_are_still_written(self):
+        from kyber6g.ground.main import new_events
+        ev = collections.deque(maxlen=50)
+        ev.append((1000.0, "SESSION", "a")); ev.append((1001.0, "PQ_RATCHET", "b"))
+        first = new_events(ev, None)
+        self.assertEqual([k for _, k, _ in first], ["SESSION", "PQ_RATCHET"])
+        ev.append((998.5, "SWITCH", "c"))                  # the wall clock was stepped back by 2.5 s
+        ev.append((998.6, "CACHED_REKEY", "d"))
+        self.assertEqual([k for _, k, _ in new_events(ev, first[-1])], ["SWITCH", "CACHED_REKEY"])
+        self.assertEqual(new_events(ev, ev[-1]), [])
+        for i in range(60):                                # the last one written has dropped out: all are new
+            ev.append((2000.0 + i, "X", str(i)))
+        self.assertEqual(len(new_events(ev, first[-1])), 50)
+
+
 class TestMediaLibrary(unittest.TestCase):
     """The MEDIA page: everything the ground station holds can be listed, newest first, and a recording that has just
     been saved on the UAV is fetched without being asked for. (Recordings that nobody had fetched were taken for lost:

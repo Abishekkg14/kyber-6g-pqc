@@ -1073,6 +1073,147 @@ The dashboard test ran on the code as it was at 23:00; after it only `tools/data
 - **A microphone.** A file still stands in for it.
 - **The web page in browsers other than headless Chromium**, and on a server.
 
+## 18. Ninth round (2026-10-14): the review's two repairs, a DTLS 1.3 baseline, the GNSS receiver, camera stalls
+
+The task of this round: answer the manuscript review (a repeat timer that follows the round trip, a keyframe that the
+ground station can ask for, a comparison with a standard protocol), measure each change on the test bed, check the GNSS
+receiver that was attached again, make the system robust and bring every report up to date. Measurement runs were
+interleaved to save time: in each run the settings under comparison alternate in the same minutes, in threads that
+run side by side (video slices in one, session operations in another, DTLS handshakes in a third).
+
+### 18.1 Results at a glance
+
+| What | Result |
+|---|---|
+| Repeat timer from the round trip (`paper_plots/data/loss_ab.json`, 18:35 to 18:41) | pooled over the five loss rates from 1.2 % to 19.8 %: round-trip timer 70 of 70 operations completed, none over 1 s; fixed timer 66 of 71, 9 of them over 1 s. 95th percentile of all operations 2,168 ms with the fixed timer, 468 ms with the round-trip timer; full handshake 3,507 and 630 ms; PQ ratchet alone 435 and 541 ms (no gain). First wait of a full handshake 49 to 67 ms (median at each loss rate) instead of 1.2 s |
+| Keyframe request (same run, request on and off in 10 s slices) | frames that reached the decoder, without and with requests: 58.6 and 80.5 % at 1.22 % loss, 40.0 and 72.4 % at 1.95 %, 8.3 and 44.3 % at 5.05 %, 12.8 and 15.8 % at 9.82 %, 2.0 and 7.1 % at 19.83 %; up to 2.5 keyframes a second with requests; received bit rate within 15 % |
+| DTLS 1.3 against the link (`paper_plots/data/baseline_ab.json`, 20:37 to 20:47, camera off) | full handshake without loss: DTLS 29,277 bytes, 31 datagrams, median 48.3 ms; the link 13,106 bytes, 13 datagrams, 20.4 ms (45 % of the bytes, 2.4 times as fast). Under loss (0.4 % to 21 %, counted): the link 22 of 22, none over 1 s; DTLS 21 of 25, 10 over 1 s. Table 9 of the paper and `paper_plots/tables/baseline_ab_*.csv` have every row |
+| GNSS receiver (L89 behind a USB serial adapter, 1a86:55d3) | a receiver plugged in after start-up was not read by gpsd; a udev rule now hands it over (§18.2). 21:02: 3D fix, 12 of 23 satellites used, HDOP 0.73 |
+| Camera with the receiver attached | on 14 October the camera stopped delivering frames within seconds once the Pi sent over Wi-Fi: 11 stalls from 19:56 to 20:19, each found by the new watchdog and ended by a restart of the UAV program; no under-voltage recorded (`get_throttled` 0x0 since the boot at 19:28). On 15 October at 06:15, receiver still attached, hotspot signal −70 dBm: no stall in the pipeline test, but under-voltage under full load and, a few minutes later, a reboot of the Pi. Hardware, cause open (§18.4) |
+| End-to-end pipeline on the live hardware (15 October, 06:15) | **56 PASS, 5 FAIL** (§18.5): video 30.0 frames a second, 0 of 340 frames lost, 0 of 356 lost during 6 rekeys, recordings, photos, sealed audio and every export pass; no authentication failure or replay on the link |
+| Automated tests on the final code | laptop 332 run, all pass (21:05), 337 after the fixes of 15 October (§18.4); Pi 324 run, all pass, 9 of them skipped there (21:00), 329 on 15 October; the code on the Pi is the repository's (one SHA-256 over all `.py` and `.json` files of `kyber6g/`, `tests/` and `deploy/`, equal on both machines) |
+
+The repair run differs from the campaign of §15.2 in three ways, so its shares of frames cannot be compared with
+plot 8: the Wi-Fi was a phone's hotspot in the 2.4 GHz band (signal −34 to −47 dBm at the Pi), the GNSS receiver was not
+connected, and the camera faced a plain surface (about 0.6 Mbit/s and 2.9 datagrams a frame instead of 3 Mbit/s and
+11.9). The comparison holds between the two settings, which saw the same minutes. Five operations of each kind with
+each timer at each loss rate, and 20 s of video for each setting and loss rate, make these results indicative.
+
+### 18.2 What was built
+
+* **Repeat timer from the round trip** (`kyber6g/transport/link.py`, `UavLink._waits`; `LinkConfig.retx_timer`,
+  default `"rtt"`, `"fixed"` gives the old timers). The first wait is three times the last round trip of that kind of
+  exchange, at least 30 ms; each repeat doubles it up to the old fixed value (1.2 s ClientHello, 0.7 s cached rekey,
+  0.35 s ratchet), and the UAV keeps trying for as long as before. Only an exchange that needed no repeat gives a round
+  trip (Karn's rule). The operation log records the timer of each operation (`retx`, `first_wait_ms`); the operation
+  commands carry the timer (`retx`), and `link_tuning {retx_timer}` sets it.
+* **Keyframe request.** The ground station (`kyber6g/ground/video_sink.py`) asks for a keyframe when its decoder waits
+  for one while chunks still arrive (one in the last second), at most every 0.25 s, with `{"t": "kf_req"}` on the
+  control stream. The UAV makes its encoder's next frame a keyframe (`CameraService.request_keyframe`: V4L2
+  `FORCE_KEY_FRAME` on picamera2's encoder), at most four a second, and counts the requests and failures.
+  `GroundConfig.video_keyframe_request` (default on) and the command `video_tuning {keyframe_request}` switch it.
+* **Cell binding as a setting** (`LinkConfig.cell_binding`, default on): the ground station's check that a cached
+  rekey comes from the session's position cell can be switched off for a fixed site.
+* **Camera watchdog** (`kyber6g/camera/camera.py`, `kyber6g/uav/main.py`): a camera that should stream and has sent no
+  frame for 5 s, or a picamera2 call that needs the next frame and has not returned after 6 s, counts as stalled. The
+  UAV then reports `CAMERA stalled` to the ground station and on its display and exits with code 75; systemd starts it
+  again after 3 s (`Restart=always`). A stalled camera used to hang the program until someone restarted it.
+* **GNSS hotplug** (on the Pi, `/etc/udev/rules.d/61-kyber6g-gnss.rules`): gpsd runs with `USBAUTO=false` and opened
+  the receiver only at its start; the rule starts `gpsdctl@ttyACM0.service` whenever the adapter (1a86:55d3) appears.
+* **Measurement tools**: `kyber6g/tools/loss_ab.py` (the two repairs, interleaved), `kyber6g/tools/baseline_ab.py`
+  (the link against DTLS 1.3, three threads, link and DTLS handshakes taking turns through one lock),
+  `kyber6g/tools/kf_check.py` (does the encoder obey a request), `kyber6g/tools/dtls_baseline/` (`dtls_bench.c`,
+  `build.sh`); evaluation `paper_plots/scripts/review_ab.py` and `baseline_ab.py`. `bench_link.need_live()` now waits
+  until 45 frames arrive within 3 s instead of trusting the camera's status.
+* **DTLS 1.3 set-up**: wolfSSL 5.9.4 built from the tag `v5.9.4-stable` (archive of 34,782,887 bytes, SHA-256
+  7256bfc8…45ac57, kept in `/root/wolfssl-src` on the laptop) with DTLS 1.3, ClientHello fragmentation, ML-KEM, ML-DSA,
+  session tickets and the HelloRetryRequest cookie (flags in `build.sh`); installed in `~/wolfssl-5.9.4` on the Pi and
+  `/root/wolfssl-5.9.4` on the laptop; `dtls_bench` in `~/dtls` and `/root/dtls`. Each end has a self-signed ML-DSA-87
+  certificate made with OpenSSL 3.5 (`~/dtls_certs`, `/root/dtls_certs`; not in the repository) and trusts only the
+  other's.
+* **Tests**: `tests/test_review_fixes.py` (13 tests: the timer, with a proxy that drops the first ClientHello; the
+  operation log; cell binding; the keyframe request and its rate limits) and the watchdog's tests (`TestCameraStall`
+  in `tests/test_robustness.py`).
+* **Reports**: the paper (Sections 5.6 and 5.7, Tables 8 and 9; `elsarticle1/README_PAPER.txt`), and new copies of
+  the three project reports with a subsection on this round (`Downloads/Kyber6G_Project_Reports/FINAL_v2_2026-10-14`;
+  the approved reports in `FINAL` are unchanged).
+
+### 18.3 The DTLS 1.3 baseline in detail
+
+Group SecP384r1MLKEM1024 (ML-KEM-1024 with ECDH on P-384, security category 5), suite TLS_AES_256_GCM_SHA384,
+mutual authentication with the pinned ML-DSA-87 certificates; client on the Pi (it times each handshake), server on the
+laptop; one handshake at a time, alternating with the link's operations; the same random loss on the link's port and
+on the two DTLS ports, counted apart by the Pi's packet filter.
+
+| Operation | Bytes | Datagrams | Median without loss (ms) | Completed under loss | Over 1 s |
+|---|---:|---:|---:|---:|---:|
+| Kyber-6G full handshake, round-trip timer | 13,106 | 13 | 20.4 | 22 of 22 | 0 |
+| Kyber-6G full handshake, fixed timer | 13,106 | 13 | 16.4 | 22 of 22 | 8 |
+| DTLS 1.3 full handshake | 29,277 | 31 | 48.3 | 21 of 25 | 10 |
+| DTLS 1.3 full handshake with cookie | 29,459 | 31 | 48.7 | 22 of 25 | 6 |
+| Kyber-6G cached rekey, round-trip timer | 324 | 3 | 6.6 | 20 of 22 | 0 |
+| DTLS 1.3 resumption, PSK only | 724 | 6 | 11.2 | 19 of 25 | 6 |
+| Kyber-6G PQ ratchet, round-trip timer | 4,757 | 5 | 11.7 | 23 of 24 | 0 |
+| DTLS 1.3 resumption with a new key exchange | 4,602 | 10 | 38.8 | 15 of 25 | 4 |
+
+Two causes stand out. Each certificate carries an ML-DSA-87 signature besides its public key. And wolfSSL sends its
+first ClientHello without the hybrid key share (139 bytes in every recorded flow) and the share only after the
+server's HelloRetryRequest, with or without a cookie: one round trip more in every full handshake. wolfSSL's DTLS timer
+starts at 1 s and doubles, the weakness that the link's fixed timer had. One resumption with a new key exchange was not
+resumed without loss (the server did not accept the ticket); it counts as not completed. One implementation, measured
+once, without video and with five operations of each kind at each loss rate: the numbers show what the design saves on
+this test bed, not that a protocol of its own is necessary.
+
+### 18.4 Defects and findings in this round, with the measurement that showed each
+
+| What | Found by | State |
+|---|---|---|
+| **The camera stops delivering frames when the Pi sends over Wi-Fi with the GNSS receiver attached.** `rpicam-vid` alone, a picamera2 script alone and the camera service alone run without fault; with frames sent over Wi-Fi the camera stalls within seconds; `rpicam-vid` beside a burst of dummy datagrams got 0 frames; non-blocking sends change nothing. Transmit power: the camera test stalls at 15, 20, 25 and 31 dBm and runs at 5 and 10 dBm, but the whole program still stalls at 5 and 8 dBm. No under-voltage flag. Without the receiver the program streamed through the whole repair run, and on 4 October the same receiver and camera ran together on the 5 GHz access point | the stall tests `cam_class`, `cam_txsweep`, `cam_trial` (scratch tools of this round) and the watchdog's events | **not resolved; hardware.** On 15 October at 06:15, with the receiver still attached and the hotspot farther off (−70 dBm instead of −34 to −47), the camera ran through the whole pipeline test without a stall; so the stalls depend on something that changed overnight, and the cause is open. The watchdog recovers each stall. To try, one at a time: route the camera ribbon away from the Wi-Fi antenna and from the receiver and its cable, or shield it; the 5 GHz network instead of the 2.4 GHz hotspot; a powered USB hub for the receiver; the official 5.1 V, 3 A supply. The transmit-power hook that was tried is removed; the radio is back at 31 dBm |
+| **The Pi's supply sags under full load, and the Pi rebooted.** Kernel: "Undervoltage detected" 06:16:45 to 06:17:09 during the pipeline test (camera, recording, audio, Wi-Fi at 31 dBm, GNSS receiver), twice more while it booted again; a reboot between 06:21:47 and 06:26 (the journal is not kept across boots, so the last messages before it are lost) | `vcgencmd get_throttled` 0x50005 after the pipeline, the kernel log, `journalctl --list-boots` | **not resolved; hardware.** Use the official 5.1 V, 3 A supply with a short cable, not a laptop port or a weak power bank; a powered hub for the receiver |
+| **After a reboot the UAV could not connect for about 25 s.** The Pi has no real-time clock: it came up 3.4 minutes behind, and the ground station refuses a hello more than 120 s off; it connected the moment NTP set the clock. Without internet (in the field) it would not connect at all until its clock is set | the UAV's log after the reboot (`link DOWN handshake timeout` until the clock jumped) | **remedy installed on 15 October:** chrony replaces systemd-timesyncd on the Pi and takes the GNSS receiver's time from gpsd's shared memory (`/etc/chrony/conf.d/kyber6g-gnss.conf`, NMEA, about 0.1 s) besides the network servers; `makestep 1 3` sets a clock that is off at start. **Verified at 07:13 to 07:17** once the receiver had a fix again (3D, 5 of 7 satellites): NMEA time arrived 0.19 s late (+189 to +194 ms against network time, 0.6 ms spread), entered as `offset 0.192`, after which the GNSS source agreed with network time within 19 µs; with the network servers offline chrony ran on GNSS alone (0.15 ms from network time); with the clock set 200 s back and only the GNSS source (`chronyd -q`), it reported "System clock wrong by 200.400162 seconds" and stepped it right 23 s after it started. The link stayed up through the 23 s. Also: the journal is now kept across reboots (`/etc/systemd/journald.conf.d/50-kyber6g-persistent.conf`, at most 64 MB; Raspberry Pi OS keeps it in RAM) |
+| **The ratchet check of the pipeline saw 5 of 6 session switches.** All three ratchets completed on the UAV, and the ground station's counter shows that it answered every one, but its active session did not move to the ratchet's session; it kept sending under the session before, which the UAV had retired, until the UAV's next cached rekey repaired it. Repeated without video (6 rounds of the pipeline's sequence): the same once | the pipeline test; `rekey_seq` (scratch); the ground station's counters; a test that steps the clock back | **fixed.** The ground station ordered its sessions by the wall clock (`confirmed = time.time()`), which WSL runs 7.7 % fast and steps back; a ratchet answered after a step was dated before the session ahead of it. Now the monotonic clock (`GcsLink._confirm`, the ratchet). `test_a_ratchet_after_the_wall_clock_stepped_back_becomes_the_active_session` fails on the old code and passes now. The two lines missing from the event log had the same cause: the writer kept only events dated after the last one written; it now follows the events themselves (`ground.main.new_events`, `TestEventLogAfterAClockStep`). The new repeat timer is not involved |
+| **A recording of 0 bytes** on the Pi (`rec_20261014_133043_…`, 14 October 13:31) | the stored-data audit in the pipeline test | **fixed for new recordings:** the recorder wrote its header into a buffer that reached the disk only with the first segment, so a program stopped before that (killed, restarted) left 0 bytes; the header is now flushed at once (`EncryptedRecorder`, `test_the_header_is_on_disk_before_the_first_frame`). The old empty file is still on the card (no data in it): delete it by hand |
+| **3 of 223 frames of the pipeline's recording did not decode** (220 of 223) | the pipeline test | **fixed; the recording was whole.** ffprobe decodes all 223 frames of that file. The recording had arrived twice (the fetch after `stop_rec` and the pipeline's own `fetch_recording`), and the second remux rewrote the .mp4 in place while the pipeline read it. The ground station now writes the .k6grec and the .mp4 under names of their own and renames them (`TestRecordingWrittenWhole`) |
+| **The motion watch's self-test found the drawn target in 0 of 26 looks at 302.9 lux** | the pipeline test | **open**; the cause was not established (the scene was not looked at); known blind cases are in §17.4 and §17.8 |
+| A camera that stalls hangs the UAV program (a picamera2 call that needs the next frame never returns) | the first stalls of the evening | fixed: the watchdog of §18.2 |
+| gpsd did not read a receiver plugged in after its start | the receiver attached at run time showed no fix | fixed: the udev rule of §18.2 |
+| The first repair run had no video: the camera's "live" status was stale after a deploy | `loss_ab_without_video.json` (kept, not used) | fixed: `need_live()` counts arriving frames |
+| The second run asked for two ratchets 0.4 s apart; the ground station accepts one in 0.5 s | `loss_ab_ratchets_adjacent.json` (kept, not used) | fixed: the timer alternates after whole sets of the three operations |
+| A drop rule in the Pi's output hook makes `sendto()` fail with EPERM, and wolfSSL gave up the handshake | the first DTLS runs under loss (error −308) | fixed in `dtls_bench`: EPERM, ENOBUFS, EAGAIN and ECONNREFUSED count as a sent and lost datagram |
+| A resumption with PSK only and no key share (`wolfSSL_NoKeyShares`) got a HelloRetryRequest and hung for 15 s | the first resumption runs | the call was taken out; the PSK-only resumption now needs no HelloRetryRequest (ClientHello of 407 bytes, then the server's flight, in all 30 recorded flows but one repeat under loss) |
+| `wolfSSL_SESSION_has_ticket` is not exported by the build | the link step | `wolfSSL_get_SessionTicket` instead |
+| `tcpdump` on WSL's loopback recorded nothing | the first attempt to see the DTLS flow | `dtls_bench` records the size and direction of every datagram itself (`flow`) |
+
+### 18.5 Verification runs on the final code
+
+| Run | Result |
+|---|---|
+| Unit tests, laptop (21:05) | 332 run, all pass (122 s) |
+| Unit tests, Raspberry Pi (21:00) | 324 run, all pass; 9 of them skipped there (140 s) |
+| Is the code on the Pi the repository's? (after the deploy at 21:00) | yes: the SHA-256 over all `.py` and `.json` files of `kyber6g/`, `tests/` and `deploy/` is the same on both machines |
+| UAV service after the deploy | active, not restarted by systemd, link up 26 ms after the start, not throttled, 53.5 °C |
+| GNSS | gpsd active; the device carries `SYSTEMD_WANTS=gpsdctl@ttyACM0.service`; 3D fix, 12 of 23 satellites used, HDOP 0.73 (14 October 21:02); no fix yet 3 minutes after the reboot of 15 October 06:39 |
+| Pipeline on the live hardware (15 October 06:15, receiver attached) | **56 PASS, 5 FAIL**: the laptop's clock (WSL, 7.7 % fast, 615 steps); the watch's self-test on the camera (0 of 26 looks at 302.9 lux); every recorded frame decodes (220 of 223); the PQ ratchet check (5 of 6 session switches); the stored-data audit (the old fix row of §17.5 and the 0-byte recording). All in §18.4. Video 30.0 frames a second, 0 of 340 lost; 0 of 356 lost during 6 rekeys; no camera stall |
+| The pipeline's rekey sequence again, without video (06:31) | 6 cached rekeys and 6 ratchets, every one started and completed with one request; 11 of 12 session switches within 2 s (§18.4); the ground station counted all 6 ratchets |
+| The Pi | rebooted twice on 15 October (between 06:21:47 and 06:26, and between 06:31 and 06:39), under-voltage logged during the pipeline test and at the first of these boots (§18.4); no further heavy run was made |
+| After the fixes of 15 October (§18.4): unit tests, laptop (07:01) | 337 run, all pass (122 s) |
+| Unit tests, Raspberry Pi (07:01, after a deploy) | 329 run, all pass; 9 of them skipped there (138 s); the code on the Pi is the repository's (hash equal on both machines) |
+| The ground station reloaded with the fixes (07:00), the pipeline's rekey sequence once more (07:05) | 6 cached rekeys and 6 ratchets, **12 of 12 session switches** (the first round included); one ratchet needed 4 requests (577 ms; a datagram lost at −70 dBm), the round-trip timer repeated it; no under-voltage during the run |
+| Time on the Pi (07:04 to 07:17) | 07:04: chrony on network servers, the GNSS source without samples (no fix since the reboot at 06:39). 07:13 to 07:17, with a fix again: calibrated, GNSS alone keeps time, a clock 200 s off is set right from GNSS in 23 s (§18.4) |
+| Link on the weak hotspot (−70 dBm), 07:10 and 07:14 | two link time-outs (no authenticated record for 5 s), each repaired by a full handshake in about 6 s; not caused by the clock tests (no link event during the 23 s with the wrong clock) |
+| Paper (`elsarticle1/`, rebuilt 15 October) | main.pdf 36 pages, main_review.pdf 95, supplementary.pdf 8; no undefined reference; 131 of 131 checked values equal the data; 45 figures and tables cited in order. One overfull box in the review build: elsarticle splits its title block where the abstract runs onto page 2 (nothing is cut off) |
+
+### 18.6 NOT TESTED in this round
+
+- **The repairs on the campaign's scene and network.** They were measured with small frames on a phone hotspot; a
+  run with a textured scene on the 5 GHz access point, with the GNSS receiver attached, is still to be done once the
+  camera stalls are cured.
+- **The repairs with more operations.** Five of each kind with each timer at each loss rate.
+- **Loss in bursts**, for the repairs and for DTLS.
+- **DTLS 1.3 with raw public keys**, with another implementation, with video, and QUIC.
+- **The cause of the camera stalls** (§18.4).
+- **Flight**, as before.
+
 ## 11. Reproduce
 
 ```bash
@@ -1115,4 +1256,15 @@ bash run/kyber6g.sh measure motion   # §17.4: generated scenes, the camera's ow
 bash run/kyber6g.sh plots            # plots 21 and 22 with the rest
 python3 paper_figures/scripts/build.py   # the nineteen diagrams
 python3 kyber6g-website/scripts/build_data.py && (cd kyber6g-website && npm run build)   # the web page
+
+# round 9 (laptop, with the Pi's service running): the two repairs and the DTLS 1.3 baseline (§18)
+python -m kyber6g.tools.kf_check --loss 5 --seconds 20   # does the Pi's encoder make a keyframe when asked?
+python -m kyber6g.tools.loss_ab                   # the two repairs, interleaved, at 0/1/2/5/10/20 % loss (about 6 min)
+python3 paper_plots/scripts/review_ab.py          # -> paper_plots/tables/review_ab_video.csv, review_ab_operations.csv
+# DTLS 1.3: wolfSSL 5.9.4 (tag v5.9.4-stable) built with the CMake flags in kyber6g/tools/dtls_baseline/build.sh and
+# installed under PREFIX on both machines; an ML-DSA-87 certificate and key for each end in ~/dtls_certs (Pi) and
+# /root/dtls_certs (laptop), uav-* and gcs-*, made with OpenSSL 3.5 or later
+bash kyber6g/tools/dtls_baseline/build.sh PREFIX OUTDIR   # dtls_bench, on each machine (~/dtls on the Pi, /root/dtls on the laptop)
+python -m kyber6g.tools.baseline_ab --no-video    # the link and DTLS 1.3 in turns at the same loss rates (about 10 min)
+python3 paper_plots/scripts/baseline_ab.py        # -> paper_plots/tables/baseline_ab_{operations,sizes,pooled}.csv
 ```

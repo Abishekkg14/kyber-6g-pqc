@@ -145,6 +145,11 @@ schematic.* The waveform in figure 15 is a synthetic signal drawn for the figure
 
 ## Artwork and licences
 
+In the version of the paper submitted in October 2026, the diagrams fig01, fig06, fig07, fig08, fig09 and fig11 show
+frames of the prototype's own camera and recordings, with three of the authors, who consented in writing. These photographs are not in the
+repository (they are frames of received media), and neither are the exported figures that contain them; the
+repository keeps the earlier versions of those figures, with the public-domain aerial photograph below.
+
 Nothing was taken from a web image search: a picture found that way usually may not be reprinted without the
 owner's permission. Everything used is free to publish (details in `assets/ARTWORK_ATTRIBUTION.md`):
 

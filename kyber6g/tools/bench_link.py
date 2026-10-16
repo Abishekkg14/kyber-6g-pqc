@@ -79,6 +79,9 @@ def snap(api):
             "stream_gaps": v.get("stream_gaps"), "decoder_restarts": v.get("decoder_restarts"), "decode_ms_raw": v.get("decode_ms"),
             "decoder_behind": v.get("decoder_behind"), "frames_given_up_decoder_behind": v.get("frames_dropped_decoder_behind"),
             "frames_without_picture": v.get("frames_without_picture"), "det_eased": (d.get("ease") or {}).get("factor"),
+            "keyframes_rx": v.get("keyframes"), "keyframe_requests_gcs": v.get("keyframe_requests"),
+            "cam_keyframes": cam.get("keyframes"), "cam_frames": cam.get("frames"), "keyframe_requests_uav": cam.get("keyframe_requests"),
+            "keyframe_requests_failed_uav": cam.get("keyframe_requests_failed"), "retx_timer": ul.get("retx_timer"), "uav_rtt_ms": ul.get("rtt_ms"),
             "network_latency_ms_est": v.get("network_latency_ms"), "display_latency_ms_est": v.get("display_latency_ms"),
             "uav_cpu": sysm.get("cpu_percent"), "uav_per_cpu": sysm.get("per_cpu"), "uav_temp_c": sysm.get("temp_c"), "uav_mem_pct": sysm.get("mem_percent"),
             "uav_throttled": sysm.get("throttled"), "wifi_dbm": (sysm.get("wifi") or {}).get("signal_dbm"),
@@ -170,6 +173,16 @@ def need_live(api):
         if not r.get("ok"):
             raise SystemExit(f"cannot start the live stream: {r}")
         time.sleep(6)
+    # The camera's "live" can be the status of a UAV program that has just been restarted (a deploy): what counts is
+    # video arriving here. Without it, ask for it once more, then give up rather than measure an idle link.
+    for attempt in range(2):
+        f0 = api.get("/api/state")["video"]["frames_complete"]
+        time.sleep(3)
+        if api.get("/api/state")["video"]["frames_complete"] - f0 >= 45:      # at least 15 frames a second arrive
+            return
+        api.cmd("start_live")
+        time.sleep(6)
+    raise SystemExit("no live video arrives at the ground station: not measuring")
 
 
 def ref_clock(a):
@@ -382,12 +395,35 @@ def nft_clear(pi):
             f"sudo -n {NFT} list table inet k6gloss 2>&1 | head -1", 30)
 
 
+def set_variant(a, api):
+    """The two settings that the review of 14 October 2026 asked to measure: the UAV's repeat timer ("fixed": the
+    timers of the October campaign, "rtt": from the measured round trip) and the ground station's keyframe request
+    after a lost frame. Both are set before the run and read back; the run refuses to start if either did not take."""
+    got = {}
+    if a.retx:
+        r = api.cmd("link_tuning", retx_timer=a.retx)
+        if not (r.get("ok") and (r.get("result") or {}).get("retx_timer") == a.retx):
+            raise SystemExit(f"could not set the repeat timer on the UAV: {r}")
+        got["retx_timer"] = a.retx
+    if a.kf:
+        r = api.cmd("video_tuning", keyframe_request=(a.kf == "on"))
+        if not (r.get("ok") and (r.get("result") or {}).get("keyframe_request") == (a.kf == "on")):
+            raise SystemExit(f"could not set the keyframe request on the ground station: {r}")
+        got["keyframe_request"] = a.kf == "on"
+    return got
+
+
 def loss(a, api):
     need_live(api)
     levels = [float(x) for x in a.levels.split(",")]
+    variant = set_variant(a, api)
     ref = ref_clock(a)
     out = {"what": "packet loss injected on the Pi (nftables, UDP 14600, both directions); video, telemetry, rekeying and transfers under it",
-           "provenance": provenance(api, a, ref), "window_s": a.seconds, "levels": []}
+           "provenance": provenance(api, a, ref), "window_s": a.seconds, "variant": variant, "levels": []}
+    time.sleep(2)
+    for op in OPS:                     # a round trip of each kind without loss, for the "rtt" timer (Karn: only unrepeated)
+        run_op(api, op, "warmup", wait_s=8)
+        time.sleep(0.6)
     first = oplog(api)
     since = first[-1]["n"] if first else 0
     # dead-man switch: whatever happens to this program, the Pi removes the rules by itself
@@ -442,7 +478,7 @@ def loss(a, api):
     time.sleep(6)                                        # the link settles; then the UAV's log of what really happened
     out["uav_oplog"] = [e for e in oplog(api, since) if str(e.get("tag", "")).startswith("loss")]
     out["after_recovery"] = snap(api)
-    return finish(out, ref, a, "loss")
+    return finish(out, ref, a, a.name or "loss")
 
 
 # ------------------------------------------------------------------------------------------------------ transfer
@@ -519,6 +555,8 @@ def main():
     ap.add_argument("--record-at", type=float, default=0, help="timeline: start a recording after this many seconds (0 = none)")
     ap.add_argument("--record-for", type=float, default=0, help="timeline: ... and stop it after this many more")
     ap.add_argument("--levels", default="0,0.5,1,2,5,10,20")
+    ap.add_argument("--retx", choices=["fixed", "rtt"], help="loss: set the UAV's repeat timer before the run")
+    ap.add_argument("--kf", choices=["on", "off"], help="loss: keyframe request of the ground station on or off before the run")
     ap.add_argument("--ops", type=int, default=8, help="loss: rounds of the three session operations per level")
     ap.add_argument("--photos", type=int, default=3, help="loss / transfer: photos per level / in total")
     ap.add_argument("--record-s", type=float, default=20, help="transfer: length of the test recording (s)")

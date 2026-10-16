@@ -715,7 +715,7 @@ def ablation_design():
         losses = sorted({l for _, l in retx})
         xs = [100 * l for l in losses]
         top = 0
-        styles = ((0, "-", "fixed timers (as implemented)"), (1, (0, (1.2, 1.3)), "three round trips, at most the fixed timer (design study)"))
+        styles = ((0, "-", "fixed timers (measurement campaign)"), (1, (0, (1.2, 1.3)), "three round trips, at most the fixed timer (built later)"))
         for ad, ls, tag in styles:
             for i, (kind, label) in enumerate(KINDS):
                 groups = [planned(retx[(ad, l)], kind) for l in losses if (ad, l) in retx]
@@ -736,11 +736,11 @@ def ablation_design():
             + [Line2D([], [], color=INK, marker="none", linestyle=ls) for _, ls, _ in styles]
         c.legend(handles, [label for _, label in KINDS] + ["solid: " + styles[0][2], "dotted: " + styles[1][2]], loc="upper left", handlelength=2.4)
         pl.panel(c, "c", "When to repeat an unanswered message")
-    # (d) what would help the live video (not implemented)
+    # (d) what would help the live video: the keyframe request was built later (14 October 2026), the parity datagram was not
     if video:
         losses = sorted({l for *_, l in video})
         xs = [100 * l for l in losses]
-        variants = [((0, 0), "As implemented"), ((0, 1), "Keyframe on request"), ((1, 0), "One parity datagram per frame"), ((1, 1), "Both")]
+        variants = [((0, 0), "Neither (measurement campaign)"), ((0, 1), "Keyframe on request (built later)"), ((1, 0), "One parity datagram per frame"), ((1, 1), "Both")]
         for i, ((fec, kf), label) in enumerate(variants):
             groups = [frames(video[(fec, kf, l)]) for l in losses if (fec, kf, l) in video]
             if not groups:
@@ -758,7 +758,7 @@ def ablation_design():
         d.set_xlabel("Datagrams dropped in each direction (%)")
         d.set_ylabel("Frames given to the decoder (%)")
         d.legend(loc="upper right")
-        pl.panel(d, "d", "Live video: two additions that are not implemented")
+        pl.panel(d, "d", "Live video: keyframe request and parity datagram")
     pl.save(fig, "plot16_ablation_design")
     pl.table("plot16_ablation_design", ["study", "variant", "loss_pct", "n", "completed_pct_or_frames_complete_pct", "within_1s_pct_or_decoder_pct", "p5_ms", "median_ms",
                                         "p95_ms", "mean_transmissions_or_keyframe_requests"], tab)

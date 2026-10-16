@@ -358,4 +358,7 @@ Set the GCS IP in `deploy/uav.json` (`link.gcs_host`). On WSL with mirrored netw
 
 ## License
 
-MIT, as stated by the authors. (A `LICENSE` file is not in the repository yet.)
+MIT (`LICENSE`): the code, the proof models, the tools, the measurement data and the scripts of this repository.
+Third-party parts keep their own licences: `ns-3-dev/` (ns-3 with 5G-LENA, GPL-2.0), the patches in
+`simulation/ns3/patches/` (changes to 5G-LENA, GPL-2.0), and the pictograms in `paper_figures/assets/`
+(Material Design Icons, Apache-2.0). To cite the work, see `CITATION.cff`.

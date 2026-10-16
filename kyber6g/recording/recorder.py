@@ -72,6 +72,9 @@ class EncryptedRecorder:
         self.f = os.fdopen(os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "wb")
         self._digest = hashlib.sha256(self.file_header)        # of every byte written: what the UAV signs at the end
         self.f.write(self.file_header)
+        # on disk at once: a program that stops before the first segment (killed, restarted by the camera watchdog)
+        # used to leave a file of 0 bytes that nothing could recognise (rec_20261014_133043_…, audit of 15 October)
+        self.f.flush()
         self.file_bytes = len(self.file_header)
         self.seg_idx = 0
         self.buf = bytearray()

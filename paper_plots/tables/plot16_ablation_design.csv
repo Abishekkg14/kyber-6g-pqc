@@ -29,36 +29,36 @@ fragment size,1400 B,2.0,1200,100.0,82.75,19.79,23.57,1223.08,1.21
 fragment size,1400 B,5.0,1200,100.0,58.83,20.03,26.57,2419.4,1.54
 fragment size,1400 B,10.0,1200,99.33,33.92,20.6,1220.32,3618.28,2.09
 fragment size,1400 B,20.0,1200,88.5,9.83,22.15,2419.32,4819.54,3.29
-repeat timer,"Full handshake, fixed timers (as implemented)",1.0,600,100.0,90.83,20.21,23.35,1219.87,1.1
-repeat timer,"Full handshake, fixed timers (as implemented)",2.0,600,100.0,78.5,20.14,23.98,1227.92,1.26
-repeat timer,"Full handshake, fixed timers (as implemented)",5.0,600,99.83,53.5,20.72,28.01,2420.34,1.62
-repeat timer,"Full handshake, fixed timers (as implemented)",10.0,600,98.67,29.67,21.33,1221.84,3620.94,2.25
-repeat timer,"Full handshake, fixed timers (as implemented)",20.0,600,81.5,6.5,23.39,2424.31,4819.83,3.63
-repeat timer,"Cached rekey, fixed timers (as implemented)",1.0,600,100.0,100.0,7.5,9.03,15.47,1.02
-repeat timer,"Cached rekey, fixed timers (as implemented)",2.0,600,100.0,100.0,7.42,9.02,17.48,1.04
-repeat timer,"Cached rekey, fixed timers (as implemented)",5.0,600,99.67,98.5,7.45,9.24,708.86,1.13
-repeat timer,"Cached rekey, fixed timers (as implemented)",10.0,600,99.67,96.83,7.21,9.13,710.09,1.18
-repeat timer,"Cached rekey, fixed timers (as implemented)",20.0,600,94.33,87.0,7.57,10.11,1408.37,1.5
-repeat timer,"PQ ratchet, fixed timers (as implemented)",1.0,600,100.0,100.0,14.05,16.52,369.63,1.06
-repeat timer,"PQ ratchet, fixed timers (as implemented)",2.0,600,100.0,100.0,14.01,16.48,411.32,1.09
-repeat timer,"PQ ratchet, fixed timers (as implemented)",5.0,600,100.0,99.33,14.03,16.92,722.8,1.28
-repeat timer,"PQ ratchet, fixed timers (as implemented)",10.0,600,99.0,92.67,14.02,19.14,1078.45,1.69
-repeat timer,"PQ ratchet, fixed timers (as implemented)",20.0,600,85.83,68.33,14.57,413.5,1459.21,2.66
-repeat timer,"Full handshake, three round trips, at most the fixed timer (design study)",1.0,600,100.0,100.0,20.2,23.5,61.36,1.11
-repeat timer,"Full handshake, three round trips, at most the fixed timer (design study)",2.0,600,100.0,100.0,20.17,23.91,75.48,1.27
-repeat timer,"Full handshake, three round trips, at most the fixed timer (design study)",5.0,600,99.83,99.17,20.77,28.28,112.21,1.65
-repeat timer,"Full handshake, three round trips, at most the fixed timer (design study)",10.0,600,98.83,98.0,21.38,59.47,160.0,2.25
-repeat timer,"Full handshake, three round trips, at most the fixed timer (design study)",20.0,600,82.17,79.17,23.36,106.05,207.65,3.6
-repeat timer,"Cached rekey, three round trips, at most the fixed timer (design study)",1.0,600,100.0,100.0,7.5,9.04,15.36,1.02
-repeat timer,"Cached rekey, three round trips, at most the fixed timer (design study)",2.0,600,100.0,100.0,7.38,9.0,17.93,1.04
-repeat timer,"Cached rekey, three round trips, at most the fixed timer (design study)",5.0,600,99.67,99.67,7.47,9.24,55.32,1.13
-repeat timer,"Cached rekey, three round trips, at most the fixed timer (design study)",10.0,600,99.67,99.67,7.23,9.14,58.81,1.18
-repeat timer,"Cached rekey, three round trips, at most the fixed timer (design study)",20.0,600,94.17,94.17,7.56,10.27,78.76,1.5
-repeat timer,"PQ ratchet, three round trips, at most the fixed timer (design study)",1.0,600,100.0,100.0,14.05,16.56,71.73,1.06
-repeat timer,"PQ ratchet, three round trips, at most the fixed timer (design study)",2.0,600,100.0,100.0,14.0,16.4,91.32,1.09
-repeat timer,"PQ ratchet, three round trips, at most the fixed timer (design study)",5.0,600,100.0,100.0,14.03,16.92,134.22,1.27
-repeat timer,"PQ ratchet, three round trips, at most the fixed timer (design study)",10.0,600,99.17,99.17,14.05,19.38,166.52,1.7
-repeat timer,"PQ ratchet, three round trips, at most the fixed timer (design study)",20.0,600,85.67,85.5,14.54,89.44,204.31,2.65
+repeat timer,"Full handshake, fixed timers (measurement campaign)",1.0,600,100.0,90.83,20.21,23.35,1219.87,1.1
+repeat timer,"Full handshake, fixed timers (measurement campaign)",2.0,600,100.0,78.5,20.14,23.98,1227.92,1.26
+repeat timer,"Full handshake, fixed timers (measurement campaign)",5.0,600,99.83,53.5,20.72,28.01,2420.34,1.62
+repeat timer,"Full handshake, fixed timers (measurement campaign)",10.0,600,98.67,29.67,21.33,1221.84,3620.94,2.25
+repeat timer,"Full handshake, fixed timers (measurement campaign)",20.0,600,81.5,6.5,23.39,2424.31,4819.83,3.63
+repeat timer,"Cached rekey, fixed timers (measurement campaign)",1.0,600,100.0,100.0,7.5,9.03,15.47,1.02
+repeat timer,"Cached rekey, fixed timers (measurement campaign)",2.0,600,100.0,100.0,7.42,9.02,17.48,1.04
+repeat timer,"Cached rekey, fixed timers (measurement campaign)",5.0,600,99.67,98.5,7.45,9.24,708.86,1.13
+repeat timer,"Cached rekey, fixed timers (measurement campaign)",10.0,600,99.67,96.83,7.21,9.13,710.09,1.18
+repeat timer,"Cached rekey, fixed timers (measurement campaign)",20.0,600,94.33,87.0,7.57,10.11,1408.37,1.5
+repeat timer,"PQ ratchet, fixed timers (measurement campaign)",1.0,600,100.0,100.0,14.05,16.52,369.63,1.06
+repeat timer,"PQ ratchet, fixed timers (measurement campaign)",2.0,600,100.0,100.0,14.01,16.48,411.32,1.09
+repeat timer,"PQ ratchet, fixed timers (measurement campaign)",5.0,600,100.0,99.33,14.03,16.92,722.8,1.28
+repeat timer,"PQ ratchet, fixed timers (measurement campaign)",10.0,600,99.0,92.67,14.02,19.14,1078.45,1.69
+repeat timer,"PQ ratchet, fixed timers (measurement campaign)",20.0,600,85.83,68.33,14.57,413.5,1459.21,2.66
+repeat timer,"Full handshake, three round trips, at most the fixed timer (built later)",1.0,600,100.0,100.0,20.2,23.5,61.36,1.11
+repeat timer,"Full handshake, three round trips, at most the fixed timer (built later)",2.0,600,100.0,100.0,20.17,23.91,75.48,1.27
+repeat timer,"Full handshake, three round trips, at most the fixed timer (built later)",5.0,600,99.83,99.17,20.77,28.28,112.21,1.65
+repeat timer,"Full handshake, three round trips, at most the fixed timer (built later)",10.0,600,98.83,98.0,21.38,59.47,160.0,2.25
+repeat timer,"Full handshake, three round trips, at most the fixed timer (built later)",20.0,600,82.17,79.17,23.36,106.05,207.65,3.6
+repeat timer,"Cached rekey, three round trips, at most the fixed timer (built later)",1.0,600,100.0,100.0,7.5,9.04,15.36,1.02
+repeat timer,"Cached rekey, three round trips, at most the fixed timer (built later)",2.0,600,100.0,100.0,7.38,9.0,17.93,1.04
+repeat timer,"Cached rekey, three round trips, at most the fixed timer (built later)",5.0,600,99.67,99.67,7.47,9.24,55.32,1.13
+repeat timer,"Cached rekey, three round trips, at most the fixed timer (built later)",10.0,600,99.67,99.67,7.23,9.14,58.81,1.18
+repeat timer,"Cached rekey, three round trips, at most the fixed timer (built later)",20.0,600,94.17,94.17,7.56,10.27,78.76,1.5
+repeat timer,"PQ ratchet, three round trips, at most the fixed timer (built later)",1.0,600,100.0,100.0,14.05,16.56,71.73,1.06
+repeat timer,"PQ ratchet, three round trips, at most the fixed timer (built later)",2.0,600,100.0,100.0,14.0,16.4,91.32,1.09
+repeat timer,"PQ ratchet, three round trips, at most the fixed timer (built later)",5.0,600,100.0,100.0,14.03,16.92,134.22,1.27
+repeat timer,"PQ ratchet, three round trips, at most the fixed timer (built later)",10.0,600,99.17,99.17,14.05,19.38,166.52,1.7
+repeat timer,"PQ ratchet, three round trips, at most the fixed timer (built later)",20.0,600,85.67,85.5,14.54,89.44,204.31,2.65
 video,"parity 0, keyframe request 0",0.45,5,95.12,45.49,,,,0.0
 video,"parity 0, keyframe request 0",1.0,5,89.29,18.49,,,,0.0
 video,"parity 0, keyframe request 0",2.0,5,79.7,6.16,,,,0.0

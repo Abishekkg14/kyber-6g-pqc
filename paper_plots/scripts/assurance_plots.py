@@ -83,7 +83,7 @@ def motion_watch():
         ax.set_ylim(-4, 104)
         ax.yaxis.set_major_locator(FixedLocator([0, 25, 50, 75, 100]))
         ax.set_xlabel(xlabel)
-        ax.set_ylabel("Looks in which it is found (%)")
+        ax.set_ylabel("Frames in which it is found (%)")
         pl.panel(ax, letter, title)
 
     a = fig.add_subplot(gs[0, 0])
@@ -94,7 +94,7 @@ def motion_watch():
            [("size, day noise", "day noise"), ("size, night noise", "night noise")], "size", {"contrast": 25, "speed": 2}, ticks=[3, 4, 6, 8, 12, 16])
     b.legend(loc="lower right", handlelength=1.8)                # the one legend of (a) to (c): this corner is the only free one
     c = fig.add_subplot(gs[1, 0])
-    curves(c, "c", "By speed", "Speed of the target (pixels per look)", [("speed", "day noise")], "speed", {"size": 8, "contrast": 25}, ticks=[0.1, 0.4, 1.5, 6])
+    curves(c, "c", "By speed", "Target speed (px per analyzed frame)", [("speed", "day noise")], "speed", {"size": 8, "contrast": 25}, ticks=[0.1, 0.4, 1.5, 6])
     d = fig.add_subplot(gs[1, 1])
     for i, (name, label) in enumerate((("pan", "camera pans"), ("pan + turn", "pans and turns 0.3°"))):
         x, y, rows = sim_series(syn, name)
@@ -104,8 +104,8 @@ def motion_watch():
     d.set_ylim(-4, 104)
     d.yaxis.set_major_locator(FixedLocator([0, 25, 50, 75, 100]))
     d.xaxis.set_major_locator(FixedLocator([0, 1, 2, 4, 8, 12]))
-    d.set_xlabel("Movement of the camera (pixels per look)")
-    d.set_ylabel("Looks in which it is found (%)")
+    d.set_xlabel("Camera movement (px per analyzed frame)")
+    d.set_ylabel("Frames in which it is found (%)")
     d.legend(loc="lower left", handlelength=2.2)
     pl.panel(d, "d", "While the camera moves")
     fr, lk = sum(r["false_regions"] for r in quiet_pan), sum(r["looks"] for r in quiet_pan)
@@ -124,27 +124,29 @@ def motion_watch():
     for lab in labels:
         y -= 0.066
         cells = {r["series"].split(", ")[1]: r for r in still if r["label"] == lab}
-        pl.note(e, 0.0, y, lab, color=INK2, transform=e.transAxes, size=pl.FS_MIN)
+        # the case names of the measurement say "look" for an analyzed frame (kyber6g/tools/motion_bench.py)
+        shown = lab.replace(" a look", " a frame").replace("/look", "/frame")
+        pl.note(e, 0.0, y, shown, color=INK2, transform=e.transAxes, size=pl.FS_MIN)
         for xpos, lev in ((0.80, "medium"), (1.0, "high")):
             r = cells.get(lev)
             pl.note(e, xpos, y, f"{r['false_regions']} in {r['looks']}" if r else "", ha="right", color=INK, transform=e.transAxes, size=pl.FS_MIN)
             if r:
                 table.append(["e", f"generated scene, nothing moves, sensitivity {lev}: {lab}", "", 0, 0, "", r["false_regions"]])
     y -= 0.085
-    lines = [f"Camera pans (d), nothing moves: {fr} in {lk} looks."]
+    lines = [f"Camera pans (d), nothing moves: {fr} in {lk} analyzed frames."]
     for mode, dd in cams:
         r = dd["rows"][0]
-        lines.append(f"UAV camera, {mode.upper()}, nothing drawn in: {r['false_regions']} in {r['looks']} looks*")
+        lines.append(f"UAV camera, {mode.upper()}, nothing drawn in: {r['false_regions']} in {r['looks']} analyzed frames*")
         table.append(["e", f"UAV camera, {mode.upper()} mode, no target drawn in (real scene, not controlled)", "", 0, 0, "", r["false_regions"]])
     if quiet:
-        lines.append(f"The scene left to itself for {quiet['minutes']:.0f} min: {quiet['movements']} movements,\n{quiet['looks_with_motion']:,} of {quiet['looks']:,} looks with a region*")
+        lines.append(f"The scene left to itself for {quiet['minutes']:.0f} min: {quiet['movements']} movements,\n{quiet['looks_with_motion']:,} of {quiet['looks']:,} analyzed frames with a region*")
     if cams or quiet:
         lines.append("* a lit room with people in it: what moved there,\nor a false alarm; the pictures cannot be kept to tell.")
     pl.note(e, 0.0, y, "\n".join(lines), va="top", color=INK2, transform=e.transAxes, size=pl.FS_MIN, linespacing=1.3)
 
     f = fig.add_subplot(gs[1, 2])
     f.axis("off")
-    pl.panel(f, "f", "What the watch costs the UAV")
+    pl.panel(f, "f", "What the detector costs the UAV")
     rows_cost = []
     if cost:
         med = lambda on, key: statistics.median([r[key] for r in cost["rounds"] if r["watch"] is on and r.get(key) is not None] or [float("nan")])
@@ -155,7 +157,7 @@ def motion_watch():
                      ("Processor clock (MHz)**", f"{med(False, 'pi_cpu_mhz'):.0f}", f"{med(True, 'pi_cpu_mhz'):.0f}"),
                      ("Camera frames per second", f"{med(False, 'camera_fps'):.1f}", f"{med(True, 'camera_fps'):.1f}"),
                      ("Video frames lost", f"{tot(False, 'frames_lost')} of {tot(False, 'frames'):,}", f"{tot(True, 'frames_lost')} of {tot(True, 'frames'):,}"),
-                     ("AES-GCM per video chunk (µs)", f"{med(False, 'seal_us_per_chunk'):.0f}", f"{med(True, 'seal_us_per_chunk'):.0f}")]
+                     ("Seal and send per video record (µs)", f"{med(False, 'seal_us_per_chunk'):.0f}", f"{med(True, 'seal_us_per_chunk'):.0f}")]
         if any(r.get("ops") for r in cost["rounds"]):
             rows_cost += [("Full handshake at the UAV (ms)", f"{ops(False, 'full_handshake'):.1f}", f"{ops(True, 'full_handshake'):.1f}"),
                           ("1-RTT Cached RapidRekey (ms)", f"{ops(False, 'cached_rekey'):.1f}", f"{ops(True, 'cached_rekey'):.1f}"),
@@ -172,10 +174,10 @@ def motion_watch():
         n_on = sum(r["watch"] for r in cost["rounds"])
         n_cap = max((len(dd.get("per_capture", [])) for _, dd in cams), default=0)
         pl.note(f, 0.0, y - 0.012,
-                f"One look: {med(True, 'motion_ms_per_look'):.0f} ms, {w['hz']:g} a second, {w['lores'][0]} × {w['lores'][1]} pixels, beside\nvideo of "
+                f"One analyzed frame: {med(True, 'motion_ms_per_look'):.0f} ms, {w['hz']:g} a second, {w['lores'][0]} × {w['lores'][1]} pixels, beside\nvideo of "
                 f"{cam['width']} × {cam['height']}. Off and on in turns, {n_on} stretches of {cost['rounds'][0]['seconds']} s each.\n"
-                "** with the watch on, the Pi's governor raises the clock:\nthat is why the other work gets quicker, not slower.\n"
-                "(a) to (c): target 8 pixels wide, contrast 25, 2 pixels per look\nunless varied. Grey: generated scenes. Colour: the UAV's\n"
+                "** with the detector on, the Pi's governor raises the clock:\nthat is why the other work gets quicker, not slower.\n"
+                "(a) to (c): target 8 pixels wide, contrast 25, 2 pixels per analyzed\nframe unless varied. Grey: generated scenes. Colour: the UAV's\n"
                 f"camera, targets drawn in on the UAV; median of {n_cap} captures,\nthin line: their range.",
                 va="top", color=INK2, transform=f.transAxes, size=pl.FS_MIN, linespacing=1.25)
     else:

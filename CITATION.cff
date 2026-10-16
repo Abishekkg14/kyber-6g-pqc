@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software or its measurement data, please cite it as below."
+title: "Kyber-6G: a hybrid post-quantum secure link for UAV missions (prototype, proof models, measurement data)"
+type: software
+license: MIT
+authors:
+  - given-names: "Abishek"
+    family-names: "K G"
+    affiliation: "School of Computer Science and Engineering, Vellore Institute of Technology, Chennai, India"
+  - given-names: "Ramana Sree"
+    family-names: "K V"
+    affiliation: "School of Computer Science and Engineering, Vellore Institute of Technology, Chennai, India"
+  - given-names: "Roshan"
+    family-names: "Parveen"
+    affiliation: "School of Computer Science and Engineering, Vellore Institute of Technology, Chennai, India"
+  - given-names: "Jai Vinita"
+    family-names: "L"
+    affiliation: "School of Computer Science and Engineering, Vellore Institute of Technology, Chennai, India"
+repository-code: "https://github.com/Abishekkg14/kyber-6g-pqc"
+keywords:
+  - post-quantum cryptography
+  - ML-KEM
+  - ML-DSA
+  - unmanned aerial vehicle
+  - hybrid key exchange
+  - ProVerif

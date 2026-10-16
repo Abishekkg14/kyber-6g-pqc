@@ -1,0 +1,8 @@
+operation,bytes,datagrams,flow
+"DTLS 1.3 full handshake, cookie",29459,31,>139 <168 >1400 >524 <1400 <369 <36 <75 <1400 <1400 <1400 <1400 <1400 <725 <1400 <1400 <1400 <567 <82 >1400 >1400 >1400 >1400 >1400 >725 >1400 >1400 >1400 >567 >82 <200
+DTLS 1.3 full handshake,29277,31,>139 <77 >1400 >433 <1400 <369 <36 <75 <1400 <1400 <1400 <1400 <1400 <725 <1400 <1400 <1400 <567 <82 >1400 >1400 >1400 >1400 >1400 >725 >1400 >1400 >1400 >567 >82 <200
+"DTLS 1.3 resumption, PSK only",724,6,>407 <77 <36 <82 >82 <40
+"DTLS 1.3 resumption, new key exchange",4602,10,>408 <77 >1400 >702 <1400 <375 <36 <82 >82 <40
+Kyber-6G full handshake,13106,13,Table 6 (counted in the implementation)
+Kyber-6G cached rekey,324,3,Table 6
+Kyber-6G PQ ratchet,4757,5,Table 6

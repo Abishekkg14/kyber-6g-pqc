@@ -30,8 +30,16 @@ AUD = b"\x00\x00\x00\x01\x09\xf0"
 
 
 class VideoSink:
-    def __init__(self, ffmpeg="ffmpeg", jitter_ms=150, clock_offset=lambda: None):
+    KF_REQUEST_GAP = 0.25   # s: at most this often a keyframe request while the decoder waits for a keyframe
+
+    def __init__(self, ffmpeg="ffmpeg", jitter_ms=150, clock_offset=lambda: None, on_need_key=None):
         self.ffmpeg = ffmpeg
+        # Called (outside the lock, from the reaper thread) while the decoder waits for a keyframe and video arrives:
+        # the ground station asks the UAV for a keyframe now instead of waiting for the next periodic one (up to 1 s).
+        # None: no requests (the video path of the measurements of October 2026).
+        self.on_need_key = on_need_key
+        self._kf_last = 0.0             # when the last keyframe request went out (monotonic)
+        self._last_chunk = 0.0          # when the last video chunk arrived (monotonic)
         self.jitter = jitter_ms / 1000
         self.clock_offset = clock_offset
         self.lock = threading.Lock()
@@ -55,7 +63,8 @@ class VideoSink:
                   "chunk_loss_pct": 0.0, "expected_chunks": 0, "decoder": "stopped", "decoder_restarts": 0,
                   "late_chunks": 0, "stream_gaps": 0, "last_gap": None,
                   "decoder_behind": 0, "frames_dropped_decoder_behind": 0,   # times the decoder fell behind / frames given up for it
-                  "frames_without_picture": 0}                               # frames the decoder took and gave no picture for
+                  "frames_without_picture": 0,                               # frames the decoder took and gave no picture for
+                  "keyframe_requests": 0}                                    # requests sent to the UAV (see on_need_key)
         self._sps = None                # sequence parameter set of the stream being decoded (changes with resolution)
         self._last_frame = None         # arrival time of the newest complete frame
         self._stream_started = 0.0      # arrival time of the first frame after a pause
@@ -78,6 +87,7 @@ class VideoSink:
         now = time.monotonic()
         with self.lock:
             self.s["chunks_rx"] += 1
+            self._last_chunk = now
             if self.next_fid is not None and ((fid - self.next_fid) & 0xFFFFFFFF) > 0x7FFFFFFF:
                 if ((self.next_fid - fid) & 0xFFFFFFFF) <= self.RESYNC:
                     self.s["late_chunks"] += 1          # arrived after its frame was given up (jitter window too short?)
@@ -264,8 +274,15 @@ class VideoSink:
     def _reaper(self):
         while self.running:
             time.sleep(0.05)
+            ask = None
             with self.lock:
                 self._deliver()
+                mono = time.monotonic()
+                cb = self.on_need_key
+                if cb is not None and self.need_key and mono - self._last_chunk < 1.0 and mono - self._kf_last >= self.KF_REQUEST_GAP:
+                    self._kf_last = mono
+                    self.s["keyframe_requests"] += 1
+                    ask = cb
                 if self.pending and not self.done:
                     # whole-frame tails: drop very old partial frames
                     for fid in [f for f, p in self.pending.items() if time.monotonic() - p["first"] > 1.0]:
@@ -275,6 +292,11 @@ class VideoSink:
                         self.need_key = True
                         if self.next_fid == fid:
                             self.next_fid = (fid + 1) & 0xFFFFFFFF
+            if ask is not None:
+                try:
+                    ask()
+                except Exception:                       # a request that cannot be sent costs a keyframe, not the reaper
+                    pass
 
     # ----------------------------------------------------------- decoder
     def _stop_decoder(self):

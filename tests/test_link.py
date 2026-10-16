@@ -204,6 +204,24 @@ class TestLink(unittest.TestCase):
         self.assertTrue(wait(lambda: any(p == b"after-ratchet" for _, _, p in got)))
         self.assertNotEqual(uav.session.session_id, sid1)
 
+    def test_a_ratchet_after_the_wall_clock_stepped_back_becomes_the_active_session(self):
+        """The ground station ordered its sessions by the wall clock, which in WSL runs fast and is stepped back by the
+        host (pipeline test of 15 October 2026: 7.7 % fast, 615 steps). A ratchet answered after such a step was dated
+        before the session ahead of it and never became the active one; the ground station went on sending under a
+        session the UAV had retired until the UAV's next cached rekey repaired it (5 of 6 session switches)."""
+        from unittest import mock
+        uav, gcs, proxy, got, ctrl = self.make()
+        self.assertTrue(wait(lambda: uav.state == "UP"))
+        self.assertTrue(uav._cached_rekey("test"))
+        self.assertTrue(wait(lambda: uav.state == "UP" and gcs.active == uav.session.session_id))
+        real = time.time
+        with mock.patch("time.time", side_effect=lambda: real() - 30.0):     # the wall clock is stepped back by 30 s
+            self.assertTrue(uav.request_pq_ratchet())
+            self.assertTrue(wait(lambda: uav.stats["pq_ratchets"] == 1))
+            ratchet_sid = uav.session.session_id                              # the ratchet's session, not a later one
+            uav.send(ks.STREAM_TELEMETRY, b"after-the-step")
+            self.assertTrue(wait(lambda: gcs.active == ratchet_sid, 4))
+
     def test_recovery_after_interruption(self):
         uav, gcs, proxy, got, ctrl = self.make()
         self.assertTrue(wait(lambda: uav.state == "UP"))

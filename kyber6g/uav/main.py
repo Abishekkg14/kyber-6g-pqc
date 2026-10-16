@@ -83,6 +83,7 @@ class UavApp:
     def __init__(self, cfg: cfgmod.UavConfig):
         self.cfg = cfg
         self._cmds = queue.Queue(maxsize=32)
+        self._kf_at = 0.0                        # when the last keyframe request from the ground station was carried out
         keydir = Path(cfg.link.keydir).expanduser() if cfg.link.keydir else idm.DEFAULT_DIR
         self.ident = idm.load_identity(keydir, "uav", cfg.link.uav_id.encode()[:8].ljust(8, b"-"))
         gcs_pk = idm.load_pinned_peer(keydir, "gcs")
@@ -151,6 +152,20 @@ class UavApp:
         self.events = self.events[-100:]
         log.info("%s: %s", kind, msg)
 
+    def on_camera_stall(self, why):
+        """The camera stopped delivering frames (see CameraService._watchdog). Nothing inside this process brings it
+        back: the program ends and systemd starts it again (Restart=always), which opens the camera afresh. A
+        recording that was running is closed at the next start from what is on the card, as after a power cut."""
+        self.event("CAMERA", f"stalled ({why}); restarting the UAV program to reset the camera")
+        if self.lcd:
+            try:
+                self.lcd.show_now("CAMERA STALLED", "RESTARTING", seconds=3.0)
+            except Exception:
+                pass
+        time.sleep(2.5)                          # the event reaches the ground station with the next status message
+        logging.shutdown()
+        os._exit(75)
+
     # --------------------------------------------------------------- video
     def on_live_frame(self, data: bytes, keyframe: bool, ts_us: int):
         fid = self.frame_id
@@ -209,11 +224,24 @@ class UavApp:
         recording, reading a 50 MB file) run here would stop keepalives being processed and look like a dead link."""
         if self.blobs.on_control(msg):
             return
+        if msg.get("t") == "kf_req":             # no answer and no queue: it is only worth anything at once
+            self.on_keyframe_request()
+            return
         try:
             self._cmds.put_nowait(msg)
         except queue.Full:
             self.link.send_control({"t": "ack", "id": msg.get("id"), "cmd": msg.get("t"), "ok": False,
                                     "error": "UAV busy: too many commands waiting"})
+
+    def on_keyframe_request(self):
+        """The ground station lost a video frame and waits for a keyframe (ground/video_sink.py): the encoder starts
+        its next frame as one, instead of the decoder waiting up to a second for the periodic keyframe. At most four
+        requests a second are carried out, however many arrive."""
+        now = time.monotonic()
+        if self.camera is None or now - self._kf_at < 0.25:
+            return
+        self._kf_at = now
+        self.camera.request_keyframe()
 
     def command_loop(self):
         while self.running:
@@ -307,6 +335,16 @@ class UavApp:
             name = Path(msg["name"]).name
             meta = self.blobs.send(ks.STREAM_IMAGE, "photo_enc", name, self.photos.read(name), {"encrypted_at_rest": True})
             return {k: meta[k] for k in ("id", "name", "size", "sha256", "chunks")}
+        elif t == "link_tuning":
+            # for measurements: the repeat timer of handshake, rekey and ratchet messages ("fixed" | "rtt", see
+            # transport/link.py UavLink._waits), until the program starts again; without an argument: the setting
+            c = self.link.cfg
+            if "retx_timer" in msg:
+                if msg["retx_timer"] not in ("fixed", "rtt"):
+                    raise ValueError("retx_timer must be 'fixed' or 'rtt'")
+                c.retx_timer = msg["retx_timer"]
+                self.event("LINK", f"repeat timer {c.retx_timer}")
+            return {"retx_timer": c.retx_timer, "cell_binding": c.cell_binding}
         elif t == "set_mode":
             cam.set_mode(msg["mode"]); self.event("CAMERA", f"mode {msg['mode']}")
             if self.lcd: self.lcd.show_now("CAMERA MODE", msg["mode"])
@@ -365,6 +403,10 @@ class UavApp:
             # `tag` labels the entry in the link's operation log (see "oplog"); `wait` = carry it out here and answer
             # with the time it took on this clock (a full handshake always does)
             tag = str(msg.get("tag") or "manual")[:24]
+            if "retx" in msg:                    # the repeat timer for this operation and the ones after it (link_tuning)
+                if msg["retx"] not in ("fixed", "rtt"):
+                    raise ValueError("retx must be 'fixed' or 'rtt'")
+                self.link.cfg.retx_timer = msg["retx"]
             if t == "pq_ratchet":
                 return self.link.pq_ratchet_now(tag) if msg.get("wait") else {"started": self.link.request_pq_ratchet(tag)}
             if t == "cached_rekey" and not msg.get("wait"):
@@ -561,6 +603,7 @@ class UavApp:
             self.lcd.start()
         from ..camera.camera import CameraService
         self.camera = CameraService(self.cfg.camera, self.on_live_frame, self.on_motion, self.platform_moving)
+        self.camera.on_stall = self.on_camera_stall
         if not self.camera.available:
             self.event("CAMERA", f"not available: {self.camera.error}")
         else:

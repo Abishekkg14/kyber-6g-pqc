@@ -152,7 +152,7 @@ def fig02_threat_model():
     pills(5, [("epoch chain", ACC_SYM), ("PQ ratchet", ACC_KEY)], "fresh secrets")
     pills(6, [("ML-KEM-1024", ACC_KEY), ("X25519", ACC_KEY)], "wrap the file key")
     pills(7, [("ML-DSA-87", ACC_KEY)], "signs every stored file")
-    pills(8, [("ration", ACC_SYM)], "of signature checks, answer cache")
+    pills(8, [("CPU budget", ACC_SYM)], "for failed checks")
     return f
 
 
@@ -468,13 +468,12 @@ def fig08_perception_hitl():
 
 def fig09_recording_at_rest():
     """Stored photos and recordings, file format 2 (kyber6g/recording/sealing.py, photos.py, recorder.py)."""
-    W, H = W1, 372.0
+    W, H = W1, 472.0
     f = Fig("fig09_recording_at_rest", W, H, "Stored photos and recordings: written and signed on the UAV, readable only on the ground station")
     f.text(4, 2, 40, 14, "UAV", fs=FS_M, bold=True, align="left", colour=UAV_C)
     # photo or frames -> segments -> ciphertext -> file
     y = 34.0
-    f.glyph("photo", 3, y - 9, 18)
-    f.glyph("film", 21, y - 9, 18)
+    f.pic("rec_frame.jpg", 4.5, y - 9.0, 32, 18)    # a frame of a recording of the prototype (14 October 2026, 0:05)
     f.op("slice", 55, y)
     f.edge([(39, y), (47.5, y)], attach=False)
     f.text(46, 8, 90, 13, "photo, or segments", fs=FS_S)
@@ -559,6 +558,15 @@ def fig09_recording_at_rest():
     f.edge([(x3 + w3, yg), (xo - 1, yg)], attach=False)
     f.text(110, yg - 26, 90, 12, "<i>signature valid</i>", fs=FS_S, align="left")
     f.text(x3 - 8, yg + 11, w3 + 16, 12, "unwrap, decrypt", fs=FS_S)
+    # frames of a recording made by the prototype (14 October 2026), with the authors who appear in it (each gave
+    # written consent to the publication)
+    yt = yg + 34
+    f.text(4, yt, W - 8, 12, "<i>frames of a recording made and decrypted with the prototype</i>", fs=FS_S)
+    for k, (pic, name) in enumerate((("team_ramana.jpg", "Ramana Sree K V"), ("team_roshan.jpg", "Roshan Parveen"),
+                                     ("team_abishek.jpg", "Abishek K G"))):
+        x = 6 + k * 111
+        f.pic(pic, x, yt + 15, 105, 59)
+        # the names are in the caption of the paper (left to right), which keeps the figure as tall as before
     return f
 
 
@@ -815,7 +823,7 @@ def fig13_rekey_flows():
     msg_fields(f, xu + 54, y1 - 21, [("request ID", "cell"), ("X25519 key", "pq"), ("ML-KEM key", "pq")])
     f.edge([(xu, y1), (xg, y1)], attach=False)
     f.text(xg - 176, y1 + 4, 170, 12, it("encapsulate, X25519 exchange, derive"), fs=FS_S, align="right", valign="top")
-    f.text(xg - 52, y2 - 21, 46, 14, "Answer", fs=FS_M, bold=True, align="right")
+    f.text(xg - 52, y2 - 21, 46, 14, "Response", fs=FS_M, bold=True, align="right")
     msg_fields(f, xu + 8, y2 - 21, [("X25519 key", "pq"), ("ML-KEM ciphertext", "pq"), ("new ID", "cell")])
     f.edge([(xg, y2), (xu, y2)], attach=False)
     f.text(xu + 8, y2 + 4, 170, 12, it("decapsulate, X25519 exchange, derive"), fs=FS_S, align="left", valign="top")
@@ -838,10 +846,10 @@ def fig14_hello_admission():
     xl, xt = 22.0, 42.0                                           # the flow line, and where the words start
     rows = [(4, "packet", "ClientHello arrives", "6 fragments; the sender's address proves nothing"),
             (44, "hash", "Reassembly", "128 partial messages; a full table drops its oldest"),
-            (84, "refresh", "The same hello within 10 s?", "yes: the stored answer is sent again"),
-            (124, "counter", "Ration left?", "a quarter of one core for failed checks; empty: dropped"),
+            (84, "refresh", "The same hello within 10 s?", "yes: the stored response is sent again"),
+            (124, "counter", "CPU budget left?", "a quarter of one core for failed checks; empty: dropped"),
             (164, "fingerprint", "UAV known, nonce new, time within 120 s?", "no: refused, at no cost"),
-            (204, "signature", None, "fails: refused, and one unit of the ration is used"),
+            (204, "signature", None, "fails: refused, and one unit of the budget is used"),
             (250, "keys", None, "encapsulate, derive, sign; 64 half-open sessions at most")]
     for i, (y, glyph, name, how) in enumerate(rows):
         f.glyph(glyph, xl - 11, y, 22)
@@ -866,7 +874,7 @@ def fig14_hello_admission():
     for y0, y1, label in ((rows[1][0], rows[4][0] + 24, "without public-key work"), (rows[5][0] - 4, rows[6][0] + 24, "public-key work")):
         f.edge([(xr, y0), (xr, y1)], "rule", attach=False)
         f.text(xr + 3, y0, 13, y1 - y0, label, fs=FS_S, rotate=True)
-    f.text(2, H - 17, W - 4, 13, it("a genuine hello never uses the ration: only checks that fail do"), fs=FS_S)
+    f.text(2, H - 17, W - 4, 13, it("a genuine hello never uses the budget: only checks that fail do"), fs=FS_S)
     return f
 
 
@@ -1217,15 +1225,15 @@ def fig19_motion_watch():
     ground/main.py _motion). The five pictures are computed by the watch itself from the aerial photograph
     (make_illustrations.motion): a camera that shifts and turns between two looks, one small target drawn in."""
     W, H = W2, 214.0
-    f = Fig("fig19_motion_watch", W, H, "Motion watch on the UAV: the camera's own movement is taken out before two looks are compared; what moved is reported as text over the secure link")
+    f = Fig("fig19_motion_watch", W, H, "Motion detector on the UAV: the camera's own movement is taken out before two analyzed frames are compared; what moved is reported as text over the secure link")
     it = lambda s: f"<i>{s}</i>"
     f.glyph("camera", 6, 2, 28, UAV_C)
     f.text(38, 3, 150, 15, "Camera of the UAV", fs=FS_M, bold=True, align="left", colour=UAV_C)
-    f.text(38, 18, 250, 12, it("a small second picture beside the video, 8 looks a second"), fs=FS_S, align="left")
+    f.text(38, 18, 250, 12, it("a small second picture beside the video, 8 frames analyzed a second"), fs=FS_S, align="left")
     pw, ph, yp = 96.0, 54.0, 62.0
     xs = [8.0, 112.0, 242.0, 364.0, 486.0]
     names = ["motion_prev.png", "motion_now.png", "motion_diff_raw.png", "motion_diff_fit.png", "motion_found.png"]
-    heads = ["previous look", "this look", "their difference", "movement taken out", "what moved"]
+    heads = ["previous frame", "this frame", "their difference", "movement taken out", "what moved"]
     for x, name, head in zip(xs, names, heads):
         f.pic(name, x, yp, pw, ph)
         f.text(x - 6, yp - 15, pw + 12, 12, head, fs=FS_S)
@@ -1235,10 +1243,10 @@ def fig19_motion_watch():
     f.edge([(xs[3] + pw, ym), (xs[4], ym)], attach=False)
     yn = yp + ph + 6
     f.tag(1, xs[0] + 7, yn + 7)
-    f.text(xs[0] + 16, yn, 204, 26, "tiles of the two looks are correlated:<br>shift, turn and zoom of the camera", fs=FS_S, align="left", valign="top")
+    f.text(xs[0] + 16, yn, 204, 26, "tiles of the two frames are correlated:<br>shift, turn and zoom of the camera", fs=FS_S, align="left", valign="top")
     f.text(xs[2] - 8, yn, pw + 16, 26, it("every edge of the<br>scene differs"), fs=FS_S, valign="top")
     f.tag(2, xs[3] - 3, yn + 7)
-    f.text(xs[3] + 6, yn, 112, 26, "previous look put<br>onto this one", fs=FS_S, align="left", valign="top")
+    f.text(xs[3] + 6, yn, 112, 26, "previous frame put<br>onto this one", fs=FS_S, align="left", valign="top")
     f.tag(3, xs[4] - 3, yn + 7)
     f.text(xs[4] + 6, yn, 108, 26, "above the noise,<br>twice in a row", fs=FS_S, align="left", valign="top")
     # ---- the report and where it goes
