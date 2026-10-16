@@ -18,6 +18,7 @@ import itertools
 import json
 import logging
 import mimetypes
+import os
 import queue
 import re
 import shutil
@@ -53,7 +54,7 @@ CONTENT_TYPES = {".js": "text/javascript", ".mjs": "text/javascript", ".css": "t
 UAV_COMMANDS = {"start_live", "stop_live", "start_rec", "stop_rec", "capture_image", "set_mode", "set_video",
                 "list_recordings", "fetch_recording", "list_photos", "fetch_photo", "focus", "pq_ratchet",
                 "cached_rekey", "full_handshake", "oplog", "rtt_probe", "status",
-                "list_audio", "record_audio", "stop_audio", "fetch_audio", "check_audio", "motion"}
+                "list_audio", "record_audio", "stop_audio", "fetch_audio", "check_audio", "motion", "link_tuning"}
 RESERVED_ARGS = {"t", "id"}              # the envelope of a command; never taken from the request's arguments
 SAFE_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,119}")     # file names accepted from the UAV / put in a header
 
@@ -65,6 +66,25 @@ def safe_name(name) -> str:
     if not SAFE_NAME.fullmatch(name):
         raise ValueError(f"unacceptable file name {name[:60]!r}")
     return name
+
+
+def new_events(events, last):
+    """The events of `events` (a deque, oldest first) that come after the object `last`, the newest one handed out
+    before; all of them when `last` is None or has dropped out of the deque. Found by identity, not by time stamp:
+    WSL's wall clock runs fast and is stepped back, and every event dated after such a step was skipped as old (two
+    lines of one ratchet were missing from the event log on 15 October 2026)."""
+    evs = list(events)
+    if last is not None:
+        for i in range(len(evs) - 1, -1, -1):
+            if evs[i] is last:
+                return evs[i + 1:]
+    return evs
+
+
+def _part_of(path: Path) -> Path:
+    """Where a file is written before it is renamed to `path`: hidden (no listing matches it) and of this thread alone
+    (two threads that receive the same file do not write into one another's)."""
+    return path.with_name(f".{path.name}.{threading.get_ident()}.part")
 
 
 # Telemetry fields that go into arithmetic, the database's numeric columns, the map and the charts: each must be a
@@ -214,7 +234,8 @@ class GroundApp:
         self.link = GcsLink(cfg.link, self.ident, {uav_id: uav_pk}, bind=(cfg.bind_host, cfg.link.gcs_port))
         self.link.on_message = self.on_message
         self.link.on_control = self.on_control
-        self.video = VideoSink(cfg.ffmpeg, clock_offset=lambda: self.link.time_offset)
+        self.video = VideoSink(cfg.ffmpeg, clock_offset=lambda: self.link.time_offset,
+                               on_need_key=self._ask_keyframe if getattr(cfg, "video_keyframe_request", False) else None)
         # A finished transfer is decrypted / remuxed on a worker thread: doing it in the link's receive thread would
         # stop video, keepalives and pings for as long as a large recording takes to decrypt.
         self.started = time.time()
@@ -658,7 +679,9 @@ class GroundApp:
             if not name.endswith(".k6grec"):              # the .mp4 beside it is derived from this name
                 raise ValueError(f"{name}: not a .k6grec recording")
             enc = self.data / "recordings" / name
-            enc.write_bytes(data)
+            part = _part_of(enc)
+            part.write_bytes(data)
+            os.replace(part, enc)                     # whole or not at all (see decrypt_and_remux)
             entry.update(self.decrypt_and_remux(enc))
         self.store.recording(entry)
         self.recordings[:] = [entry] + [r for r in self.recordings if r.get("name") != entry.get("name")][:30]
@@ -674,9 +697,18 @@ class GroundApp:
             return {"decrypt": f"FAILED: {e}"}
         dt = time.perf_counter() - t0
         mp4 = enc.with_suffix(".mp4")
+        # A recording can arrive twice (the fetch that follows stop_rec, and one asked for by hand). ffmpeg used to
+        # rewrite the .mp4 in place while a reader had it open: the pipeline test of 15 October 2026 decoded 220 of
+        # 223 frames of a recording whose file holds all 223. Written under a name of its own and then renamed, the
+        # .mp4 is always either the old one or the new one, whole.
+        part = _part_of(mp4)
         r = subprocess.run([self.cfg.ffmpeg, "-y", "-loglevel", "error", "-framerate", str(frame_rate(hdr)),
-                            "-f", "h264", "-i", "pipe:0", "-c", "copy", "-movflags", "+faststart", str(mp4)],
+                            "-f", "h264", "-i", "pipe:0", "-c", "copy", "-movflags", "+faststart", "-f", "mp4", str(part)],
                            input=h264, capture_output=True)
+        if r.returncode == 0:
+            os.replace(part, mp4)
+        else:
+            part.unlink(missing_ok=True)
         return {"decrypt": report["status"], "decrypt_ms": round(dt * 1000, 1), "frames": report["frames"],
                 "signature": report.get("signature"), "format": report.get("format"),
                 "segments": report["segments"], "mp4": f"/recordings/{mp4.name}" if r.returncode == 0 else None,
@@ -723,7 +755,17 @@ class GroundApp:
                     self.note("RECORDING", f"{name} saved on the UAV, fetching it failed: {str(r.get('error'))[:160]}")
         threading.Thread(target=fetch, daemon=True, name="fetch-saved").start()
 
+    def _ask_keyframe(self):
+        """The decoder lost a frame and waits for a keyframe (see VideoSink.on_need_key): ask the UAV for one now."""
+        self.link.send_control({"t": "kf_req"})
+
     def local_command(self, cmd, args):
+        if cmd == "video_tuning":                     # {keyframe_request: true|false}: switch the requests on or off
+            if "keyframe_request" in args:
+                if not isinstance(args["keyframe_request"], bool):
+                    return {"ok": False, "error": "keyframe_request must be true or false"}
+                self.video.on_need_key = self._ask_keyframe if args["keyframe_request"] else None
+            return {"ok": True, "result": {"keyframe_request": self.video.on_need_key is not None}}
         if cmd == "set_home":
             if args.get("lat") is not None:
                 lat, lon = float(args["lat"]), float(args["lon"])
@@ -876,7 +918,7 @@ class GroundApp:
                                    f"{type(e).__name__}: {e}")
 
     def stats_loop(self):
-        last_event_t = 0.0
+        last_event = None                          # the last link event written to the database (see new_events)
         while True:
             try:
                 self.db_counts = self.store.counts()
@@ -886,10 +928,11 @@ class GroundApp:
                     self.store.video_stats(self.video.stats(), self.detector.live_stats() if self.detector else {})
                     if self.uav_status:
                         self.store.system_stats(self.uav_status)
-                for t, k, m in list(self.link.events):
-                    if t > last_event_t:
-                        self.store.event("LINK:" + k, m)
-                        last_event_t = t
+                fresh = new_events(self.link.events, last_event)
+                for t, k, m in fresh:
+                    self.store.event("LINK:" + k, m)
+                if fresh:
+                    last_event = fresh[-1]
                 with self.ack_cv:                       # acknowledgements nobody waited for (the caller timed out)
                     for cid in [c for c, a in self.acks.items() if time.time() - a.get("_rx", 0) > 120]:
                         del self.acks[cid]
@@ -1241,7 +1284,7 @@ def make_handler(app: GroundApp):
                 self.close_connection = True
                 return
             try:
-                if cmd in ("set_home", "detector", "finder", "audio_excerpt"):
+                if cmd in ("set_home", "detector", "finder", "audio_excerpt", "video_tuning"):
                     return self._json(app.local_command(cmd, args))
                 if cmd not in UAV_COMMANDS:
                     return self._json({"ok": False, "error": "unknown command"}, 400)

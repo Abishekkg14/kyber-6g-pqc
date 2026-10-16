@@ -298,3 +298,72 @@ class TestGroundLoops(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCameraStall(unittest.TestCase):
+    """A camera that delivers no frames any more (14 October 2026): picamera2 then never returns from stop() or a
+    capture. The watchdog notices it, the calls give up instead of hanging, and the owner is told once."""
+
+    def camera(self):
+        from kyber6g.camera.camera import CameraService
+        cam = CameraService.__new__(CameraService)
+        cam.lock, cam.recorder, cam.live, cam.encoding, cam.mode = threading.RLock(), None, True, True, "NORMAL"
+        cam.motion_set = {"enabled": True, "sentry": False, "hz": 8.0}
+        cam.stalled, cam.error, cam.stats = None, None, {"mode_arrived": True}
+        cam._starts, cam._mode_asked, cam._mode_tries = 2, 0.0, 0
+        cam._last_frame = cam._started = time.monotonic()
+        cam.STALL_S, cam.CALL_S = 0.3, 0.4
+        forever = threading.Event()                                       # never set: a camera that never answers
+        cam.picam2 = SimpleNamespace(stop=forever.wait, stop_encoder=lambda enc: forever.wait(),
+                                     capture_request=forever.wait)
+        cam.encoder = object()
+        cam.reasons = []
+        cam.on_stall = cam.reasons.append
+        return cam
+
+    def wait_for(self, cond, limit=4.0):
+        t0 = time.monotonic()
+        while not cond() and time.monotonic() - t0 < limit:
+            time.sleep(0.05)
+        return cond()
+
+    def test_watchdog_reports_a_camera_without_frames_once(self):
+        cam = self.camera()
+        threading.Thread(target=cam._watchdog, daemon=True).start()
+        self.assertTrue(self.wait_for(lambda: cam.reasons))
+        self.assertIn("no frame from the camera", cam.reasons[0])
+        self.assertTrue(cam.stalled)
+        time.sleep(1.5)
+        self.assertEqual(len(cam.reasons), 1)                             # told once, not every second
+
+    def test_frames_keep_the_watchdog_quiet(self):
+        cam = self.camera()
+        stop = threading.Event()
+
+        def frames():
+            while not stop.is_set():
+                cam._last_frame = time.monotonic()
+                time.sleep(0.05)
+        threading.Thread(target=frames, daemon=True).start()
+        threading.Thread(target=cam._watchdog, daemon=True).start()
+        time.sleep(2.5)
+        stop.set()
+        self.assertEqual(cam.reasons, [])
+        self.assertIsNone(cam.stalled)
+
+    def test_a_command_on_a_stalled_camera_gives_up_and_frees_the_lock(self):
+        cam = self.camera()
+        t0 = time.monotonic()
+        with self.assertRaises(RuntimeError):
+            cam.set_mode("NIGHT")                                         # restart: stop_encoder never returns
+        self.assertLess(time.monotonic() - t0, 2.0)
+        self.assertTrue(self.wait_for(lambda: cam.reasons))
+        self.assertIn("stop_encoder", cam.reasons[0])
+        got = cam.lock.acquire(timeout=0.5)                               # the next command is not blocked
+        self.assertTrue(got)
+        cam.lock.release()
+        t0 = time.monotonic()
+        with self.assertRaises(RuntimeError):                             # later calls refuse at once
+            cam._wait_call("capture_request", cam.picam2.capture_request)
+        self.assertLess(time.monotonic() - t0, 0.2)
+

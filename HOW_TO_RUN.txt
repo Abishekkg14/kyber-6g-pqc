@@ -1,0 +1,76 @@
+KYBER-6G STATION: HOW TO OPEN IT AND TEST IT
+============================================
+
+1. START
+--------
+1. Power the Raspberry Pi (the UAV node). Wait about a minute: its service
+   starts by itself. The Pi and the laptop must be on the same Wi-Fi.
+2. On the laptop, double-click  Kyber6G.bat  on the Desktop.
+   A window opens, starts the ground station and then opens the dashboard
+   in the browser:  http://127.0.0.1:8600
+3. The top bar should say  LINK SECURE.  Press  LIVE  on the hotbar if no
+   video shows.
+
+To stop: close the Kyber6G window (or press Ctrl+C in it).
+To switch the Pi off:   ssh kyber-pi "sudo shutdown -h now"   (from WSL),
+then unplug it once its green light has stopped blinking.
+
+
+2. TRY IT BY HAND (dashboard)
+-----------------------------
+MISSION tab
+  LIVE / STOP      live video on and off
+  DAY / NIGHT      colour picture / grey picture with long exposure
+  REC, then SAVE   record; the recording is fetched to the laptop by itself
+                   (up to 64 MB) and appears on the MEDIA tab
+  PHOTO            a photo; appears on the MEDIA tab
+  AI               object detection on and off; FIND searches for a word
+  MOTION           motion watch on the Pi (sensitivity, SENTRY, PHOTO ON
+                   MOTION). Works best with the room light on; with only a
+                   lamp it may report nothing in DAY mode.
+MEDIA tab
+  newest photos and recordings; SHOW ALL lists everything, newest first.
+  The list of recordings on the Pi shows "here" or "on the Pi only";
+  FETCH & DECRYPT brings one over.
+SECURITY tab     session, rekeys, PQ ratchet, self-test of the cryptography
+TELEMETRY tab    GNSS position, satellites, link figures
+DATA tab         database, exports (CSV, GeoJSON, KML)
+
+
+3. AUTOMATIC TESTS
+------------------
+Open WSL as root (PowerShell):   wsl -d Ubuntu-22.04 -u root
+Then:
+
+  cd "/home/abishek14/Kyber-6G project latest/Kyber-6G project/Kyber-6G project"
+
+  # unit tests on the laptop (about 2 minutes; 316 tests)
+  /root/kyber6g_gcs_venv/bin/python -m unittest discover -s tests -t .
+
+The next three need the Pi on and the ground station running (step 1):
+
+  bash run/kyber6g.sh pipeline    # end to end on the real hardware, ~2 min
+  bash run/kyber6g.sh ui-test     # the dashboard in a headless browser, ~11 min
+  bash run/kyber6g.sh audit       # what is stored: database, photos, recordings
+
+What to expect (6 October 2026):
+  unit tests   316 pass (306 on the Pi, 9 skipped there)
+  pipeline     58 PASS, 3 FAIL. The three are known:
+                 - the laptop's WSL clock runs slow (not the link)
+                 - the motion watch's self-test, when the room is lit by a
+                   lamp only
+                 - one stored GNSS row without a position
+  ui-test      113 PASS, 0 FAIL
+  audit        40 PASS, 2 WARN, 1 FAIL (that GNSS row)
+
+After changing code:   bash run/kyber6g.sh deploy    (copies it to the Pi
+and restarts its service; the camera goes back to 1280x720, DAY).
+
+
+4. WHERE THINGS ARE
+-------------------
+  README.md                 the project, results, limits
+  docs/TEST_REPORT.md       every test and what it showed
+  docs/SECURITY_AUDIT.md    security review and findings
+  paper_plots/, paper_figures/   plots and diagrams for the paper
+  ~/kyber6g_ground (as root in WSL)   received photos, recordings, database, log

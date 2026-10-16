@@ -11,8 +11,10 @@ light-dependent resistors; they are NOT software-controllable, and the
 camera does not see in darkness without that illumination.
 """
 import collections
+import fcntl
 import io
 import os
+import struct
 import threading
 import time
 
@@ -101,6 +103,10 @@ class CameraService:
         self._win = []
         self.tuning = None
         self.rec_failure = None              # (recorder, reason) when a recording had to be cut off (see _on_frame)
+        self._last_frame = 0.0               # when the encoder last delivered a frame (monotonic clock)
+        self._started = 0.0                  # when the encoder was last started
+        self.stalled = None                  # why the camera counts as stalled (see _watchdog); None while it works
+        self.on_stall = None                 # called once, in its own thread, with the reason
         try:
             from picamera2 import Picamera2
             tuning = None
@@ -114,6 +120,7 @@ class CameraService:
             self.model = self.picam2.camera_properties.get("Model")
             self.sensor_res = self.picam2.camera_properties.get("PixelArraySize")
             self.available = True
+            threading.Thread(target=self._watchdog, daemon=True, name="camera-watchdog").start()
         except Exception as e:  # no camera / ribbon unplugged
             self.picam2 = None
             self.error = f"{type(e).__name__}: {e}"
@@ -149,6 +156,8 @@ class CameraService:
     # is held against the mode (_check_mode), with one more restart if the two disagree.
     MODE_SETTLE = 2.5           # seconds before the camera's report is held against the mode (white balance needs frames)
     MODE_RETRIES = 3            # restarts for a mode that did not arrive, before the status only says so
+    STALL_S = 5.0               # no encoded frame for this long while the camera should stream: the camera has stalled
+    CALL_S = 6.0                # longest wait for a picamera2 call that needs the camera's next frame (stop, capture)
 
     def _request_mode(self):
         """Put the running camera into the current mode (call with the lock held)."""
@@ -162,14 +171,86 @@ class CameraService:
 
     def _restart_camera(self):
         """Stop the camera and start it again as it is set now: its mode is among the start controls."""
-        self.picam2.stop_encoder(self.encoder)
-        self.picam2.stop()
+        self._wait_call("stop_encoder", self.picam2.stop_encoder, self.encoder)
+        self._wait_call("stop", self.picam2.stop)
         self.encoding = False
         try:
             self._ensure_encoder()
         except Exception:
             time.sleep(0.3)                      # once more before the operator is told: a camera that is to stream must not stay off
             self._ensure_encoder()
+
+    # ------------------------------------------------------------ stalls
+    # Seen on 14 October 2026: after two camera restarts within half a second the camera delivered no frame at all
+    # any more. picamera2 then waits for ever in every call that needs a frame (stop, capture), and the command that
+    # made such a call held the camera's lock, so every later command waited too. Here: calls that wait for a frame
+    # give up after CALL_S, and a camera that should stream but has sent no frame for STALL_S counts as stalled. The
+    # owner (the UAV app) is told once and decides what to do.
+
+    # V4L2 (linux/videodev2.h): VIDIOC_S_CTRL = _IOWR('V', 28, struct v4l2_control {__u32 id; __s32 value;}) and
+    # V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME = V4L2_CID_CODEC_BASE (0x00990900) + 229. The Pi's H.264 encoder
+    # (bcm2835-codec, /dev/video11) then makes its next frame an IDR keyframe.
+    _VIDIOC_S_CTRL = 0xC008561C
+    _CID_FORCE_KEY_FRAME = 0x009909E5
+
+    def request_keyframe(self) -> bool:
+        """Ask the hardware encoder for a keyframe now (the ground station lost a frame and cannot decode until the
+        next keyframe). False if no stream is running or the encoder refused; counted in the status either way."""
+        st = self.stats
+        enc = self.encoder if self.encoding else None
+        vd = getattr(enc, "vd", None)                 # picamera2's V4L2Encoder keeps the open device as `vd`
+        try:
+            if vd is None:
+                raise OSError("no encoder running")
+            fd = vd.fileno() if hasattr(vd, "fileno") else int(vd)
+            fcntl.ioctl(fd, self._VIDIOC_S_CTRL, struct.pack("=Ii", self._CID_FORCE_KEY_FRAME, 1))
+        except (OSError, ValueError, TypeError) as e:
+            st["keyframe_requests_failed"] = st.get("keyframe_requests_failed", 0) + 1
+            st["keyframe_request_error"] = f"{type(e).__name__}: {e}"[:100]
+            return False
+        st["keyframe_requests"] = st.get("keyframe_requests", 0) + 1
+        return True
+
+    def _wait_call(self, what, fn, *args):
+        """Run a picamera2 call that needs the camera's next frame. A stalled camera never answers it: after CALL_S the
+        camera counts as stalled and the caller gets an error instead of hanging (and the lock it holds is freed)."""
+        why = getattr(self, "stalled", None)
+        if why:
+            raise RuntimeError(f"camera stalled: {why}")
+        done, box = threading.Event(), {}
+
+        def run():
+            try:
+                box["result"] = fn(*args)
+            except BaseException as e:
+                box["error"] = e
+            finally:
+                done.set()
+        threading.Thread(target=run, daemon=True, name=f"camera-{what}").start()
+        if not done.wait(self.CALL_S):
+            self._stall(f"{what} did not return within {self.CALL_S:.0f} s")
+            raise RuntimeError(f"camera stalled: {what} did not return")
+        if "error" in box:
+            raise box["error"]
+        return box.get("result")
+
+    def _stall(self, why):
+        if self.stalled:
+            return
+        self.stalled = why
+        self.error = f"stalled: {why}"
+        cb = self.on_stall
+        if cb is not None:
+            threading.Thread(target=cb, args=(why,), daemon=True, name="camera-stall").start()
+
+    def _watchdog(self):
+        """Once a second: a camera that should stream but has delivered no frame for STALL_S has stalled."""
+        while self.stalled is None:
+            time.sleep(1.0)
+            if self.encoding:
+                quiet = time.monotonic() - max(self._last_frame, self._started)
+                if quiet > self.STALL_S:
+                    self._stall(f"no frame from the camera for {quiet:.0f} s while it should stream")
 
     @staticmethod
     def mode_arrived(mode, md):
@@ -247,6 +328,7 @@ class CameraService:
             self.picam2.start_encoder(self.encoder, FanoutOutput())
             self.picam2.start()
             self._starts += 1
+            self._started = time.monotonic()
             self._mode_asked = time.monotonic()
             self.stats["mode_arrived"] = None
             self.encoding = True
@@ -256,12 +338,13 @@ class CameraService:
             if self.motion is not None:
                 threading.Thread(target=self._motion_loop, args=(self._gen,), daemon=True, name="motion").start()
         elif not need and self.encoding:
-            self.picam2.stop_encoder(self.encoder)
-            self.picam2.stop()
+            self._wait_call("stop_encoder", self.picam2.stop_encoder, self.encoder)
+            self._wait_call("stop", self.picam2.stop)
             self.encoding = False
             self.stats.update(fps=0.0, kbps=0.0)
 
     def _on_frame(self, data, keyframe, ts):
+        self._last_frame = time.monotonic()
         t_cb = time.time()
         first = getattr(self.encoder, "firsttimestamp", None)
         cap, exact = _sensor_to_wall(ts + first) if (ts is not None and first) else (t_cb, False)
@@ -593,7 +676,7 @@ class CameraService:
                 raise RuntimeError(self.error or "camera not available")
             t0 = time.perf_counter()
             if self.encoding:
-                req = self.picam2.capture_request()
+                req = self._wait_call("capture_request", self.picam2.capture_request)
                 try:
                     arr = req.make_array("main")
                     md = req.get_metadata()
@@ -612,9 +695,9 @@ class CameraService:
                 time.sleep(1.2)                     # let the exposure settle
                 if conf["controls"].get("AwbEnable"):
                     self._white_settled()
-                arr = self.picam2.capture_array("main")
-                md = self.picam2.capture_metadata()
-                self.picam2.stop()
+                arr = self._wait_call("capture_array", self.picam2.capture_array, "main")
+                md = self._wait_call("capture_metadata", self.picam2.capture_metadata)
+                self._wait_call("stop", self.picam2.stop)
                 rgb = arr[:, :, ::-1]                # libcamera RGB888 is B,G,R in memory
                 size = (self.cfg.still_width, self.cfg.still_height)
                 source = "still-mode"
@@ -635,7 +718,7 @@ class CameraService:
                 "live": self.live, "recording": rec is not None, **recst, "mode": self.mode, "encoding": self.encoding,
                 "ir": "AUTO (LDR on IR boards, not software-controlled)",
                 "width": self.cfg.width, "height": self.cfg.height, "fps_target": self.cfg.fps,
-                "bitrate_target": self.cfg.bitrate, "codec": "H.264 (VideoCore hardware encoder)", **self.stats,                "motion": self.motion_status()}
+                "bitrate_target": self.cfg.bitrate, "codec": "H.264 (VideoCore hardware encoder)", **self.stats, "stalled": self.stalled,                "motion": self.motion_status()}
 
     def close(self):
         try:

@@ -75,6 +75,14 @@ class TestRecording(unittest.TestCase):
         rec.close()
         self.assertLessEqual(abs(rec.file_bytes - rec.path.stat().st_size), 0)
 
+    def test_the_header_is_on_disk_before_the_first_frame(self):
+        """A program stopped before the first segment left a file of 0 bytes; now it is a recognisable container."""
+        rec = EncryptedRecorder(self.d / "early", self.ek, {"codec": "h264"})
+        raw = rec.path.read_bytes()
+        self.assertEqual(len(raw), len(rec.file_header))
+        self.assertIn(raw[:8], (b"K6GREC01", b"K6GREC02"))
+        rec.abort()
+
     def test_abort_leaves_no_orphan(self):
         rec = EncryptedRecorder(self.d / "abort", self.ek, {"codec": "h264"})
         self.assertTrue(rec.path.exists())

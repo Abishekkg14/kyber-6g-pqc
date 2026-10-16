@@ -281,8 +281,9 @@ class ServerHandshake:
 class RekeyCache:
     """GCS-side cache of resumption secrets, keyed by UAV id."""
 
-    def __init__(self, ttl_s: float):
+    def __init__(self, ttl_s: float, cell_binding: bool = True):
         self.ttl = ttl_s
+        self.cell_binding = cell_binding     # False: a cached rekey from another position cell is accepted too
         self.entries = {}
 
     def put(self, uav_id, secrets: ks.SessionSecrets, mobility: bytes, suite_id: int):
@@ -327,7 +328,7 @@ def server_process_rekey(cache: RekeyCache, server: ServerHandshake, body: bytes
         return reject(REJECT_AUTH)
     if not server._fresh(ts_ms, nonce_c):
         return reject(REJECT_AUTH)
-    if e["mobility"] != mobility:
+    if e["mobility"] != mobility and cache.cell_binding:
         cache.drop(uav_id)
         return reject(REJECT_STALE_MOBILITY)
     new_sid = os.urandom(8)

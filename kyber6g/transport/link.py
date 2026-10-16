@@ -302,6 +302,35 @@ class UavLink(LinkBase):
         self._ratchet_tag = "auto"
         self._echo, self._echo_rtt, self._echo_n = {}, [], 0      # see rtt_probe
         self._mob_retry_at, self._mob_backoff, self._mob_busy = 0.0, 0.5, False   # see _manage: handshake after a change of cell
+        self._rtt = {}                         # kind -> s: last exchange of that kind answered without a repeat (see _waits)
+        self._op_timer = {}                    # kind -> (repeat timer, first wait in s) of the operation in progress
+        self._ratchet_waits = [self.FIXED_WAIT["ratchet"]] * self.MAX_SENDS["ratchet"]
+
+    # The fixed repeat timers (s) and how often a message is sent with them: the timers of the measurements of October
+    # 2026, and the total time an exchange waits for its answer.
+    FIXED_WAIT = {"full": 1.2, "cached": 0.7, "ratchet": 0.35}
+    MAX_SENDS = {"full": 5, "cached": 3, "ratchet": 5}
+
+    def _waits(self, kind):
+        """How long to wait for the answer after each transmission of a ClientHello ("full"), a rekey request
+        ("cached") or a ratchet request ("ratchet").
+
+        "fixed": the fixed timer, MAX_SENDS times. "rtt": three times the last round trip of this kind of exchange that
+        needed no repeat, at least 30 ms, doubled after each repeat up to the fixed timer, and sent again until the
+        exchange has waited as long as it would with the fixed timers. Only an exchange answered at its first
+        transmission gives a round trip: after a repeat it is not known which transmission was answered (Karn and
+        Partridge). The doubling keeps a slow but working peer reachable: a ground station busy with a flood of forged
+        hellos answers after seconds, and three round trips without it would give up long before. The round trip is
+        kept for each kind, because a handshake of 13 datagrams takes longer than a rekey of one."""
+        fixed, n = self.FIXED_WAIT[kind], self.MAX_SENDS[kind]
+        rtt = self._rtt.get(kind)
+        if getattr(self.cfg, "retx_timer", "fixed") != "rtt" or not rtt:
+            return [fixed] * n
+        out, w, total = [], max(0.030, 3.0 * rtt), fixed * n
+        while sum(out) < total and len(out) < 4 * n:
+            out.append(min(w, fixed))
+            w *= 2
+        return out
 
     def _set_state(self, st, why=""):
         if st != self.state:
@@ -348,6 +377,9 @@ class UavLink(LinkBase):
         """One line per handshake / rekey / ratchet, kept on this node: when (its own clock), which kind, whether it
         worked and how long it took. `tag` says who asked: "auto" (the link itself) or the label a measurement gave."""
         self._op_n += 1
+        timer = self._op_timer.get(kind)          # which repeat timer this operation used, and its first wait
+        if timer:
+            more = {"retx": timer[0], "first_wait_ms": round(timer[1] * 1000, 1), **more}
         self.oplog.append({"n": self._op_n, "t": round(time.time(), 3), "kind": kind, "ok": bool(ok), "ms": ms, "tag": tag, **more})
 
     # One handshake or rekey at a time: they share the slot the answer is delivered to. The manager thread and a rekey
@@ -377,11 +409,13 @@ class UavLink(LinkBase):
         self._hs_result = self._hs_note = None
         self._hs_event.clear()
         self._hs = ("full", ch)
-        for attempt in range(5):
+        waits = self._waits("full")
+        self._op_timer["full"] = (getattr(self.cfg, "retx_timer", "fixed"), waits[0])
+        for attempt, wait in enumerate(waits):
             # alternate fragment order so a periodic loss pattern cannot hit
             # the same fragment index on every retransmission
             self._send_hs(hs.MSG_CLIENT_HELLO, hello, self.gcs_addr, reverse=attempt % 2 == 1)
-            if self._hs_event.wait(1.2):
+            if self._hs_event.wait(wait):
                 break
         t_answer = time.perf_counter()
         self._hs = None
@@ -392,6 +426,8 @@ class UavLink(LinkBase):
             self.stats["last_error"] = res[1] if res else f"handshake timeout{' (' + self._hs_note + ')' if self._hs_note else ''}"
             return False
         secrets, cf = res[1], res[2]
+        if attempt == 0:
+            self._rtt["full"] = t_answer - t_built
         self._install(secrets, mobility, "full")
         self._cf = cf
         self._send_hs(hs.MSG_CLIENT_FINISHED, cf, self.gcs_addr)
@@ -416,9 +452,11 @@ class UavLink(LinkBase):
         self._hs_result = self._hs_note = None
         self._hs_event.clear()
         self._hs = ("rekey", req, s.secrets)
-        for attempt in range(3):
+        waits = self._waits("cached")
+        self._op_timer["cached"] = (getattr(self.cfg, "retx_timer", "fixed"), waits[0])
+        for attempt, wait in enumerate(waits):
             self._send_hs(hs.MSG_REKEY_REQ, req, self.gcs_addr)
-            if self._hs_event.wait(0.7):
+            if self._hs_event.wait(wait):
                 break
         t_answer = time.perf_counter()
         self._hs = None
@@ -428,6 +466,8 @@ class UavLink(LinkBase):
             self.stats["cached_rekey_rejects"] += 1
             self.stats["last_error"] = f"cached rekey: {res[1] if res else 'timeout'}"
             return False
+        if attempt == 0:
+            self._rtt["cached"] = t_answer - t_built
         self._install(res[1], mobility, "cached")
         self._cf = res[2]
         self._send_hs(hs.MSG_CLIENT_FINISHED, res[2], self.gcs_addr)
@@ -525,6 +565,8 @@ class UavLink(LinkBase):
                 self._ratchet = None                          # the GCS mixed into the old one, so this result is not used
                 return True
             t_resp = time.perf_counter()
+            if self._ratchet_tx == 1:                        # answered at the first transmission: a round trip (see _waits)
+                self._rtt["ratchet"] = t_resp - self._ratchet_t0
             try:
                 sid = bytes.fromhex(msg["sid"]) if isinstance(msg.get("sid"), str) else b""
                 if len(sid) != 8:
@@ -573,6 +615,8 @@ class UavLink(LinkBase):
             self._ratchet_t0 = time.perf_counter()
             self._ratchet_build_ms = round((self._ratchet_t0 - t_build) * 1000, 3)
             self._ratchet_sent, self._ratchet_tx = time.monotonic(), 1
+            self._ratchet_waits = self._waits("ratchet")
+            self._op_timer["ratchet"] = (getattr(self.cfg, "retx_timer", "fixed"), self._ratchet_waits[0])
             self._ratchet = r
         return self.send_control(self._ratchet_msg)
 
@@ -586,7 +630,8 @@ class UavLink(LinkBase):
             self.stats["pq_ratchet_timeouts"] = self.stats.get("pq_ratchet_timeouts", 0) + 1
             self._log_op("ratchet", False, None, self._ratchet_tag, requests_sent=self._ratchet_tx, error="no answer")
             self.events.append((time.time(), "PQ_RATCHET_TIMEOUT", "no answer from the GCS; will be tried again"))
-        elif age > 0.35 * self._ratchet_tx and self._ratchet_tx < 5:
+        elif self._ratchet_tx < len(self._ratchet_waits) and age > sum(self._ratchet_waits[:self._ratchet_tx]):
+            # fixed timer: again after 0.35 s x (times sent), at most 5 times, as before; see _waits for "rtt"
             self._ratchet_tx += 1
             self.send_control(self._ratchet_msg)
 
@@ -668,7 +713,7 @@ class UavLink(LinkBase):
             if self.state in ("DOWN", "RECOVERING"):
                 self._set_state("HANDSHAKING", "establishing session")
                 ok = False
-                if self.session is not None and self.session_mobility == self.mobility_fn():
+                if self.session is not None and (not getattr(self.cfg, "cell_binding", True) or self.session_mobility == self.mobility_fn()):
                     ok = self._cached_rekey("recovery")
                 if not ok:
                     ok = self._full_handshake()
@@ -696,7 +741,7 @@ class UavLink(LinkBase):
             if s and now - s.last_rx > self.cfg.link_timeout_s:
                 self._set_state("RECOVERING", "link timeout (no authenticated traffic)")
                 continue
-            if self.mobility_fn() != self.session_mobility:
+            if getattr(self.cfg, "cell_binding", True) and self.mobility_fn() != self.session_mobility:
                 # A session belongs to the cell it was made in; a new cell needs a new full handshake. It is made IN
                 # PLACE: the running session keeps carrying traffic until the new one is installed, exactly as for a
                 # rekey the operator asks for. (Before, the link left the UP state for the handshake and nothing was
@@ -739,7 +784,9 @@ class UavLink(LinkBase):
         return {"state": self.state, "session_id": s.session_id.hex() if s else None,
                 "suite": self.suite.name, "suite_id": self.suite.suite_id,
                 "session_age_s": round(time.monotonic() - s.created, 1) if s else None,
-                "record": s.stats() if s else None, **{k: v for k, v in self.stats.items()}}
+                "record": s.stats() if s else None, "retx_timer": getattr(self.cfg, "retx_timer", "fixed"),
+                "cell_binding": getattr(self.cfg, "cell_binding", True),
+                "rtt_ms": {k: round(v * 1000, 2) for k, v in self._rtt.items()}, **{k: v for k, v in self.stats.items()}}
 
 
 # ======================================================================= GCS
@@ -748,7 +795,7 @@ class GcsLink(LinkBase):
         super().__init__(cfg)
         self.ident = ident
         self.server = hs.ServerHandshake(ident, uav_pins, suites=(1, 2))
-        self.cache = hs.RekeyCache(cfg.cached_rekey_ttl_s)
+        self.cache = hs.RekeyCache(cfg.cached_rekey_ttl_s, cell_binding=getattr(cfg, "cell_binding", True))
         self.sessions = {}       # sid -> SimpleNamespace(session, uav_id, addr, mobility, confirmed)
         self.active = None
         self.uav_addr = None
@@ -830,8 +877,11 @@ class GcsLink(LinkBase):
             self._rekey_sids.discard(secrets.session_id)
         else:                                                    # a full PQC handshake (confirmed by Finished or implicitly)
             self.stats["handshakes_ok"] += 1
+        # `confirmed` orders the sessions (see _dispatch): on the monotonic clock, because the wall clock of a WSL
+        # ground station is stepped back now and then, and a session dated before the one ahead of it never became the
+        # active one (pipeline test of 15 October 2026)
         self.sessions[secrets.session_id] = SimpleNamespace(session=s, uav_id=uav_id, addr=addr,
-                                                            mobility=mobility, confirmed=time.time())
+                                                            mobility=mobility, confirmed=time.monotonic())
         self.cache.put(uav_id, secrets, mobility, suite.suite_id)
         self.active = secrets.session_id
         self.uav_addr = addr
@@ -1020,7 +1070,7 @@ class GcsLink(LinkBase):
             self._last_ratchet = now
             new = Session(new_secrets, old.suite, "gcs", self.cfg)
             self.sessions[new_sid] = SimpleNamespace(session=new, uav_id=e.uav_id, addr=e.addr,
-                                                     mobility=e.mobility, confirmed=time.time())
+                                                     mobility=e.mobility, confirmed=time.monotonic())   # see _confirm
             self.cache.put(e.uav_id, new_secrets, e.mobility, old.suite.suite_id)
             resp = {"t": "ratchet_resp", "rid": rid, "x": b64e(x_s), "ct": b64e(ct), "sid": new_sid.hex()}
             if len(self._ratchet_done) >= 8:

@@ -1,0 +1,61 @@
+operation,setting,nominal_loss_pct,loss_pct,started,completed,median_ms,p95_ms,max_ms,over_1s
+Kyber-6G full handshake,rtt timer,0.0,0.0,5,5,20.4,24.6,24.8,0
+Kyber-6G full handshake,fixed timer,0.0,0.0,5,5,16.4,25.9,27.6,0
+Kyber-6G cached rekey,rtt timer,0.0,0.0,5,5,6.6,8.5,8.7,0
+Kyber-6G cached rekey,fixed timer,0.0,0.0,5,5,6.4,8.0,8.3,0
+Kyber-6G PQ ratchet,rtt timer,0.0,0.0,5,5,11.7,14.9,15.6,0
+Kyber-6G PQ ratchet,fixed timer,0.0,0.0,5,5,11.1,13.0,13.4,0
+"DTLS 1.3 full handshake, cookie",wolfSSL 5.9.4,0.0,0.0,5,5,48.7,66.2,69.9,0
+DTLS 1.3 full handshake,wolfSSL 5.9.4,0.0,0.0,5,5,48.3,76.5,79.6,0
+"DTLS 1.3 resumption, PSK only",wolfSSL 5.9.4,0.0,0.0,5,5,11.2,14.7,15.3,0
+"DTLS 1.3 resumption, new key exchange",wolfSSL 5.9.4,0.0,0.0,5,4,38.8,60.2,63.9,0
+Kyber-6G full handshake,rtt timer,1.0,0.562,5,5,19.2,27.0,27.1,0
+Kyber-6G full handshake,fixed timer,1.0,0.562,5,5,28.2,978.4,1214.8,1
+Kyber-6G cached rekey,rtt timer,1.0,0.562,5,5,6.1,8.2,8.3,0
+Kyber-6G cached rekey,fixed timer,1.0,0.562,5,5,7.0,8.2,8.4,0
+Kyber-6G PQ ratchet,rtt timer,1.0,0.562,5,5,10.5,60.8,72.4,0
+Kyber-6G PQ ratchet,fixed timer,1.0,0.562,5,5,12.1,13.7,13.8,0
+"DTLS 1.3 full handshake, cookie",wolfSSL 5.9.4,1.0,1.357,5,5,54.9,76.3,81.5,0
+DTLS 1.3 full handshake,wolfSSL 5.9.4,1.0,1.357,5,5,45.1,48.4,48.9,0
+"DTLS 1.3 resumption, PSK only",wolfSSL 5.9.4,1.0,1.357,5,4,12.8,865.2,1015.2,1
+"DTLS 1.3 resumption, new key exchange",wolfSSL 5.9.4,1.0,1.357,5,3,46.2,62.0,63.7,0
+Kyber-6G full handshake,rtt timer,2.0,0.597,5,5,17.3,58.8,68.2,0
+Kyber-6G full handshake,fixed timer,2.0,0.597,4,4,17.7,18.5,18.5,0
+Kyber-6G cached rekey,rtt timer,2.0,0.597,5,5,6.0,10.3,10.7,0
+Kyber-6G cached rekey,fixed timer,2.0,0.597,5,5,8.1,9.4,9.6,0
+Kyber-6G PQ ratchet,rtt timer,2.0,0.597,5,5,9.9,21.8,23.7,0
+Kyber-6G PQ ratchet,fixed timer,2.0,0.597,5,5,10.7,15.0,15.4,0
+"DTLS 1.3 full handshake, cookie",wolfSSL 5.9.4,2.0,0.446,5,5,64.2,71.4,72.5,0
+DTLS 1.3 full handshake,wolfSSL 5.9.4,2.0,0.446,5,5,64.8,322.0,322.5,0
+"DTLS 1.3 resumption, PSK only",wolfSSL 5.9.4,2.0,0.446,5,4,13.8,16.7,17.0,0
+"DTLS 1.3 resumption, new key exchange",wolfSSL 5.9.4,2.0,0.446,5,4,56.2,264.7,301.3,0
+Kyber-6G full handshake,rtt timer,5.0,5.683,5,5,26.4,92.6,97.5,0
+Kyber-6G full handshake,fixed timer,5.0,5.683,5,5,1231.4,2455.0,2462.9,3
+Kyber-6G cached rekey,rtt timer,5.0,5.683,4,4,6.5,8.5,8.8,0
+Kyber-6G cached rekey,fixed timer,5.0,5.683,5,5,6.9,8.7,9.0,0
+Kyber-6G PQ ratchet,rtt timer,5.0,5.683,5,5,13.1,67.4,79.0,0
+Kyber-6G PQ ratchet,fixed timer,5.0,5.683,5,5,14.4,346.2,427.3,0
+"DTLS 1.3 full handshake, cookie",wolfSSL 5.9.4,5.0,5.735,5,5,296.2,924.9,1081.2,1
+DTLS 1.3 full handshake,wolfSSL 5.9.4,5.0,5.735,5,4,1592.1,1645.0,1653.0,3
+"DTLS 1.3 resumption, PSK only",wolfSSL 5.9.4,5.0,5.735,5,4,72.9,1108.8,1280.3,1
+"DTLS 1.3 resumption, new key exchange",wolfSSL 5.9.4,5.0,5.735,5,4,53.3,1101.2,1284.6,1
+Kyber-6G full handshake,rtt timer,10.0,10.224,4,4,80.9,193.7,202.1,0
+Kyber-6G full handshake,fixed timer,10.0,10.224,5,5,23.7,2904.6,3624.0,1
+Kyber-6G cached rekey,rtt timer,10.0,10.224,4,4,30.0,95.3,104.2,0
+Kyber-6G cached rekey,fixed timer,10.0,10.224,5,5,8.6,9.8,10.0,0
+Kyber-6G PQ ratchet,rtt timer,10.0,10.224,5,5,153.4,489.7,567.1,0
+Kyber-6G PQ ratchet,fixed timer,10.0,10.224,4,4,17.6,31.0,33.0,0
+"DTLS 1.3 full handshake, cookie",wolfSSL 5.9.4,10.0,9.77,5,5,1561.5,3619.1,3810.9,3
+DTLS 1.3 full handshake,wolfSSL 5.9.4,10.0,9.77,5,4,2737.3,4620.2,4750.6,4
+"DTLS 1.3 resumption, PSK only",wolfSSL 5.9.4,10.0,9.77,5,2,10.7,11.4,11.4,0
+"DTLS 1.3 resumption, new key exchange",wolfSSL 5.9.4,10.0,9.77,5,2,667.2,1210.8,1271.2,1
+Kyber-6G full handshake,rtt timer,20.0,20.563,3,3,453.8,876.0,922.9,0
+Kyber-6G full handshake,fixed timer,20.0,20.563,3,3,2421.4,3590.6,3720.5,3
+Kyber-6G cached rekey,rtt timer,20.0,20.563,4,2,23.4,37.1,38.6,0
+Kyber-6G cached rekey,fixed timer,20.0,20.563,4,4,361.3,713.5,713.8,0
+Kyber-6G PQ ratchet,rtt timer,20.0,20.563,4,3,284.5,610.5,646.8,0
+Kyber-6G PQ ratchet,fixed timer,20.0,20.563,4,3,427.6,749.1,784.8,0
+"DTLS 1.3 full handshake, cookie",wolfSSL 5.9.4,20.0,21.168,5,2,4750.1,4832.2,4841.3,2
+DTLS 1.3 full handshake,wolfSSL 5.9.4,20.0,21.168,5,3,5140.9,8258.6,8605.0,3
+"DTLS 1.3 resumption, PSK only",wolfSSL 5.9.4,20.0,21.168,5,5,3273.3,7126.4,8037.2,4
+"DTLS 1.3 resumption, new key exchange",wolfSSL 5.9.4,20.0,21.168,5,2,3356.8,3478.4,3491.9,2

@@ -289,6 +289,25 @@ Panel (b) is `data/pq_conformance_{pi,laptop}.json` (`kyber6g.tools.pq_conforman
 machine. The model is symbolic (ideal primitives, no timing, no sizes); the computational arguments for the
 components are in `../docs/SECURITY_PROOFS.md`.
 
+## The review's two repairs and the DTLS 1.3 baseline (tables, measured on 14 October 2026)
+
+No plot: the paper gives these as Tables 8 and 9. Each run interleaves the settings it compares, in threads that run
+side by side at every loss rate, so both settings see the same minutes (`../docs/TEST_REPORT.md` §18).
+
+| File | Made by | Content |
+|---|---|---|
+| `data/loss_ab.json` | `kyber6g.tools.loss_ab` (18:35 to 18:41) | The keyframe request on and off in slices of 10 s of video, and the fixed and the round-trip repeat timer in turns over sets of the three session operations, at 0, 1, 2, 5, 10 and 20 % injected loss |
+| `tables/review_ab_video.csv`, `review_ab_operations.csv` | `scripts/review_ab.py` | Frames sent, complete and decoded per setting and loss rate; each operation's median, 95th percentile, slowest, transmissions and first wait, grouped by the timer the UAV logged |
+| `data/baseline_ab.json` | `kyber6g.tools.baseline_ab --no-video` (20:37 to 20:47) | The link's operations and DTLS 1.3 handshakes (wolfSSL 5.9.4, SecP384r1MLKEM1024, ML-DSA-87 certificates) in turns at the same loss rates, with every DTLS datagram's size and direction (`flow`) |
+| `tables/baseline_ab_operations.csv`, `baseline_ab_sizes.csv`, `baseline_ab_pooled.csv` | `scripts/baseline_ab.py` | Per operation and loss rate; bytes and datagrams of one operation without loss; the loss rates pooled |
+| `data/loss_ab_without_video.json`, `loss_ab_ratchets_adjacent.json` | earlier runs of `loss_ab` | Kept, not used: the first had no video (a stale camera status), the second asked for two ratchets 0.4 s apart, which the ground station's limit of one in 0.5 s refuses |
+
+**To be said with them:** the repair run used a phone's 2.4 GHz hotspot, no GNSS receiver and a plain scene (2.9
+datagrams a frame instead of 11.9), so its shares of frames cannot be compared with plot 8; five operations of each
+kind with each timer at each loss rate, and 20 s of video per setting, make it indicative. The baseline ran without
+video (the camera stalls when the GNSS receiver is attached, `../docs/TEST_REPORT.md` §18.4) and covers one DTLS
+implementation, with certificates.
+
 ## The simulated plots
 
 Made by `../simulation/analyze.py` from `../simulation/results/` (1,830 runs of the ns-3 simulator; model,
@@ -401,6 +420,8 @@ bash run/kyber6g.sh formal           # only the ProVerif models (about 30 s; nee
 bash run/kyber6g.sh report           # docs/CRYPTANALYSIS_REPORT.txt and docs/AUDIO_CRYPTANALYSIS_REPORT.txt from the experiments
 bash run/kyber6g.sh simulate         # calibrate, build and run the simulation studies (hours), then draw plots 11 to 16
 bash run/kyber6g.sh plots            # draw all plots from the data that is there and check them (checks/build_report.md)
+python -m kyber6g.tools.loss_ab && python3 paper_plots/scripts/review_ab.py                       # the two repairs (Table 8)
+python -m kyber6g.tools.baseline_ab --no-video && python3 paper_plots/scripts/baseline_ab.py      # DTLS 1.3 (Table 9; set-up in docs/TEST_REPORT.md §11)
 ```
 
 `build.py` stops with an error if a plot is not 90.0 or 190.0 mm wide, if a font is not embedded or not Arial, if

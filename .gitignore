@@ -84,3 +84,10 @@ Thumbs.db
 # Simulation: per-run logs and debugging output (the raw results, manifest and summary ARE kept)
 simulation/results/logs/
 simulation/results/debug/
+
+# Not for the public repository (16 October 2026): the audio sample is a third party's recording, and the
+# photographs of the authors that the figures of the paper use are frames of the prototype's recordings
+audio encryption/*.mp3
+*Zone.Identifier
+paper_figures/assets/illustrations/team_*.jpg
+paper_figures/assets/illustrations/rec_frame.jpg

@@ -1,0 +1,11 @@
+operation,setting,started,completed,over_1s
+DTLS 1.3 full handshake,wolfSSL 5.9.4,25,21,10
+"DTLS 1.3 full handshake, cookie",wolfSSL 5.9.4,25,22,6
+"DTLS 1.3 resumption, PSK only",wolfSSL 5.9.4,25,19,6
+"DTLS 1.3 resumption, new key exchange",wolfSSL 5.9.4,25,15,4
+Kyber-6G PQ ratchet,fixed timer,23,22,0
+Kyber-6G PQ ratchet,rtt timer,24,23,0
+Kyber-6G cached rekey,fixed timer,24,24,0
+Kyber-6G cached rekey,rtt timer,22,20,0
+Kyber-6G full handshake,fixed timer,22,22,8
+Kyber-6G full handshake,rtt timer,22,22,0
