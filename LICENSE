@@ -19,13 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
--------------------------------------------------------------------------------
-Third-party parts of this repository keep their own licences:
-
-  ns-3-dev/                  the ns-3 network simulator with the 5G-LENA module:
-                             GNU General Public License version 2 (ns-3-dev/LICENSE)
-  simulation/ns3/patches/    changes to 5G-LENA, therefore under GPL-2.0 as 5G-LENA
-  paper_figures/assets/      pictograms of Material Design Icons (Apache-2.0) and a
-                             public-domain photograph of the USDA; details in
-                             paper_figures/assets/ARTWORK_ATTRIBUTION.md
