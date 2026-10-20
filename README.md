@@ -41,12 +41,12 @@ here is "unbreakable". The Raspberry Pi has **no microphone**: a file put into i
 | [`run/`](run/), [`deploy/`](deploy/) | `kyber6g.sh` (start, deploy, test, measure, report, simulate, plots), the one-click launcher, the Pi's confined service |
 | [`tests/`](tests/) | unit, regression and fuzz tests (run on both machines) |
 | [`formal/`](formal/README.md) | ProVerif models of the handshake, the cached rekey, the PQ ratchet and the stored-file format, the four attackers, the runner and its results |
-| [`docs/`](docs/README.md) | security architecture, security review, **security proofs**, **two cryptanalysis reports (plain text: the link and stored files; sealed audio)**, the cryptographic bill of materials, test report, literature notes; `legacy/` holds documents of the earlier study |
+| [`docs/`](docs/README.md) | security architecture, security review, **security proofs**, **two cryptanalysis reports (plain text: the link and stored files; sealed audio)**, the cryptographic bill of materials, test report, literature notes; `legacy/` holds documents of the earlier, withdrawn study, whose radio settings (5G-LENA v3.1, 140 GHz, FDD and others) are superseded |
 | [`paper_figures/`](paper_figures/README.md) | nineteen diagrams for the paper (draw.io sources, PDF, EPS, PNG) |
 | [`paper_plots/`](paper_plots/README.md) | twenty-two plots for the paper, every measurement behind them, the scripts and the build checks |
 | `audio encryption/` | the sample that stands in for a microphone, and the six published audio-encryption papers the audio scheme was set against. Neither is in git: the papers are their publishers' copyright, and the sample is a third party's recording whose licence to pass it on has not been confirmed. `KYBER6G_AUDIO=<any audio file>` repeats the audio measurements with another one |
 | [`simulation/`](simulation/README.md) | calibration from the measurements, the ns-3 simulator source, the studies, the raw results, the analysis |
-| `ns-3-dev/` | the ns-3.42 tree with 5G-LENA v3.3 the simulator is built in (its build directories are not in git) |
+| `ns-3-dev/` | the ns-3.42 tree the simulator is built in (its build directories are not in git). 5G-LENA is not in git either: the simulation was made with NR-v3.3 (tag `v3.3`, commit `0a29a86f`) in `ns-3-dev/contrib/nr`; `simulation/README.md` says how to put it there |
 | [`kyber6g-website/`](kyber6g-website/README.md) | a web page of the project as it is now: every number and picture on it is taken from this repository's results by `scripts/build_data.py` (the earlier study's page and data were removed on 5 October 2026) |
 | `elsarticle/` | the journal's LaTeX template |
 
@@ -68,7 +68,7 @@ medians, timed on the UAV, over Wi-Fi, with live 720p30 video running:
 | 720p30 video, sensor → decoded picture | 91 ms: 69 camera and encoder, 6 sealing, sending and radio, 16 decoder |
 | Round trip of a control message through the secure link | 8.2 ms on the UAV's own timer, 6.6 ms right after a command (ICMP echo: 7.7 ms) |
 | Stored photo of 200 kB: sealed on the Pi / opened on the laptop | 8.1 ms / 0.5 ms (hybrid key wrap, signature); 6,761 bytes added to the file |
-| Live video under packet loss | 35 % of the frames shown at 0.55 % datagram loss, 3 % at 2.1 %: after a damaged frame the receiver waits for the next keyframe. A keyframe request and forward error correction are not implemented |
+| Live video under packet loss | 35 % of the frames shown at 0.55 % datagram loss, 3 % at 2.1 %: after a damaged frame the receiver waits for the next keyframe. This campaign ran without the keyframe request, which was added afterwards (see below); forward error correction is not implemented |
 | Session operations under packet loss | 193 of the 196 the UAV started completed, at up to 20 % loss; the link stayed up |
 | Photos under packet loss | 21 of 21 received intact |
 | Sealed audio (5 October 2026): one minute of 128 kbit/s audio sealed on the Pi / verified and opened on the laptop | 89 ms on the Pi (674 times faster than it is spoken; 9.0 % more bytes) / 12.6 ms |
@@ -82,6 +82,18 @@ medians, timed on the UAV, over Wi-Fi, with live 720p30 video running:
 | Automated tests on the final code (5 and 6 October 2026) | 314 unit tests on the laptop and 306 on the Pi (9 of them skipped there), all pass; end-to-end pipeline on the live hardware 58 PASS, 3 FAIL (the laptop's own clock; the motion watch's self-test in a lamp-lit room; one stored GNSS row without a position: none of them a check of the link); dashboard in a headless browser 111 PASS, 0 FAIL; stored-data audit 40 PASS, 2 WARN, 1 FAIL (that row) |
 
 Not measured: energy, glass-to-glass latency, more than one UAV, flight, any radio other than Wi-Fi.
+
+**Measured on 14 October 2026** (`docs/TEST_REPORT.md` §18; paper Sections 5.6 and 5.7): the two repairs built after
+the campaign above, and a standard protocol on the same machines, over Wi-Fi. The conditions differ from the campaign
+(a phone's 2.4 GHz hotspot, a plain camera view with 2.9 datagrams a frame), and five operations of each kind per
+setting and loss rate make these results indicative.
+
+| Measurement | Value |
+|---|---|
+| Repeat timer from the round trip (`LinkConfig.retx_timer`, default `"rtt"`; `"fixed"` gives the old timer), loss 1.2 % to 19.8 % | 70 of 70 session operations completed, none over 1 s; with the fixed timer 66 of 71, 9 of them over 1 s |
+| Keyframe request (`GroundConfig.video_keyframe_request`, default on): frames that reach the decoder, without / with requests | 59 / 80 % at 1.2 % loss, 40 / 72 % at 2.0 %, 8 / 44 % at 5.1 %; little gain at 10 % and 20 % loss |
+| DTLS 1.3 (wolfSSL 5.9.4, ML-KEM-1024 with P-384, ML-DSA-87 certificates) against the link: full handshake without loss, camera off | DTLS 29,277 bytes (31 datagrams), 48.3 ms; the link 13,106 bytes (13 datagrams), 20.4 ms: 45 % of the bytes, 2.4 times as fast |
+| The same under loss (0.4 % to 21 %) | the link 22 of 22 completed, none over 1 s; DTLS 21 of 25, 10 of them over 1 s |
 
 **Attacked** (`docs/CRYPTANALYSIS_REPORT.txt`; `bash run/kyber6g.sh measure attacks` and `report`): 339,084 attempts
 on the Pi and the laptop to get a forged, modified, replayed or spliced record, handshake message, rekey request,
@@ -127,7 +139,7 @@ cores (9.1 % to 11.8 % with live 720p30 video; 31 ms a look, 8 looks a second) a
 the watch then says "the picture as a whole changed" and reports nothing (the measurement is in §17.4; not repaired).
 It has not been tried on real targets against a ground truth, nor in flight; its other blind spots are in "Limits".
 
-**Simulated** (`simulation/README.md`): the implemented protocol in ns-3.42 with 5G-LENA, calibrated with the
+**Simulated** (`simulation/README.md`): the implemented protocol in ns-3.42 with 5G-LENA v3.3, calibrated with the
 measurements above; 1,830 runs, none failed. A replica of the test bed reproduces what it was not built from: full
 handshake 23.1 ms (measured 23.2), cached rekey 9.1 (9.0), PQ ratchet 16.3 (14.1: 16 % too slow, cause not found),
 video frames complete under loss within 0.8 points at six loss rates. In a simulated 5G NR cell (3.5 GHz, 100 MHz;
@@ -136,8 +148,8 @@ cell, and a downlink-heavy cell is overloaded by 48 of them: the uplink's capaci
 session protocol. 64 UAVs that start at the same instant all have their session after 156 ms. Ablations: the hybrid
 post-quantum suite costs 10 ms per handshake and 27 times the bytes of a classical one; combining the fragments of
 repeated messages raises the share of handshakes that complete at 20 % loss from 29 % to 83 %; a repeat timer of
-three round trips (not implemented) would cut the time within which 95 % of the full handshakes are done at 1 % loss
-from 1.2 s to 61 ms; a keyframe on request and one parity datagram per frame (not implemented) would raise the
+three round trips (built after the sweep, measured above) would cut the time within which 95 % of the full handshakes are done at 1 % loss
+from 1.2 s to 61 ms; a keyframe on request (built after the sweep) and one parity datagram per frame (not implemented) together would raise the
 usable video at 2 % loss from 6 % to 80 %. NR runs repeat bit for bit only with the program that made them; a rebuild
 moved the reported medians by less than 1 %.
 
@@ -332,6 +344,8 @@ Set the GCS IP in `deploy/uav.json` (`link.gcs_host`). On WSL with mirrored netw
   and range exist in the simulation only, and the simulation is a model (one cell, line of sight, no interference
   from neighbouring cells).
 - **Live video does not survive packet loss well**: a damaged frame blanks the picture until the next keyframe.
+  The keyframe request shortens the gap (measured above); there is no forward error correction, and at 10 % loss
+  and more few frames reach the decoder even with requests.
 - **A flood of forged handshakes** above the rates given above delays a connection; jamming and an attacker who
   drops packets cannot be stopped by a protocol.
 - **A captured UAV can be impersonated** until its pinned key is removed at the ground station; what is stored on

@@ -489,7 +489,7 @@ These replace the first-round figures of §3 and §4 wherever they differ: those
 - **The session survives loss.** Of the 198 operations the UAV started, 194 completed; the four that did not were timeouts at 20 % (2 full handshakes, 2 PQ ratchets). Retransmission costs time: the median full handshake took 1.2 s at 5 % and 10 % and 2.4 s at 20 %, against 23 ms without loss. The link never went down and there was no authentication failure.
 - **A command from the ground station is sent once.** 12 of the 210 requests never reached the UAV, and for 7 more the UAV did the work but its acknowledgement was lost, so the ground station reported "timeout waiting for UAV acknowledgement" 19 times. The operator has to press again; commands are **not repeated automatically**.
 - **Photos:** 20 of 21 arrived, every one intact (missing chunks are asked for again); one request at 5 % got no answer.
-- **Live video is the weak point.** A frame is 12 datagrams, so 0.45 % datagram loss already damages 5 % of the frames, and after a damaged frame the receiver shows nothing until the next keyframe: 41.5 % of the frames were shown at 0.45 % loss, 5.8 % at 1.78 %. A keyframe request and forward error correction are **not implemented**.
+- **Live video is the weak point.** A frame is 12 datagrams, so 0.45 % datagram loss already damages 5 % of the frames, and after a damaged frame the receiver shows nothing until the next keyframe: 41.5 % of the frames were shown at 0.45 % loss, 5.8 % at 1.78 %. A keyframe request and forward error correction were **not implemented** at the time (the keyframe request was added in §18).
 
 ### 14.4 Defects found in this round besides the findings of the review
 
@@ -582,7 +582,7 @@ After round 5 the implementation was attacked by experiment instead of read (`do
 - **The session survives loss.** Of the 196 operations the UAV started, 193 completed; the three that did not were timeouts at 19.9 % (1 full handshake, 2 cached rekeys). Retransmission costs time: the median full handshake took 1.2 s at 10 % and 2.4 s at 20 %, against 23 ms without loss; up to 5 % loss the medians of all three operations stayed where they are without loss. The link never went down and there was no authentication failure.
 - **A command from the ground station is still sent once**: 27 of 210 were not acknowledged (the request or its acknowledgement was lost) and have to be sent again by the operator.
 - **Photos:** 21 of 21 arrived intact (missing chunks are asked for again); a transfer took 0.1 s without loss and up to 1.6 s at 10 to 20 %.
-- **Live video is the weak point**, as in §14.3: a frame is 12 datagrams, 0.55 % datagram loss damages 6.4 % of the frames, and after a damaged frame nothing is shown until the next keyframe (35 % of the frames shown at 0.55 % loss, 3 % at 2 %). A keyframe request and forward error correction are **not implemented**; what they would give is simulated (`simulation/README.md`, plot 16) and labelled as such.
+- **Live video is the weak point**, as in §14.3: a frame is 12 datagrams, 0.55 % datagram loss damages 6.4 % of the frames, and after a damaged frame nothing is shown until the next keyframe (35 % of the frames shown at 0.55 % loss, 3 % at 2 %). A keyframe request and forward error correction were **not implemented** at the time (the keyframe request was added in §18); what they would give is simulated (`simulation/README.md`, plot 16) and labelled as such.
 
 ### 15.3 Attack experiments (`kyber6g/tools/attack_bench.py`; full account in `docs/CRYPTANALYSIS_REPORT.txt`)
 

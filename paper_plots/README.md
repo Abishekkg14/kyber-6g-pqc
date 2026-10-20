@@ -358,9 +358,9 @@ loss (29 % without). The implemented 1,180-byte fragment needs 12 datagrams; 400
 get only half the handshakes through without a repeat at 2 % loss. (c) With the implementation's fixed repeat
 timers a lost datagram costs 1.2 s (handshake), 0.7 s (cached rekey) or 0.35 s and more (ratchet): 95 % of the full
 handshakes are done within 1.2 s at 1 % loss. A timer of three round trips, never longer than the fixed one
-(simulated, not implemented), would make that 61 ms, and 208 ms at 20 % loss, without sending more datagrams and
-without completing more operations. For the live video (simulated,
-not implemented) a keyframe on request and one parity datagram per frame would raise the usable frames at 2 % loss
+(simulated; built after the sweep and measured, `docs/TEST_REPORT.md` §18), would make that 61 ms, and 208 ms at 20 % loss, without sending more datagrams and
+without completing more operations. For the live video (simulated;
+of the two, only the keyframe request was built later) a keyframe on request and one parity datagram per frame would raise the usable frames at 2 % loss
 from 6 % to 80 %.
 
 ## How it was measured

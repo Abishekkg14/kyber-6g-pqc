@@ -22,6 +22,18 @@ bash run/kyber6g.sh simulate swarm      # one study (validation swarm storm mobi
 bash run/kyber6g.sh simulate analyze    # tables and figures again from the results that are there
 ```
 
+**Before the first build:** 5G-LENA is not in this repository (ns-3 keeps `contrib/` out of git). The results were
+made with NR-v3.3 (tag `v3.3`, commit `0a29a86f`); put it where ns-3 expects it, and `run_sweep.py` applies the two
+patches and builds:
+
+```bash
+git clone --branch v3.3 https://gitlab.com/cttc-lena/nr.git ns-3-dev/contrib/nr
+```
+
+The radio settings below (one TDD carrier at 3.5 GHz, 100 MHz, 30 kHz subcarrier spacing) are the program's
+defaults (`ns3/k6g-swarm-sim.cc`, `struct Params`). Documents in `docs/legacy/` that name 5G-LENA v3.1, 20 MHz,
+28 GHz, 140 GHz or FDD describe the earlier, withdrawn study, not this simulation.
+
 ## 1. What is simulated
 
 The three session operations of the implemented protocol (`kyber6g/transport/link.py`) as the datagrams they are:
@@ -162,8 +174,9 @@ signature sizes) and computing times: the measured time of the real step, with t
 configuration's primitives put in place of those of the implemented one (`bench_crypto`, group "variants", on both
 machines). The alternatives were not implemented in the link.
 
-**Two additions to the video path are simulated but not implemented**: a keyframe on request, and one parity
-datagram per frame. They are in plot 16 as what would help, not as what the system does.
+**Two additions to the video path were simulated before either existed**: a keyframe on request, and one parity
+datagram per frame. The keyframe request was built after the sweep and measured on the test bed on 14 October 2026
+(`docs/TEST_REPORT.md` §18); the parity datagram is not implemented. Plot 16 shows the simulated effect of both.
 
 ## 5. Results
 
@@ -259,17 +272,20 @@ the implemented 1,180 bytes (12 datagrams) and 83 % with 1,400 bytes. The gain f
 a 1,400-byte fragment is a 1,436-byte datagram, which does not fit every tunnelled or cellular path; with 1,180
 bytes a datagram is 1,216 bytes on the wire, under the 1,280 bytes every IPv6 path must carry.
 
-**When to repeat an unanswered message** (16c). The implementation waits a fixed time: 1.2 s for a handshake
+**When to repeat an unanswered message** (16c). The implementation of the measurement campaign waits a fixed time: 1.2 s for a handshake
 message, 0.7 s for a cached rekey, 0.35 s and more for a ratchet. A lost datagram is therefore expensive: 95 % of
 the full handshakes are done within 1.2 s at 1 % loss and within 2.4 s at 5 %, where one that needs no repeat takes
 23 ms. A timer of three times the last round trip that needed no repeat, and never longer than the fixed one
-(simulated, **not implemented**), brings that 95th percentile to 61 ms at 1 % loss, 112 ms at 5 % and 208 ms at
+(simulated here), brings that 95th percentile to 61 ms at 1 % loss, 112 ms at 5 % and 208 ms at
 20 %; for the cached rekey to 55 ms instead of 709 ms at 5 % loss, for the ratchet to 134 ms instead of 723 ms. It
 sends no more datagrams (1.65 transmissions of a request at 5 % loss against 1.62) and completes the same share of
 operations (82 % of the full handshakes at 20 % loss either way): how many attempts are allowed decides that, not
-how long each waits. Of the alternatives studied here this is the cheapest to build.
+how long each waits. Of the alternatives studied here this is the cheapest to build. It was built after the sweep
+(`LinkConfig.retx_timer`, default `"rtt"`; `"fixed"` gives the old timer) and measured on 14 October 2026: at 1.2 %
+to 19.8 % loss none of 70 session operations took more than 1 s, against 9 of the 66 completed with the fixed timer
+(`docs/TEST_REPORT.md` §18).
 
-**Live video** (16d; the two additions are simulated, **not implemented**). As implemented, 45 % of the frames
+**Live video** (16d; simulated; of the two additions only the keyframe request was built later). Without either, 45 % of the frames
 reach the decoder at 0.45 % loss and 6 % at 2 %. A keyframe on request (the ground station asks for one as soon as
 a frame is lost) gives 74 % and 20 %; one parity datagram per frame (any one lost datagram of a frame is rebuilt)
 95 % and 53 %; both together 99 % and 80 %. Two parity datagrams with keyframe requests keep 97 % at 2 % loss and
@@ -346,8 +362,10 @@ numbers around constants and never ran ns-3; the ns-3 module beside them (`contr
 - The frame is given up exactly when its 150 ms window ends; the implementation looks every 50 ms at the latest.
 - A cached rekey that is refused, and a link that times out (5 s without traffic), are not followed up: the
   operation counts as failed and the next planned one starts.
-- Design alternatives (other algorithms, keyframe request, parity, other repeat timers, more answering threads) are
-  simulated, not implemented.
+- Design alternatives (other algorithms, parity, other scalings of the repeat timer, more answering threads) are
+  simulated, not implemented. The keyframe request and the round-trip repeat timer were built after the sweep and
+  measured on the test bed (`docs/TEST_REPORT.md` §18); where the sweep says "as implemented", it means the fixed
+  timer and the video without keyframe requests of the measurement campaign.
 - The PQ ratchet is predicted 16 % too slow on the test-bed link (§3); the cause was not found.
 - The check under loss rests on few measured operations (10 of each kind per loss rate), and the loss experiment was
   run two hours before the round trips the model was calibrated on.

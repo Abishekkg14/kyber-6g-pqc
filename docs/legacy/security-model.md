@@ -1,3 +1,10 @@
+> **SUPERSEDED: earlier study, kept for the record only, not used in the paper.**
+> This document belongs to the first phase of the project, whose simulation results were withdrawn. Its radio
+> and simulator settings (for example 5G-LENA v3.1, a 3.5 GHz n78 carrier with 20 MHz, carriers at 28 GHz or
+> 140 GHz, FDD, 120 m/s) do not describe the current work. The current simulation uses ns-3.42 with 5G-LENA
+> NR-v3.3 and one TDD carrier at 3.5 GHz with 100 MHz and 30 kHz subcarrier spacing (simulation/README.md);
+> the prototype runs over Wi-Fi only. See docs/README.md, section legacy/.
+
 # Security Model
 
 ## Hybrid KEM construction

@@ -168,7 +168,7 @@ export default function ResultsDashboard({ data }) {
         <div className="charts-grid">
           <ScrollReveal delay={1}>
             <ChartCard title="Live video when datagrams are lost" kind="measured"
-              note="After a damaged frame the receiver waits for the next keyframe, so far fewer frames are shown than arrive. A keyframe on request and forward error correction are not implemented. The loss axis is drawn on a square-root scale.">
+              note="After a damaged frame the receiver waits for the next keyframe, so far fewer frames are shown than arrive. These measurements were made without the keyframe request, which was added later and measured on its own; forward error correction is not implemented. The loss axis is drawn on a square-root scale.">
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={loss} margin={{ top: 8, right: 24, left: 4, bottom: 24 }}>
                   <CartesianGrid stroke={GRID} />

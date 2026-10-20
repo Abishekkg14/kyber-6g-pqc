@@ -41,3 +41,9 @@ Before quoting anything from them, note:
 4. ML-KEM-1024 and ML-DSA-87 establish and authenticate the session and wrap and sign the stored files; the data
    itself (video, telemetry, files, audio) is encrypted with AES-256-GCM (or ChaCha20-Poly1305). No document should be
    read as claiming that the video or the audio is "post-quantum encrypted" as a whole.
+5. **Their radio and simulator settings are superseded.** They name 5G-LENA v3.1 or v3.3, a 3.5 GHz carrier in band
+   n78 with 20 MHz, carriers at 28 GHz and 140 GHz, FDD and 120 m/s, and `known_limitations.txt` describes an FDD
+   workaround for a 140 GHz model. None of this applies to the current work. The simulation of the paper is ns-3.42
+   with 5G-LENA NR-v3.3 (tag `v3.3`), one TDD carrier at 3.5 GHz with 100 MHz and 30 kHz subcarrier spacing
+   ([`../simulation/README.md`](../simulation/README.md) §2; defaults in `../simulation/ns3/k6g-swarm-sim.cc`); its
+   limits are in §7 of that file. The prototype runs over Wi-Fi only.
