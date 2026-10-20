@@ -1,10 +1,12 @@
 # Kyber-6G: a post-quantum secure link for UAV video, telemetry and control
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23407561.svg)](https://doi.org/10.5281/zenodo.23407561)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23407560.svg)](https://doi.org/10.5281/zenodo.23407560)
 [![NIST FIPS 203](https://img.shields.io/badge/NIST-FIPS%20203%20(ML--KEM)-green.svg)](https://csrc.nist.gov/pubs/fips/203/final)
 [![NIST FIPS 204](https://img.shields.io/badge/NIST-FIPS%20204%20(ML--DSA)-brightgreen.svg)](https://csrc.nist.gov/pubs/fips/204/final)
 [![ns-3 3.42](https://img.shields.io/badge/ns--3-3.42-blue.svg)](https://www.nsnam.org/)
 [![5G-LENA NR v3.3](https://img.shields.io/badge/5G--LENA-v3.3-orange.svg)](https://5g-lena.cttc.es/)
+
+Archived on Zenodo: the DOI above always resolves to the newest release; each release also has its own DOI. The paper cites release v1.0.1, [10.5281/zenodo.23407561](https://doi.org/10.5281/zenodo.23407561).
 
 A Raspberry Pi 4B (the UAV node: camera, GNSS receiver, status display) and a ground control station exchange
 **live H.264 video, photos, telemetry, recordings and operator commands** over a link whose sessions are established

@@ -17,6 +17,9 @@ authors:
     family-names: "L"
     affiliation: "School of Computer Science and Engineering, Vellore Institute of Technology, Chennai, India"
 repository-code: "https://github.com/Abishekkg14/kyber-6g-pqc"
+version: "1.0.2"
+date-released: "2026-10-20"
+doi: "10.5281/zenodo.23407560"
 keywords:
   - post-quantum cryptography
   - ML-KEM
